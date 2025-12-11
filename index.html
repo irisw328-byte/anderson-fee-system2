@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Year-Round School Management System (CAD)</title>
+    <style>
+        :root {
+            --primary-color: #4dc2ff; /* Light Blue */
+            --secondary-color: #6c757d; /* Gray */
+            --success-color: #28a745; /* Green */
+            --warning-color: #ffc107; /* Yellow */
+            --danger-color: #dc3545; /* Red */
+            --bg-color: #f0f8ff; /* Very Light Blue Background */
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header & Navigation */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 { color: var(--primary-color); }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 10px 15px;
+            border: none;
+            background-color: #e0e0e0;
+            cursor: pointer;
+            border-radius: var(--border-radius);
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .nav-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            animation: fadeIn 0.3s;
+        }
+
+        .section.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label { display: block; margin-bottom: 5px; font-weight: 600; }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        /* Custom style for editable price input */
+        #itemPriceDisplay:not([readonly]) {
+            background-color: var(--warning-color); 
+            color: var(--text-color);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            flex-wrap: wrap; 
+        }
+
+        .input-group input, .input-group select {
+            flex-grow: 1;
+        }
+        
+        /* Specific Layout for Payment */
+        .payment-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+        
+        .itemized-list {
+            list-style: none;
+            padding: 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            min-height: 150px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        
+        .itemized-list li {
+            padding: 8px 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            transition: background 0.2s;
+        }
+
+        .btn-primary { background-color: var(--primary-color); }
+        .btn-success { background-color: var(--success-color); }
+        .btn-info { background-color: #17a2b8; }
+        .btn-secondary { background-color: var(--secondary-color); }
+        .btn-danger { background-color: var(--danger-color); padding: 5px 10px; font-size: 0.8em;}
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th { background-color: #f1f1f1; }
+        
+        /* Modal Style */
+        #returnModal, #reportsModal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            z-index: 2000;
+            width: 90%;
+            max-width: 600px;
+        }
+        
+        #reportsModal { max-width: 800px; }
+
+        #notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--success-color);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 4px;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🗓️ Year-Round School Management System (CAD)</h1>
+        <div class="nav-tabs">
+            <button class="nav-btn active" onclick="showSection('payment')">💰 Cashier</button>
+            <button class="nav-btn" onclick="showSection('records')">📊 All Transactions/Return</button>
+            <button class="nav-btn" onclick="showSection('reports')">📈 Reports & Analytics</button>
+            <button class="nav-btn" onclick="showSection('students')">👨‍🎓 Student Management</button>
+            <button class="nav-btn" onclick="showSection('events')">🗓️ Event Management</button>
+            <button class="nav-btn" onclick="showSection('fees')">📦 Item Setup</button>
+        </div>
+    </header>
+
+    <div id="payment" class="section active">
+        <h2>New Transaction</h2>
+        
+        <h3>1. Select Event & Student</h3>
+        <div class="input-group" style="margin-bottom: 15px;">
+            <select id="eventSelect" onchange="renderItemOptions()">
+                <option value="">-- Select Event --</option>
+            </select>
+        </div>
+        <div class="input-group" style="margin-bottom: 20px;">
+            <input type="text" id="payStudentSearch" placeholder="Search Last Name, First Name, or Division" oninput="renderPayStudentOptions()">
+            <select id="payStudentField" onchange="renderPayStudentOptions()" style="width: 120px; flex-grow: 0;">
+                <option value="lastName">Last Name</option>
+                <option value="firstName">First Name</option>
+                <option value="division">Division</option>
+            </select>
+            <select id="payStudentSelect" style="flex-grow: 2;">
+                <option value="">-- Select Student --</option>
+            </select>
+        </div>
+
+        <div class="payment-grid">
+            <div>
+                <h3>2. Add Items/Fees</h3>
+                <div class="input-group">
+                    <select id="itemSelect" onchange="updateItemPrice()">
+                        <option value="">-- Select Item/Fee --</option>
+                    </select>
+                    <input type="number" id="itemQuantity" value="1" min="1" style="width: 80px; flex-grow: 0;">
+                    <input type="number" id="itemPriceDisplay" placeholder="Price" oninput="updateCartDisplay()" onchange="validateOpenPrice()" style="width: 100px; flex-grow: 0;">
+                    <button class="btn btn-primary" onclick="addItemToCart()">Add</button>
+                </div>
+                
+                <ul id="itemizedList" class="itemized-list"></ul>
+                
+                <div class="form-group" style="margin-top: 20px;">
+                    <button class="btn btn-warning" onclick="resetCart()">Reset All Items</button>
+                </div>
+            </div>
+            
+            <div style="background-color: #f1f1f1; padding: 15px; border-radius: 4px;">
+                <h3>3. Confirm & Pay</h3>
+                
+                <div class="form-group">
+                    <label>Total Amount Due (CAD):</label>
+                    <input type="number" id="calculatedTotalDisplay" value="0.00" readonly style="font-size: 1.5em; text-align: right;">
+                </div>
+                
+                <div class="form-group">
+                    <label for="paymentMethod">Payment Method:</label>
+                    <select id="paymentMethod">
+                        <option value="Cash">Cash</option>
+                        <option value="Card">Card</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-success" onclick="processPayment()" style="width: 100%; margin-top: 15px; font-size: 1.2em;">Complete Transaction</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="records" class="section">
+        <h2>All Transactions/Return</h2>
+        <div class="action-bar">
+            <button class="btn btn-warning" onclick="exportToExcel()">📥 Export CSV</button>
+            <button class="btn btn-danger" onclick="clearAllData()">⚠️ Clear All Data</button>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Date/Time</th>
+                    <th>Event</th>
+                    <th>Student Name</th>
+                    <th>Items Purchased</th>
+                    <th>Method</th>
+                    <th>Original</th>
+                    <th>Returned</th>
+                    <th>Net Amount</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="recordsTableBody"></tbody>
+        </table>
+    </div>
+    
+    <div id="reports" class="section">
+        <h2>Reports & Analytics</h2>
+        <div class="dashboard-grid">
+             <button class="btn btn-primary" onclick="generateStudentReport()">Student Spending History</button>
+             <button class="btn btn-success" onclick="generateEventReport()">Event Income Summary</button>
+             <button class="btn btn-info" onclick="generateItemReport()">Item Sales Statistics</button>
+        </div>
+        
+        <h3 style="margin-top: 30px;">Report Output:</h3>
+        <div id="reportOutput" style="border: 1px solid #ccc; padding: 20px; min-height: 200px; background-color: #f8f8f8; border-radius: 4px;">
+            Select a report type above.
+        </div>
+    </div>
+
+
+    <div id="students" class="section">
+        <h2>Student Management (Year-Round Database)</h2>
+        
+        <h3>Add New Student</h3>
+        <div class="input-group" style="margin-bottom: 20px;">
+            <input type="text" id="newStudentId" placeholder="Student ID (Manual)" required>
+            <input type="text" id="newStudentLName" placeholder="Last Name" required>
+            <input type="text" id="newStudentFName" placeholder="First Name" required>
+            <input type="text" id="newStudentDivision" placeholder="Division # (e.g. 10)">
+            <button class="btn btn-primary" onclick="addStudent()">Add Student</button>
+        </div>
+        
+        <h3>Student List</h3>
+        <div class="input-group" style="margin-bottom: 20px;">
+            <input type="text" id="studentSearchInput" placeholder="Search by Last Name, First Name, or Division" oninput="renderStudents()">
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Last Name</th>
+                    <th>First Name</th>
+                    <th>Division</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="studentTableBody"></tbody>
+        </table>
+    </div>
+    
+    <div id="events" class="section">
+        <h2>Event Management</h2>
+        
+        <h3>Add New Event</h3>
+        <div class="input-group" style="margin-bottom: 20px;">
+            <input type="text" id="newEventName" placeholder="Event Name (e.g. Book Fair 2025)" required>
+            <button class="btn btn-primary" onclick="addEvent()">Add Event</button>
+        </div>
+        
+        <h3>Existing Events</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Event ID</th>
+                    <th>Event Name</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="eventTableBody"></tbody>
+        </table>
+    </div>
+
+    <div id="fees" class="section">
+        <h2>Item/Product Setup (Per Event)</h2>
+        <div class="input-group" style="margin-bottom: 20px;">
+            <select id="itemEventSelect" style="flex-grow: 2;">
+                <option value="">-- Select Event to Add Items --</option>
+            </select>
+            <input type="text" id="newItemName" placeholder="Item Name (e.g. Pencil Set)">
+            <input type="number" id="newItemAmount" placeholder="Price (CAD)" min="0.00" step="0.01">
+            <button class="btn btn-primary" onclick="addItem()">Add Item</button>
+        </div>
+        
+        <p style="color:var(--danger-color);">** Note: Set price to **0.00** to create an "Open Price Item" for manual input at checkout. **</p>
+        
+        <h3>Items by Event</h3>
+        <select id="filterItemEvent" onchange="renderFees()">
+             <option value="">-- View All Items --</option>
+        </select>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Event Name</th>
+                    <th>Item Name</th>
+                    <th>Price (CAD)</th>
+                    <th>Type</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="feeTableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<div id="returnModal" style="display:none;">
+    <h3>Process Item Return</h3>
+    <p>Transaction ID: <span id="returnTransactionId"></span></p>
+    <p>Student: <span id="returnStudentDetails"></span> | Event: <span id="returnEventDetails"></span></p>
+    <p>Original Total: <span id="returnOriginalAmount"></span> | Returned So Far: <span id="returnedSoFar"></span></p>
+    
+    <label for="returnType">Return Type:</label>
+    <select id="returnType" onchange="toggleReturnOptions()">
+        <option value="full">Full Transaction Return</option>
+        <option value="partial">Partial Amount Return</option>
+    </select>
+    
+    <div id="partialReturnContainer" style="margin-top: 15px; border: 1px solid #ddd; padding: 15px; display:none;">
+        <div class="form-group">
+            <label for="returnAmountManual">Return Amount (CAD):</label>
+            <input type="number" id="returnAmountManual" min="0.01" step="0.01" placeholder="Enter amount to return">
+        </div>
+        <small style="color:red;">Note: Max returnable amount is the Net Amount Due.</small>
+    </div>
+    
+    <button class="btn btn-success" onclick="confirmReturn()" style="margin-top: 20px;">Confirm Return</button>
+    <button class="btn btn-secondary" onclick="closeReturnModal()">Cancel</button>
+</div>
+
+
+<div id="notification">Operation Successful!</div>
+
+<script>
+    const DB_KEYS = {
+        STUDENTS: 'sys_students_v7',
+        EVENTS: 'sys_events_v7',
+        ITEMS: 'sys_items_v7',
+        RECORDS: 'sys_records_v7'
+    };
+    const CURRENCY_CODE = 'CAD';
+
+    let students = JSON.parse(localStorage.getItem(DB_KEYS.STUDENTS)) || [];
+    let events = JSON.parse(localStorage.getItem(DB_KEYS.EVENTS)) || [{ id: 'E001', name: 'Default Event' }];
+    let items = JSON.parse(localStorage.getItem(DB_KEYS.ITEMS)) || [];
+    let records = JSON.parse(localStorage.getItem(DB_KEYS.RECORDS)) || [];
+    let currentCart = [];
+    let recordToReturn = null; 
+
+    window.onload = function() {
+        renderAll();
+    };
+
+    function saveData() {
+        localStorage.setItem(DB_KEYS.STUDENTS, JSON.stringify(students));
+        localStorage.setItem(DB_KEYS.EVENTS, JSON.stringify(events));
+        localStorage.setItem(DB_KEYS.ITEMS, JSON.stringify(items));
+        localStorage.setItem(DB_KEYS.RECORDS, JSON.stringify(records));
+        renderAll();
+    }
+
+    function renderAll() {
+        renderStudents();
+        renderEvents();
+        renderFees();
+        renderRecords();
+        renderPaymentSetup();
+        updateCartDisplay();
+    }
+
+    function showSection(sectionId) {
+        document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+        
+        document.getElementById(sectionId).classList.add('active');
+        
+        const buttons = document.querySelectorAll('.nav-btn');
+        const sections = ['payment', 'records', 'reports', 'students', 'events', 'fees'];
+        const index = sections.indexOf(sectionId);
+        if(index !== -1) buttons[index].classList.add('active');
+        
+        if (sectionId === 'reports') document.getElementById('reportOutput').innerHTML = 'Select a report type above.';
+    }
+
+    function showNotification(msg) {
+        const notif = document.getElementById('notification');
+        notif.textContent = msg;
+        notif.style.display = 'block';
+        setTimeout(() => { notif.style.display = 'none'; }, 3000);
+    }
+    
+    function formatCurrency(amount) {
+        return `${CURRENCY_CODE} ${Number(amount).toFixed(2)}`;
+    }
+    
+    function getEventName(id) {
+        const event = events.find(e => e.id === id);
+        return event ? event.name : 'N/A';
+    }
+
+    // Utility function to capitalize the first letter
+    function capitalizeFirst(str) {
+        if (!str) return '';
+        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    }
+
+    /* --- Student Management --- */
+    function addStudent() {
+        const idInput = document.getElementById('newStudentId');
+        const lNameInput = document.getElementById('newStudentLName');
+        const fNameInput = document.getElementById('newStudentFName');
+        const divInput = document.getElementById('newStudentDivision');
+        
+        const studentId = idInput.value.trim();
+        const lastName = capitalizeFirst(lNameInput.value.trim());
+        const firstName = capitalizeFirst(fNameInput.value.trim());
+        const division = divInput.value.trim() || 'N/A';
+        
+        if (!studentId || !lastName || !firstName) return alert('Please enter Student ID, Last Name, and First Name.');
+        if (students.some(s => s.studentId === studentId)) return alert('Student ID already exists.');
+
+        students.push({ studentId, lastName, firstName, division });
+        
+        idInput.value = '';
+        lNameInput.value = '';
+        fNameInput.value = '';
+        divInput.value = '';
+        saveData();
+        showNotification(`Student Added: ${firstName} ${lastName} (DIV ${division})`);
+    }
+
+    function renderStudents() {
+        const tbody = document.getElementById('studentTableBody');
+        const searchInput = document.getElementById('studentSearchInput').value.toLowerCase();
+        
+        let filteredStudents = students.filter(s => {
+            if (!searchInput) return true;
+            
+            // Search by Last Name, First Name, or Division
+            return s.lastName.toLowerCase().includes(searchInput) ||
+                   s.firstName.toLowerCase().includes(searchInput) ||
+                   s.division.toLowerCase().includes(searchInput);
+        });
+
+        if (filteredStudents.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#888;">No students found matching the search criteria.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = filteredStudents.map((s) => {
+             const studentIndex = students.findIndex(std => std.studentId === s.studentId);
+             return `
+                 <tr>
+                     <td>${s.studentId}</td>
+                     <td>${s.lastName}</td>
+                     <td>${s.firstName}</td>
+                     <td>DIV ${s.division}</td>
+                     <td><button class="btn btn-danger" onclick="deleteStudent(${studentIndex})">Delete</button></td>
+                 </tr>
+             `;
+        }).join('');
+    }
+    
+    function deleteStudent(index) {
+        if(confirm('Are you sure you want to delete this student?')) {
+            students.splice(index, 1);
+            saveData();
+        }
+    }
+    
+    /* --- Event Management (No changes needed) --- */
+    function addEvent() {
+        const nameInput = document.getElementById('newEventName');
+        const name = nameInput.value.trim();
+        
+        if (!name) return alert('Please enter an Event Name.');
+        if (events.some(e => e.name.toLowerCase() === name.toLowerCase())) return alert('Event name already exists.');
+
+        const id = 'E' + (events.length + 1).toString().padStart(3, '0');
+        events.push({ id, name });
+        
+        nameInput.value = '';
+        saveData();
+        showNotification(`Event Added: ${name}`);
+    }
+
+    function renderEvents() {
+        const tbody = document.getElementById('eventTableBody');
+        tbody.innerHTML = events.map((e, index) => `
+            <tr>
+                <td>${e.id}</td>
+                <td>${e.name}</td>
+                <td><button class="btn btn-danger" onclick="deleteEvent('${e.id}', ${index})">Delete</button></td>
+            </tr>
+        `).join('');
+        
+        // Update payment and item setup select boxes
+        const paymentSelect = document.getElementById('eventSelect');
+        const itemSetupSelect = document.getElementById('itemEventSelect');
+        const filterSelect = document.getElementById('filterItemEvent');
+        
+        const options = events.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+        
+        paymentSelect.innerHTML = '<option value="">-- Select Event --</option>' + options;
+        itemSetupSelect.innerHTML = '<option value="">-- Select Event to Add Items --</option>' + options;
+        filterSelect.innerHTML = '<option value="">-- View All Items --</option>' + options;
+        
+        renderPayStudentOptions(); 
+        renderItemOptions(); 
+    }
+    
+    function deleteEvent(eventId, index) {
+        if(records.some(r => r.eventId === eventId)) {
+            return alert('Cannot delete event: Transactions exist for this event.');
+        }
+        if(items.some(i => i.eventId === eventId)) {
+            if(!confirm('Items are tied to this event. Deleting the event will delete its items. Continue?')) return;
+        }
+
+        items = items.filter(i => i.eventId !== eventId);
+        events.splice(index, 1);
+        saveData();
+        showNotification('Event and associated items deleted.');
+    }
+    
+    /* --- Item Setup --- */
+    function addItem() {
+        const eventId = document.getElementById('itemEventSelect').value;
+        const nameInput = document.getElementById('newItemName');
+        const amountInput = document.getElementById('newItemAmount');
+        
+        const name = nameInput.value.trim();
+        const amount = Number(amountInput.value);
+
+        if (!eventId) return alert('Please select an Event first.');
+        if (!name || amount < 0 || isNaN(amount)) return alert('Please enter a valid Item Name and Price (>= 0).');
+        if (items.some(i => i.eventId === eventId && i.name.toLowerCase() === name.toLowerCase())) return alert('Item name already exists for this event.');
+
+
+        items.push({ 
+            id: Date.now(), 
+            eventId, 
+            name, 
+            amount: amount.toFixed(2),
+            isOpenPrice: amount === 0 
+        });
+        nameInput.value = '';
+        amountInput.value = '';
+        saveData();
+        showNotification(`Item added to ${getEventName(eventId)}.`);
+    }
+
+    function deleteItem(index) {
+        if(confirm('Are you sure you want to delete this item?')) {
+            items.splice(index, 1);
+            saveData();
+        }
+    }
+
+    function renderFees() {
+        const tbody = document.getElementById('feeTableBody');
+        const filterId = document.getElementById('filterItemEvent').value;
+        
+        const filteredItems = filterId 
+            ? items.filter(i => i.eventId === filterId)
+            : items;
+
+        if (filteredItems.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#888;">No items found for this event or overall.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = filteredItems.map((f) => {
+             const itemIndex = items.findIndex(item => item.id === f.id);
+             const type = f.isOpenPrice ? 'Open Price (Manual)' : 'Fixed Price';
+             return `
+                 <tr>
+                     <td>${getEventName(f.eventId)}</td>
+                     <td>${f.name}</td>
+                     <td>${formatCurrency(f.amount)}</td>
+                     <td>${type}</td>
+                     <td><button class="btn btn-danger" onclick="deleteItem(${itemIndex})">Delete</button></td>
+                 </tr>
+             `;
+        }).join('');
+    }
+    
+    /* --- Payment Counter Logic --- */
+    function renderPaymentSetup() {
+        renderEvents(); 
+        renderItemOptions(); 
+        renderPayStudentOptions();
+    }
+
+    function renderPayStudentOptions() {
+        const sSelect = document.getElementById('payStudentSelect');
+        const searchInput = document.getElementById('payStudentSearch').value.toLowerCase();
+        const searchField = document.getElementById('payStudentField').value;
+
+        let filteredStudents = students.filter(s => {
+            if (!searchInput) return true;
+            
+            // Search by Last Name, First Name, or Division
+            let searchValue;
+            if (searchField === 'lastName') searchValue = s.lastName.toLowerCase();
+            else if (searchField === 'firstName') searchValue = s.firstName.toLowerCase();
+            else if (searchField === 'division') searchValue = s.division.toLowerCase();
+            else return false; // Should not happen with current select options
+            
+            return searchValue.includes(searchInput);
+        });
+        
+        sSelect.innerHTML = '<option value="">-- Select Student --</option>' + 
+            filteredStudents.map(s => `<option value="${s.studentId}|${s.firstName} ${s.lastName}|${s.division}">${s.lastName}, ${s.firstName} (DIV ${s.division})</option>`).join('');
+    }
+    
+    function renderItemOptions() {
+        const eventId = document.getElementById('eventSelect').value;
+        const select = document.getElementById('itemSelect');
+        
+        if (!eventId) {
+            select.innerHTML = '<option value="">-- Select Event First --</option>';
+            document.getElementById('itemPriceDisplay').value = '0.00';
+            document.getElementById('itemPriceDisplay').readOnly = true;
+            return;
+        }
+
+        const eventItems = items.filter(i => i.eventId === eventId);
+        
+        select.innerHTML = '<option value="">-- Select Item/Fee --</option>' + 
+            eventItems.map(f => {
+                const priceDisplay = Number(f.amount) === 0 ? 'Open Price' : formatCurrency(f.amount);
+                return `<option value="${f.id}">${f.name} (${priceDisplay})</option>`;
+            }).join('');
+        
+        updateItemPrice(); 
+    }
+    
+    function updateItemPrice() {
+        const select = document.getElementById('itemSelect');
+        const priceDisplay = document.getElementById('itemPriceDisplay');
+        const selectedItem = items.find(f => f.id == select.value);
+        
+        if (selectedItem) {
+            priceDisplay.value = selectedItem.amount;
+            // Check for Open Price Item (amount === 0)
+            if (Number(selectedItem.amount) === 0) {
+                priceDisplay.readOnly = false;
+                priceDisplay.value = '0.00'; // Clear for manual input
+            } else {
+                priceDisplay.readOnly = true;
+            }
+        } else {
+            priceDisplay.value = '0.00';
+            priceDisplay.readOnly = true;
+        }
+        updateCartDisplay();
+    }
+    
+    function validateOpenPrice() {
+        const price = Number(document.getElementById('itemPriceDisplay').value);
+        if (price < 0 || isNaN(price)) {
+            document.getElementById('itemPriceDisplay').value = '0.00';
+        }
+    }
+
+    function addItemToCart() {
+        const eventId = document.getElementById('eventSelect').value;
+        const itemSelect = document.getElementById('itemSelect');
+        const quantityInput = document.getElementById('itemQuantity');
+        const priceInput = document.getElementById('itemPriceDisplay');
+        
+        if (!eventId) return alert('Please select an Event.');
+        
+        const itemId = itemSelect.value;
+        const quantity = Number(quantityInput.value);
+        const unitPrice = Number(priceInput.value);
+        
+        if (!itemId || quantity <= 0 || isNaN(quantity)) return alert('Please select an item and a valid quantity.');
+        if (unitPrice <= 0 || isNaN(unitPrice)) return alert('Please enter a valid unit price.');
+
+        const selectedItemBase = items.find(f => f.id == itemId);
+        
+        // Use the base item name, but the manually entered unitPrice
+        const itemTotal = (unitPrice * quantity).toFixed(2);
+        
+        currentCart.push({
+            id: selectedItemBase.id,
+            name: selectedItemBase.name,
+            price: unitPrice.toFixed(2), // Store the actual unit price used
+            quantity: quantity,
+            total: itemTotal
+        });
+        
+        itemSelect.value = ""; 
+        quantityInput.value = "1";
+        updateItemPrice(); // Reset price display
+        
+        updateCartDisplay();
+    }
+    
+    function removeItemFromCart(index) {
+        currentCart.splice(index, 1);
+        updateCartDisplay();
+    }
+    
+    function resetCart() {
+        currentCart = [];
+        updateItemPrice(); // To reset item price display state
+        updateCartDisplay();
+    }
+
+    function updateCartDisplay() {
+        const list = document.getElementById('itemizedList');
+        const total = currentCart.reduce((sum, item) => sum + Number(item.total), 0);
+        const calculatedTotalDisplay = document.getElementById('calculatedTotalDisplay');
+        
+        calculatedTotalDisplay.value = total.toFixed(2);
+
+        list.innerHTML = currentCart.map((item, index) => `
+            <li>
+                <span>${item.name} (${formatCurrency(item.price)} x ${item.quantity})</span>
+                <span>${formatCurrency(item.total)} <button class="btn btn-danger" onclick="removeItemFromCart(${index})">X</button></span>
+            </li>
+        `).join('');
+    }
+
+    function processPayment() {
+        const eventId = document.getElementById('eventSelect').value;
+        const sSelect = document.getElementById('payStudentSelect');
+        const paymentMethod = document.getElementById('paymentMethod').value;
+        const finalAmount = Number(document.getElementById('calculatedTotalDisplay').value);
+
+        if (!eventId) return alert('Please select an Event.');
+        if (!sSelect.value) return alert('Please select a student.');
+        if (currentCart.length === 0) return alert('Please add at least one item to the cart.');
+        if (finalAmount <= 0) return alert('Transaction amount must be greater than zero.');
+
+        const studentData = sSelect.value.split('|');
+        const studentId = studentData[0];
+        const studentName = studentData[1];
+        
+        const record = {
+            id: Date.now(),
+            date: new Date().toLocaleString(),
+            eventId,
+            studentId,
+            studentName,
+            paymentMethod,
+            originalAmount: finalAmount,
+            returnedAmount: 0,
+            netAmount: finalAmount,
+            items: currentCart // Store the items sold
+        };
+
+        records.unshift(record);
+        saveData();
+        showNotification(`Transaction Successful! ${getEventName(eventId)}: ${formatCurrency(finalAmount)} (${paymentMethod}).`);
+        
+        // Reset payment form
+        document.getElementById('eventSelect').value = "";
+        sSelect.value = "";
+        document.getElementById('payStudentSearch').value = "";
+        resetCart(); 
+        renderPaymentSetup();
+    }
+
+    /* --- Records & Returns (No changes needed) --- */
+    function renderRecords() {
+        const tbody = document.getElementById('recordsTableBody');
+
+        if (records.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#888;">No transaction records yet.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = records.map((r, index) => {
+            const isFullyReturned = r.netAmount <= 0;
+            const returnBtn = isFullyReturned 
+                ? `<button class="btn btn-secondary" disabled>Returned</button>`
+                : `<button class="btn btn-info" onclick="openReturnModal(${r.id})">Return</button>`;
+            
+            const itemsSummary = r.items.map(i => `${i.name} (${i.quantity})`).join(', ');
+
+            return `
+                <tr>
+                    <td>${r.date}</td>
+                    <td>${getEventName(r.eventId)}</td>
+                    <td>${r.studentName}</td>
+                    <td title="${itemsSummary}">${r.items.length} items</td>
+                    <td>${r.paymentMethod}</td>
+                    <td>${formatCurrency(r.originalAmount)}</td>
+                    <td style="color: ${r.returnedAmount > 0 ? 'red' : '#888'};">${formatCurrency(r.returnedAmount)}</td>
+                    <td style="color: ${isFullyReturned ? '#888' : 'var(--success-color)'}; font-weight:bold;">${formatCurrency(r.netAmount)}</td>
+                    <td>
+                        ${returnBtn}
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+    
+    function openReturnModal(recordId) {
+        recordToReturn = records.find(r => r.id === recordId);
+        if (!recordToReturn || recordToReturn.netAmount <= 0) {
+            return alert("This transaction is not eligible for return or is fully returned.");
+        }
+        
+        document.getElementById('returnTransactionId').textContent = recordToReturn.id;
+        document.getElementById('returnStudentDetails').textContent = recordToReturn.studentName;
+        document.getElementById('returnEventDetails').textContent = getEventName(recordToReturn.eventId);
+        document.getElementById('returnOriginalAmount').textContent = formatCurrency(recordToReturn.originalAmount);
+        document.getElementById('returnedSoFar').textContent = formatCurrency(recordToReturn.returnedAmount);
+        
+        document.getElementById('returnType').value = 'full';
+        document.getElementById('returnAmountManual').value = recordToReturn.netAmount.toFixed(2);
+        document.getElementById('returnAmountManual').max = recordToReturn.netAmount.toFixed(2);
+        
+        toggleReturnOptions(); 
+        document.getElementById('returnModal').style.display = 'block';
+    }
+    
+    function closeReturnModal() {
+        document.getElementById('returnModal').style.display = 'none';
+        recordToReturn = null;
+    }
+    
+    function toggleReturnOptions() {
+        const type = document.getElementById('returnType').value;
+        const partialContainer = document.getElementById('partialReturnContainer');
+        
+        if (type === 'partial') {
+            partialContainer.style.display = 'block';
+        } else {
+            partialContainer.style.display = 'none';
+            document.getElementById('returnAmountManual').value = recordToReturn.netAmount.toFixed(2);
+        }
+    }
+
+    function confirmReturn() {
+        const type = document.getElementById('returnType').value;
+        let amountToReturn = 0;
+        
+        if (type === 'full') {
+            amountToReturn = recordToReturn.netAmount;
+        } else {
+            amountToReturn = Number(document.getElementById('returnAmountManual').value);
+        }
+
+        if (amountToReturn <= 0 || isNaN(amountToReturn)) {
+            return alert('Please enter a valid return amount.');
+        }
+        
+        if (amountToReturn > recordToReturn.netAmount) {
+            return alert(`Return amount cannot exceed net payable amount (${formatCurrency(recordToReturn.netAmount)}).`);
+        }
+        
+        recordToReturn.returnedAmount += amountToReturn;
+        recordToReturn.netAmount -= amountToReturn;
+        recordToReturn.netAmount = Math.max(0, recordToReturn.netAmount); 
+        
+        saveData();
+        closeReturnModal();
+        showNotification(`Return of ${formatCurrency(amountToReturn)} processed.`);
+    }
+
+    /* --- Reports (No changes needed) --- */
+    function generateStudentReport() {
+        let output = '<h3>Student Spending History</h3>';
+        
+        const studentSpending = students.map(s => {
+            const studentRecords = records.filter(r => r.studentId === s.studentId);
+            const totalSpent = studentRecords.reduce((sum, r) => sum + r.netAmount, 0);
+            return {
+                name: `${s.lastName}, ${s.firstName}`,
+                division: s.division,
+                studentId: s.studentId,
+                totalSpent,
+                transactions: studentRecords.length
+            };
+        }).sort((a, b) => b.totalSpent - a.totalSpent);
+        
+        output += `
+            <table>
+                <thead>
+                    <tr><th>Student (ID)</th><th>Division</th><th>Transactions</th><th>Total Net Spent</th></tr>
+                </thead>
+                <tbody>
+                    ${studentSpending.map(s => `
+                        <tr>
+                            <td>${s.name} (${s.studentId})</td>
+                            <td>DIV ${s.division}</td>
+                            <td>${s.transactions}</td>
+                            <td>${formatCurrency(s.totalSpent)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        document.getElementById('reportOutput').innerHTML = output;
+    }
+
+    function generateEventReport() {
+        let output = '<h3>Event Income Summary</h3>';
+        
+        const eventSummary = events.map(e => {
+            const eventRecords = records.filter(r => r.eventId === e.id);
+            const totalIncome = eventRecords.reduce((sum, r) => sum + r.netAmount, 0);
+            return {
+                name: e.name,
+                id: e.id,
+                totalIncome,
+                transactions: eventRecords.length
+            };
+        }).sort((a, b) => b.totalIncome - a.totalIncome);
+        
+        output += `
+            <table>
+                <thead>
+                    <tr><th>Event Name</th><th>Total Transactions</th><th>Total Net Income</th></tr>
+                </thead>
+                <tbody>
+                    ${eventSummary.map(e => `
+                        <tr>
+                            <td>${e.name}</td>
+                            <td>${e.transactions}</td>
+                            <td>${formatCurrency(e.totalIncome)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        document.getElementById('reportOutput').innerHTML = output;
+    }
+    
+    function generateItemReport() {
+        let output = '<h3>Item Sales Statistics (Gross/Count)</h3>';
+        const itemSales = {};
+        
+        records.forEach(r => {
+            r.items.forEach(i => {
+                const itemKey = `${r.eventId}_${i.id}_${i.name}`; 
+                const grossPrice = Number(i.price) * i.quantity; 
+                
+                if (!itemSales[itemKey]) {
+                    const baseItem = items.find(base => base.id === i.id) || {};
+                    itemSales[itemKey] = { 
+                        name: i.name, 
+                        eventName: getEventName(r.eventId),
+                        count: 0, 
+                        revenue: 0,
+                        isOpen: baseItem.isOpenPrice || false
+                    };
+                }
+                
+                itemSales[itemKey].count += i.quantity;
+                itemSales[itemKey].revenue += grossPrice;
+            });
+        });
+        
+        const sortedItems = Object.values(itemSales).sort((a, b) => b.revenue - a.revenue);
+        
+        output += `
+            <table>
+                <thead>
+                    <tr><th>Event</th><th>Item Name</th><th>Type</th><th>Units Sold</th><th>Gross Revenue (approx.)</th></tr>
+                </thead>
+                <tbody>
+                    ${sortedItems.map(i => `
+                        <tr>
+                            <td>${i.eventName}</td>
+                            <td>${i.name}</td>
+                            <td>${i.isOpen ? 'Open Price' : 'Fixed Price'}</td>
+                            <td>${i.count}</td>
+                            <td>${formatCurrency(i.revenue)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        document.getElementById('reportOutput').innerHTML = output;
+    }
+
+
+    function clearAllData() {
+        if(confirm('This will delete ALL data (Students, Events, Items, Transactions)! Are you sure?')) {
+            if(confirm('FINAL CONFIRMATION: Data will be permanently lost!')) {
+                localStorage.clear();
+                students = [];
+                events = [{ id: 'E001', name: 'Default Event' }];
+                items = [];
+                records = [];
+                renderAll();
+                showNotification('System reset successful.');
+            }
+        }
+    }
+
+    function exportToExcel() {
+        if (records.length === 0) {
+            return alert("No data to export!");
+        }
+
+        let csvContent = "\uFEFF"; 
+        csvContent += "Date/Time,Event ID,Event Name,Student ID,Student Name,Payment Method,Items Purchased,Original Amount (CAD),Returned Amount (CAD),Net Amount (CAD)\n";
+
+        records.forEach(row => {
+            const itemsDetail = row.items.map(i => `${i.name} (Qty: ${i.quantity}, Unit Price: ${i.price})`).join('; ');
+            csvContent += `"${row.date}","${row.eventId}","${getEventName(row.eventId)}","${row.studentId}","${row.studentName}","${row.paymentMethod}","${itemsDetail.replace(/"/g, '""')}",${row.originalAmount.toFixed(2)},${row.returnedAmount.toFixed(2)},${row.netAmount.toFixed(2)}\n`;
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+
+        const date = new Date();
+        const filename = `YearRound_Report_${date.getFullYear()}${String(date.getMonth()+1).padStart(2,'0')}${date.getDate()}.csv`;
+
+        link.href = url;
+        link.download = filename;
+        link.style.visibility = "hidden";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        showNotification("Report Downloaded!");
+    }
+    
+</script>
+
+</body>
+</html>
