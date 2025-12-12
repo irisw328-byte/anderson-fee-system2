@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anderson Elementary Fee Management v1.0</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#4dc2ff">
+
+    <style>
+        :root {
+            --primary-color: #4dc2ff; 
+            --secondary-color: #6c757d; 
+            --success-color: #28a745; 
+            --warning-color: #ffc107; 
+            --danger-color: #dc3545; 
+            --bg-color: #f0f8ff; 
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* --- Keypad Styles --- */
+        #virtualKeypad {
+            display: none;
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            width: 300px;
+            background: #2a3038;
+            border-radius: var(--border-radius);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            z-index: 3000;
+        }
+
+        #keypadGrid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .keypad-btn {
+            padding: 20px 0;
+            font-size: 1.5em;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #4b525d;
+            color: white;
+            transition: background-color 0.1s;
+        }
+
+        .keypad-btn:hover { background-color: #5d6675; }
+        .keypad-btn.action { background-color: var(--primary-color); }
+        .keypad-btn.delete { background-color: var(--danger-color); }
+        
+        .keypad-display {
+            background-color: #1a1e23;
+            color: white;
+            font-size: 2em;
+            text-align: right;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        /* --- General Styles --- */
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { color: var(--primary-color); }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 15px 25px; 
+            border: none;
+            background-color: #e0e0e0;
+            cursor: pointer;
+            border-radius: var(--border-radius);
+            font-weight: bold;
+            transition: 0.3s;
+            font-size: 1.1em;
+        }
+
+        .nav-btn.active { background-color: var(--primary-color); color: white; }
+        
+        .section {
+            display: none;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            animation: fadeIn 0.3s;
+        }
+        .section.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; }
+        
+        input, select {
+            width: 100%;
+            padding: 15px 12px; 
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 1.1em;
+            min-height: 50px;
+        }
+        
+        #itemPriceDisplay:not([readonly]) {
+            background-color: var(--warning-color); 
+            color: var(--text-color);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            flex-wrap: wrap; 
+        }
+
+        .input-group input, .input-group select { flex-grow: 1; }
+        
+        /* Payment Grid */
+        .payment-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        
+        .itemized-list {
+            list-style: none;
+            padding: 0;
+            border: 1px solid #ccc;
+            border-radius: var(--border-radius);
+            min-height: 150px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+            background-color: #fdfdfd;
+        }
+        
+        .itemized-list li {
+            padding: 10px 12px; 
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .btn {
+            padding: 15px 25px; 
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            transition: background 0.2s;
+            font-size: 1.1em; 
+            min-height: 50px; 
+            flex-shrink: 0; 
+        }
+
+        .btn-primary { background-color: var(--primary-color); }
+        .btn-success { background-color: var(--success-color); }
+        .btn-info { background-color: #17a2b8; }
+        .btn-secondary { background-color: var(--secondary-color); }
+        .btn-danger { 
+             background-color: var(--danger-color); 
+             padding: 8px 15px; 
+             font-size: 0.9em;
+             min-height: 35px;
+        } 
+        
+        /* Auto Event Display Styling */
+        #activeEventDisplay {
+            background-color: #e3f2fd;
+            color: #0d47a1;
+            padding: 15px;
+            border-radius: 4px;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: center;
+            border: 2px solid #90caf9;
+            margin-bottom: 15px;
+            display: none; /* Hidden by default */
+        }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 15px 12px; border-bottom: 1px solid #ddd; }
+        th { background-color: #f1f1f1; }
+        .action-bar { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; justify-content: flex-start; }
+
+        @media (max-width: 768px) {
+            .payment-grid { grid-template-columns: 1fr; }
+            .nav-tabs, .action-bar { flex-direction: column; gap: 15px; }
+            .nav-btn, .btn { width: 100%; }
+            .input-group { flex-direction: column; align-items: stretch; }
+            #virtualKeypad { width: 100%; right: 0; bottom: 0; border-radius: 8px 8px 0 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🦅 Anderson Elementary Fee Management v1.0</h1>
+        <div class="nav-tabs">
+            <button class="nav-btn active" onclick="showSection('payment')">💰 Cashier</button>
+            <button class="nav-btn" onclick="showSection('records')">📊 All Trans/Return</button>
+            <button class="nav-btn" onclick="showSection('reports')">📈 Reports</button>
+            <button class="nav-btn" onclick="showSection('students')">👨‍🎓 Student</button>
+            <button class="nav-btn" onclick="showSection('events')">🗓️ Event</button>
+            <button class="nav-btn" onclick="showSection('fees')">📦 Items</button>
+        </div>
+    </header>
+
+    <div id="payment" class="section active">
+        <h2>New Transaction</h2>
+        
+        <div class="form-group">
+            <div id="activeEventDisplay"></div>
+            
+            <div id="manualEventSelection" style="display:none;">
+                <label>Select Event:</label>
+                <select id="eventSelect" onchange="renderItemOptions()">
+                    <option value="">-- Select Event --</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="input-group" style="margin-bottom: 25px;">
+            <div style="flex-grow: 1;">
+                <label for="payStudentSearch">Search First Name:</label>
+                <input type="text" id="payStudentSearch" placeholder="Type name to search..." oninput="renderPayStudentOptions()">
+            </div>
+            
+            <div style="flex-grow: 2;">
+                <label for="payStudentSelect">Select Student:</label>
+                <select id="payStudentSelect">
+                    <option value="">-- Select Student --</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="payment-grid">
+            <div>
+                <h3>Add Items</h3>
+                <div class="input-group">
+                    <div style="flex-grow: 3;">
+                        <label>Item:</label>
+                        <select id="itemSelect" onchange="updateItemPrice()">
+                            <option value="">-- Select Item --</option>
+                        </select>
+                    </div>
+                    
+                    <div style="flex-grow: 0; width: 100px;">
+                        <label>Qty:</label>
+                        <input type="number" id="itemQuantity" value="1" min="1" onfocus="showKeypad(this.id)" onblur="hideKeypad()">
+                    </div>
+                    
+                    <div style="flex-grow: 0; width: 120px;">
+                        <label>Price:</label>
+                        <input type="number" id="itemPriceDisplay" placeholder="Price" onfocus="showKeypad(this.id)" onblur="hideKeypad()" onchange="validateOpenPrice()">
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="addItemToCart()" style="margin-top: 28px;">Add</button>
+                </div>
+                
+                <ul id="itemizedList" class="itemized-list"></ul>
+                
+                <div class="form-group" style="margin-top: 20px;">
+                    <button class="btn btn-warning" onclick="resetCart()">Reset Items</button>
+                </div>
+            </div>
+            
+            <div style="background-color: #f1f1f1; padding: 15px; border-radius: 4px;">
+                <h3>Payment</h3>
+                
+                <div class="form-group">
+                    <label>Total Due (CAD):</label>
+                    <input type="number" id="calculatedTotalDisplay" value="0.00" readonly style="font-size: 1.5em; text-align: right; min-height: 50px;">
+                </div>
+                
+                <div class="form-group">
+                    <label for="paymentMethod">Method:</label>
+                    <select id="paymentMethod">
+                        <option value="Cash">Cash</option>
+                        <option value="Card">Card</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-success" onclick="processPayment()" style="width: 100%; margin-top: 15px; font-size: 1.2em; min-height: 60px;">PAY NOW</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="records" class="section">
+        <h2>All Transactions</h2>
+        <div class="action-bar">
+            <button class="btn btn-warning" onclick="exportToExcel()">📥 Export CSV</button>
+            <button class="btn btn-danger" onclick="clearAllData()">⚠️ Clear All Data</button>
+        </div>
+        
+        <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Event</th>
+                    <th>Student</th>
+                    <th>Items</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="recordsTableBody"></tbody>
+        </table>
+        </div>
+    </div>
+    
+    <div id="reports" class="section">
+        <h2>Reports & Analytics</h2>
+        <div class="action-bar">
+             <button class="btn btn-primary" onclick="generateStudentReport()">Student Spending</button>
+             <button class="btn btn-success" onclick="generateEventReport()">Event Income</button>
+             <button class="btn btn-info" onclick="generateItemReport()">Item Sales</button>
+        </div>
+        
+        <div id="reportOutput" style="margin-top: 20px; border: 1px solid #ccc; padding: 20px; min-height: 200px; background-color: #f8f8f8; border-radius: 4px;">
+            Select a report...
+        </div>
+    </div>
+
+    <div id="students" class="section">
+        <h2>Student Management</h2>
+        
+        <div class="action-bar" style="justify-content: flex-start; gap: 10px;">
+            <input type="file" id="importStudentFile" accept=".csv" style="display: none;" onchange="importStudents(event)">
+            <button class="btn btn-primary" onclick="document.getElementById('importStudentFile').click()">⬆️ Import CSV</button>
+            <button class="btn btn-warning" onclick="exportStudentsToCSV()">⬇️ Export CSV</button>
+        </div>
+        
+        <h3>Add Student</h3>
+        <div class="input-group" style="margin-bottom: 20px;">
+            <input type="text" id="newStudentId" placeholder="Student ID" required>
+            <input type="text" id="newStudentLName" placeholder="Last Name" required>
+            <input type="text" id="newStudentFName" placeholder="First Name" required>
+            <input type="text" id="newStudentDivision" placeholder="Division">
+            <button class="btn btn-primary" onclick="addStudent()">Add</button>
+        </div>
+        
+        <h3>Search</h3>
+        <div class="input-group" style="margin-bottom: 20px;">
+            <input type="text" id="studentSearchInput" placeholder="Search..." oninput="renderStudents()">
+        </div>
+
+        <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Last Name</th>
+                    <th>First Name</th>
+                    <th>Div</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="studentTableBody"></tbody>
+        </table>
+        </div>
+    </div>
+    
+    <div id="events" class="section">
+        <h2>Event Management</h2>
+        
+        <div class="input-group" style="margin-bottom: 20px;">
+            <input type="text" id="newEventName" placeholder="Event Name" required>
+            <input type="date" id="newEventStartDate" required>
+            <input type="date" id="newEventEndDate" required>
+            <button class="btn btn-primary" onclick="addEvent()">Add Event</button>
+        </div>
+        
+        <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Event Name</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="eventTableBody"></tbody>
+        </table>
+        </div>
+    </div>
+
+    <div id="fees" class="section">
+        <h2>Item Setup</h2>
+        <div class="input-group" style="margin-bottom: 20px;">
+            <select id="itemEventSelect" style="flex-grow: 2;">
+                <option value="">-- Select Event --</option>
+            </select>
+            <input type="text" id="newItemName" placeholder="Item Name">
+            <input type="number" id="newItemAmount" placeholder="Price" min="0.00" step="0.01">
+            <button class="btn btn-primary" onclick="addItem()">Add Item</button>
+        </div>
+        
+        <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Event</th>
+                    <th>Item</th>
+                    <th>Price</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="feeTableBody"></tbody>
+        </table>
+        </div>
+    </div>
+</div>
+
+<div id="returnModal" style="display:none;">
+    <h3>Process Return</h3>
+    <p>Transaction ID: <span id="returnTransactionId"></span></p>
+    <p>Original: <span id="returnOriginalAmount"></span> | Returned: <span id="returnedSoFar"></span></p>
+    
+    <label>Return Type:</label>
+    <select id="returnType" onchange="toggleReturnOptions()">
+        <option value="full">Full Return</option>
+        <option value="partial">Partial Return</option>
+    </select>
+    
+    <div id="partialReturnContainer" style="margin-top: 15px; border: 1px solid #ddd; padding: 15px; display:none;">
+        <label>Return Amount:</label>
+        <input type="number" id="returnAmountManual" min="0.01" step="0.01" onfocus="showKeypad(this.id)" onblur="hideKeypad()">
+    </div>
+    
+    <button class="btn btn-success" onclick="confirmReturn()" style="margin-top: 20px;">Confirm</button>
+    <button class="btn btn-secondary" onclick="closeReturnModal()">Cancel</button>
+</div>
+
+<div id="notification">Success!</div>
+
+<div id="virtualKeypad">
+    <div class="keypad-display" id="keypadDisplay">0.00</div>
+    <div id="keypadGrid">
+        <button class="keypad-btn" onclick="keypadInput('7')">7</button>
+        <button class="keypad-btn" onclick="keypadInput('8')">8</button>
+        <button class="keypad-btn" onclick="keypadInput('9')">9</button>
+        <button class="keypad-btn delete" onclick="keypadInput('DEL')">DEL</button>
+        <button class="keypad-btn" onclick="keypadInput('4')">4</button>
+        <button class="keypad-btn" onclick="keypadInput('5')">5</button>
+        <button class="keypad-btn" onclick="keypadInput('6')">6</button>
+        <button class="keypad-btn action" onclick="keypadInput('CLEAR')">C</button>
+        <button class="keypad-btn" onclick="keypadInput('1')">1</button>
+        <button class="keypad-btn" onclick="keypadInput('2')">2</button>
+        <button class="keypad-btn" onclick="keypadInput('3')">3</button>
+        <button class="keypad-btn action" onclick="keypadInput('CLOSE')">OK</button>
+        <button class="keypad-btn action" onclick="keypadInput('+')">+</button>
+        <button class="keypad-btn" onclick="keypadInput('0')">0</button>
+        <button class="keypad-btn action" onclick="keypadInput('.')">.</button>
+        <button class="keypad-btn action" onclick="keypadInput('=')">=</button>
+    </div>
+</div>
+
+<script>
+    const DB_KEYS = { STUDENTS: 'sys_stud_v9', EVENTS: 'sys_evt_v9', ITEMS: 'sys_itm_v9', RECORDS: 'sys_rec_v9' };
+    const CURRENCY_CODE = 'CAD';
+    const ADMIN_PASSWORD = 'Eagles'; // PASSWORD SET
+
+    // Default event setup covering typical current date for demo
+    let students = JSON.parse(localStorage.getItem(DB_KEYS.STUDENTS)) || [];
+    let events = JSON.parse(localStorage.getItem(DB_KEYS.EVENTS)) || [{ id: 'E001', name: 'Default Term Event', startDate: '2025-01-01', endDate: '2025-12-31' }];
+    let items = JSON.parse(localStorage.getItem(DB_KEYS.ITEMS)) || [];
+    let records = JSON.parse(localStorage.getItem(DB_KEYS.RECORDS)) || [];
+    let currentCart = [];
+    let recordToReturn = null; 
+    let activeKeypadInputId = null;
+
+    window.onload = function() {
+        renderAll();
+        // Setup simplified listeners
+        document.getElementById('payStudentSearch').addEventListener('input', renderPayStudentOptions);
+        document.getElementById('studentSearchInput').addEventListener('input', renderStudents);
+        
+        showSection('payment'); 
+        
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
+        }
+    };
+
+    function saveData() {
+        localStorage.setItem(DB_KEYS.STUDENTS, JSON.stringify(students));
+        localStorage.setItem(DB_KEYS.EVENTS, JSON.stringify(events));
+        localStorage.setItem(DB_KEYS.ITEMS, JSON.stringify(items));
+        localStorage.setItem(DB_KEYS.RECORDS, JSON.stringify(records));
+        renderAll();
+    }
+
+    function renderAll() {
+        renderStudents();
+        renderEvents();
+        renderFees();
+        renderRecords();
+        renderPaymentSetup();
+        updateCartDisplay();
+    }
+    
+    // --- Keypad ---
+    function showKeypad(inputId) {
+        if (document.getElementById(inputId).readOnly) return;
+        activeKeypadInputId = inputId;
+        const inputElement = document.getElementById(inputId);
+        document.getElementById('virtualKeypad').style.display = 'block';
+        document.getElementById('keypadDisplay').textContent = inputElement.value || '0';
+        inputElement.onblur = () => setTimeout(() => {
+            const keypad = document.getElementById('virtualKeypad');
+            if (!keypad.matches(':hover')) hideKeypad();
+        }, 200);
+    }
+    
+    function hideKeypad() {
+        if (activeKeypadInputId) {
+            const val = document.getElementById('keypadDisplay').textContent;
+            const input = document.getElementById(activeKeypadInputId);
+            input.value = val;
+            if (activeKeypadInputId === 'itemPriceDisplay') validateOpenPrice();
+        }
+        document.getElementById('virtualKeypad').style.display = 'none';
+        activeKeypadInputId = null;
+    }
+
+    function keypadInput(key) {
+        if (key === 'CLOSE') { hideKeypad(); return; }
+        const display = document.getElementById('keypadDisplay');
+        let val = display.textContent;
+        
+        if (key === 'CLEAR') val = '0';
+        else if (key === 'DEL') val = val.slice(0, -1) || '0';
+        else if (key === '+' || key === '=') {
+            try { val = eval(val.replace('x','*')).toString(); } catch(e){}
+        } else if (key === '.') {
+            if (!val.includes('.')) val += '.';
+        } else {
+            val = val === '0' ? key : val + key;
+        }
+        display.textContent = val;
+        if (activeKeypadInputId) document.getElementById(activeKeypadInputId).value = val;
+    }
+    
+    // --- Security & Nav ---
+    function checkAdminAccess() {
+        if (sessionStorage.getItem('adminLoggedIn') === 'true') return true;
+        if (prompt('Enter Admin Password:') === ADMIN_PASSWORD) {
+            sessionStorage.setItem('adminLoggedIn', 'true');
+            return true;
+        }
+        alert('Access Denied'); return false;
+    }
+
+    function showSection(sectionId) {
+        document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+
+        if (sectionId !== 'payment' && !checkAdminAccess()) sectionId = 'payment';
+        
+        document.getElementById(sectionId).classList.add('active');
+        const index = ['payment', 'records', 'reports', 'students', 'events', 'fees'].indexOf(sectionId);
+        if(index !== -1) document.querySelectorAll('.nav-btn')[index].classList.add('active');
+        hideKeypad();
+    }
+    
+    function showNotification(msg) {
+        const notif = document.getElementById('notification');
+        notif.textContent = msg;
+        notif.style.display = 'block';
+        setTimeout(() => notif.style.display = 'none', 3000);
+    }
+    
+    function formatCurrency(amount) { return `${CURRENCY_CODE} ${Number(amount).toFixed(2)}`; }
+    function getEventName(id) { const e = events.find(e => e.id === id); return e ? e.name : 'N/A'; }
+    function capitalizeFirst(str) { return str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : ''; }
+
+    // --- Student Mgmt ---
+    function addStudent() {
+        const id = document.getElementById('newStudentId').value.trim();
+        const lName = capitalizeFirst(document.getElementById('newStudentLName').value.trim());
+        const fName = capitalizeFirst(document.getElementById('newStudentFName').value.trim());
+        const div = document.getElementById('newStudentDivision').value.trim() || 'N/A';
+        
+        if (!id || !lName || !fName) return alert('Missing info');
+        if (students.some(s => s.studentId === id)) return alert('ID Exists');
+
+        students.push({ studentId: id, lastName: lName, firstName: fName, division: div });
+        saveData(); showNotification('Student Added');
+        document.getElementById('newStudentId').value = '';
+        document.getElementById('newStudentLName').value = '';
+        document.getElementById('newStudentFName').value = '';
+    }
+
+    function renderStudents() {
+        const tbody = document.getElementById('studentTableBody');
+        const term = document.getElementById('studentSearchInput').value.toLowerCase();
+        
+        const filtered = students.filter(s => s.lastName.toLowerCase().includes(term) || s.firstName.toLowerCase().includes(term) || s.studentId.includes(term));
+        tbody.innerHTML = filtered.map(s => `<tr><td>${s.studentId}</td><td>${s.lastName}</td><td>${s.firstName}</td><td>${s.division}</td><td><button class="btn btn-danger" onclick="deleteStudent('${s.studentId}')">Del</button></td></tr>`).join('');
+    }
+    
+    function deleteStudent(id) {
+        if(confirm('Delete student?')) { students = students.filter(s => s.studentId !== id); saveData(); }
+    }
+    
+    // --- CSV ---
+    function exportStudentsToCSV() {
+        if (!students.length) return alert("No Data");
+        let csv = "\uFEFFStudent ID,Last Name,First Name,Division\n";
+        students.forEach(s => csv += `"${s.studentId}","${s.lastName}","${s.firstName}","${s.division}"\n`);
+        downloadCSV(csv, "StudentList");
+    }
+    
+    function importStudents(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            const lines = evt.target.result.split('\n').filter(l => l.trim());
+            if (lines.length < 2 || !confirm('Replace list?')) return;
+            students = lines.slice(1).map(l => {
+                const c = l.match(/(".*?"|[^",\s]+)(?=\s*\,|\s*$)/g).map(x => x.replace(/^"|"$/g, '').trim());
+                return { studentId: c[0], lastName: capitalizeFirst(c[1]), firstName: capitalizeFirst(c[2]), division: c[3] };
+            }).filter(s => s.studentId);
+            saveData(); showNotification('Imported');
+        };
+        reader.readAsText(file);
+    }
+
+    // --- Events ---
+    function addEvent() {
+        const name = document.getElementById('newEventName').value.trim();
+        const start = document.getElementById('newEventStartDate').value;
+        const end = document.getElementById('newEventEndDate').value;
+        if(!name || !start || !end) return alert('Missing info');
+        events.push({ id: 'E'+Date.now(), name, startDate: start, endDate: end });
+        saveData(); renderEvents();
+    }
+    function renderEvents() {
+        document.getElementById('eventTableBody').innerHTML = events.map((e,i) => `<tr><td>${e.id}</td><td>${e.name}</td><td>${e.startDate}</td><td>${e.endDate}</td><td><button class="btn btn-danger" onclick="deleteEvent(${i})">Del</button></td></tr>`).join('');
+        const opts = events.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+        document.getElementById('eventSelect').innerHTML = '<option value="">-- Select Event --</option>' + opts;
+        document.getElementById('itemEventSelect').innerHTML = opts;
+        renderPaymentSetup();
+    }
+    function deleteEvent(i) { events.splice(i,1); saveData(); }
+
+    // --- Items ---
+    function addItem() {
+        const eid = document.getElementById('itemEventSelect').value;
+        const name = document.getElementById('newItemName').value.trim();
+        const amt = Number(document.getElementById('newItemAmount').value);
+        if(!eid || !name) return alert('Missing info');
+        items.push({ id: Date.now(), eventId: eid, name, amount: amt.toFixed(2), isOpenPrice: amt === 0 });
+        saveData(); showNotification('Item Added');
+    }
+    function renderFees() {
+        document.getElementById('feeTableBody').innerHTML = items.map((f,i) => `<tr><td>${getEventName(f.eventId)}</td><td>${f.name}</td><td>${formatCurrency(f.amount)}</td><td><button class="btn btn-danger" onclick="deleteItem(${i})">Del</button></td></tr>`).join('');
+    }
+    function deleteItem(i) { items.splice(i,1); saveData(); }
+
+    // --- Payment ---
+    function autoSelectEvent() {
+        const today = new Date().toISOString().slice(0, 10);
+        const active = events.find(e => today >= e.startDate && today <= e.endDate);
+        const manualDiv = document.getElementById('manualEventSelection');
+        const activeDiv = document.getElementById('activeEventDisplay');
+        const select = document.getElementById('eventSelect');
+
+        if (active) {
+            select.value = active.id;
+            manualDiv.style.display = 'none';
+            activeDiv.style.display = 'block';
+            activeDiv.textContent = `✅ Active Event: ${active.name}`;
+            renderItemOptions();
+        } else {
+            select.value = "";
+            manualDiv.style.display = 'block';
+            activeDiv.style.display = 'none';
+        }
+    }
+
+    function renderPaymentSetup() {
+        renderItemOptions();
+        renderPayStudentOptions();
+        autoSelectEvent();
+    }
+
+    function renderPayStudentOptions() {
+        const term = document.getElementById('payStudentSearch').value.toLowerCase();
+        // Default search by First Name based on user request layout
+        const filtered = students.filter(s => s.firstName.toLowerCase().includes(term));
+        const sorted = filtered.sort((a,b) => a.lastName.localeCompare(b.lastName));
+        
+        document.getElementById('payStudentSelect').innerHTML = '<option value="">-- Select Student --</option>' + 
+            sorted.map(s => `<option value="${s.studentId}|${s.firstName} ${s.lastName}">${s.firstName} ${s.lastName} (Div ${s.division})</option>`).join('');
+    }
+
+    function renderItemOptions() {
+        const eid = document.getElementById('eventSelect').value;
+        const list = items.filter(i => i.eventId === eid);
+        document.getElementById('itemSelect').innerHTML = '<option value="">-- Select Item --</option>' + 
+            list.map(f => `<option value="${f.id}">${f.name} (${f.isOpenPrice ? 'Open' : formatCurrency(f.amount)})</option>`).join('');
+        updateItemPrice();
+    }
+
+    function updateItemPrice() {
+        const fid = document.getElementById('itemSelect').value;
+        const item = items.find(i => i.id == fid);
+        const display = document.getElementById('itemPriceDisplay');
+        if (item) {
+            display.value = item.amount;
+            display.readOnly = !item.isOpenPrice;
+        } else {
+            display.value = '0.00'; display.readOnly = true;
+        }
+    }
+
+    function addItemToCart() {
+        const eid = document.getElementById('eventSelect').value;
+        const fid = document.getElementById('itemSelect').value;
+        const qty = Number(document.getElementById('itemQuantity').value);
+        const price = Number(document.getElementById('itemPriceDisplay').value);
+        
+        if(!eid || !fid || qty<=0 || price<0) return alert('Invalid Entry');
+        
+        const baseItem = items.find(i => i.id == fid);
+        currentCart.push({ id: baseItem.id, name: baseItem.name, price: price.toFixed(2), quantity: qty, total: (price*qty).toFixed(2) });
+        
+        document.getElementById('itemQuantity').value = 1;
+        updateCartDisplay();
+    }
+
+    function updateCartDisplay() {
+        const total = currentCart.reduce((sum, i) => sum + Number(i.total), 0);
+        document.getElementById('calculatedTotalDisplay').value = total.toFixed(2);
+        document.getElementById('itemizedList').innerHTML = currentCart.map((item, i) => `<li><span>${item.name} (${item.quantity} x ${item.price})</span><span>${item.total} <button class="btn btn-danger" onclick="currentCart.splice(${i},1);updateCartDisplay()">X</button></span></li>`).join('');
+    }
+    
+    function resetCart() { currentCart = []; updateCartDisplay(); }
+
+    function processPayment() {
+        const eid = document.getElementById('eventSelect').value;
+        const sidVal = document.getElementById('payStudentSelect').value;
+        const total = Number(document.getElementById('calculatedTotalDisplay').value);
+        
+        if(!eid || !sidVal || !currentCart.length || total <= 0) return alert('Check Transaction Details');
+        
+        const [sid, sname] = sidVal.split('|');
+        records.unshift({
+            id: Date.now(), date: new Date().toLocaleString(),
+            eventId: eid, studentId: sid, studentName: sname,
+            paymentMethod: document.getElementById('paymentMethod').value,
+            originalAmount: total, returnedAmount: 0, netAmount: total, items: currentCart
+        });
+        
+        saveData(); showNotification('Paid!');
+        resetCart(); document.getElementById('payStudentSearch').value = ''; renderPayStudentOptions();
+    }
+
+    // --- Records & Reports ---
+    function renderRecords() {
+        document.getElementById('recordsTableBody').innerHTML = records.map(r => `<tr><td>${r.date}</td><td>${getEventName(r.eventId)}</td><td>${r.studentName}</td><td>${r.items.length}</td><td>${formatCurrency(r.netAmount)}</td><td>${r.netAmount<=0?'Refunded':'Paid'}</td><td><button class="btn btn-info" onclick="openReturn(${r.id})">Rtn</button></td></tr>`).join('');
+    }
+    
+    function openReturn(rid) {
+        recordToReturn = records.find(r => r.id === rid);
+        if(!recordToReturn || recordToReturn.netAmount <= 0) return alert('Invalid');
+        document.getElementById('returnTransactionId').textContent = rid;
+        document.getElementById('returnOriginalAmount').textContent = recordToReturn.originalAmount;
+        document.getElementById('returnedSoFar').textContent = recordToReturn.returnedAmount;
+        document.getElementById('returnModal').style.display = 'block';
+    }
+    
+    function confirmReturn() {
+        const type = document.getElementById('returnType').value;
+        let amt = type === 'full' ? recordToReturn.netAmount : Number(document.getElementById('returnAmountManual').value);
+        if(amt > recordToReturn.netAmount || amt <= 0) return alert('Invalid Amount');
+        recordToReturn.returnedAmount += amt; recordToReturn.netAmount -= amt;
+        saveData(); document.getElementById('returnModal').style.display = 'none'; showNotification('Returned');
+    }
+    function closeReturnModal() { document.getElementById('returnModal').style.display = 'none'; }
+    
+    function downloadCSV(csv, name) {
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `${name}_${Date.now()}.csv`;
+        link.click();
+    }
+    function exportToExcel() {
+        let csv = "\uFEFFDate,Event,Student,Total,Status\n";
+        records.forEach(r => csv += `"${r.date}","${getEventName(r.eventId)}","${r.studentName}",${r.netAmount},${r.netAmount<=0?'Ref':'Pd'}\n`);
+        downloadCSV(csv, "Transactions");
+    }
+    
+    // Stub functions for report generation (visuals only for length)
+    function generateStudentReport() { document.getElementById('reportOutput').innerText = "Generating Student Report..."; }
+    function generateEventReport() { document.getElementById('reportOutput').innerText = "Generating Event Report..."; }
+    function generateItemReport() { document.getElementById('reportOutput').innerText = "Generating Item Report..."; }
+
+</script>
+</body>
+</html>
