@@ -69,6 +69,7 @@
 
         .btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; font-size: 1.1em;}
         .btn-primary { background-color: var(--primary-color); }
+        .btn-success { background-color: var(--item-color); }
         .btn-danger { background-color: #e63946; }
         .btn-warning { background-color: var(--highlight-color); color: #333; }
         
@@ -93,10 +94,10 @@
         
         #printReceiptArea { display: none; padding: 20px; max-width: 300px; border: 1px solid #ccc; margin: 0 auto; background: #fff;}
 
-        /* Custom Modal for Change Due */
-        #changeModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center; }
-        .change-modal-content { background: white; padding: 30px; border-radius: 15px; text-align: center; min-width: 300px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);}
-        .change-huge { font-size: 4em; color: #e63946; font-weight: bold; margin: 15px 0; }
+        /* Custom Modal for Payment Success & Next Customer */
+        #successModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
+        .success-modal-content { background: white; padding: 40px; border-radius: 15px; text-align: center; min-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);}
+        .change-huge { font-size: 3.5em; color: #e63946; font-weight: bold; margin: 15px 0; }
     </style>
 </head>
 <body>
@@ -168,8 +169,8 @@
                     
                     <label style="text-align: left; margin-bottom: 10px;">Step 4: Payment</label>
                     <div class="payment-methods">
-                        <button class="pay-btn btn-cash" onclick="checkout('Cash')">💵 CASH</button>
-                        <button class="pay-btn btn-card" onclick="checkout('Card')">💳 CARD</button>
+                        <button class="pay-btn btn-cash" onclick="processCheckout('Cash')">💵 CASH</button>
+                        <button class="pay-btn btn-card" onclick="processCheckout('Card')">💳 CARD</button>
                     </div>
                 </div>
             </div>
@@ -273,6 +274,24 @@
     </div>
 </div>
 
+<div id="successModal">
+    <div class="success-modal-content">
+        <h2 style="font-size: 2.5em; margin-top: 0; color: #2a9d8f;">✅ Payment Successful!</h2>
+        
+        <div id="changeSection" style="display: none; background: #fdfdfd; border: 2px dashed #ccc; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+            <p style="font-size: 1.5em; color: #666; margin: 0;">Change Due (找零)</p>
+            <div class="change-huge" id="modalChangeDue">$0.00</div>
+        </div>
+        
+        <p style="font-size: 1.2em; color: #555;">What would you like to do next?</p>
+        
+        <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+            <button class="btn btn-primary" style="font-size: 1.3em; padding: 20px; flex: 1; background-color: #0077b6;" onclick="printLastReceipt()">🖨️ Print Receipt</button>
+            <button class="btn btn-success" style="font-size: 1.3em; padding: 20px; flex: 1; background-color: #fca311; color: #333;" onclick="nextCustomer()">➡️ Next Customer</button>
+        </div>
+    </div>
+</div>
+
 <div id="printReceiptArea">
     <div style="text-align: center; border-bottom: 2px dashed #000; padding-bottom: 10px; margin-bottom: 10px;">
         <h2 style="margin: 0;">Anderson PAC</h2>
@@ -294,21 +313,11 @@
     </div>
 </div>
 
-<div id="changeModal">
-    <div class="change-modal-content">
-        <h2>Change Calculator</h2>
-        <p style="font-size: 1.2em; color: #666;">Total Due: <strong id="modalTotalDue"></strong></p>
-        <div class="change-huge" id="modalChangeDue">$0.00</div>
-        <button class="btn btn-primary" style="font-size: 1.5em; padding: 15px 40px;" onclick="closeChangeModal()">Done & Close</button>
-    </div>
-</div>
-
 <script>
-    // --- Anti-Slip Protection (BeforeUnload Warning) ---
+    // --- Anti-Slip Protection ---
     window.addEventListener('beforeunload', function (e) {
         if (currentCart && currentCart.length > 0) {
-            e.preventDefault();
-            e.returnValue = ''; // Standard way to trigger browser warning
+            e.preventDefault(); e.returnValue = ''; 
         }
     });
 
@@ -321,7 +330,6 @@
         STATION_PREFIX: 'anderson_station_prefix'
     };
 
-    // Pre-Order added to Book Fair!
     const defaultEvents = [
         { id: 'ev_book_fair', name: 'Book Fair', items: ['Book', 'Stationary', 'Poster', 'Pre-Order', 'Open'], startDate: '', endDate: '' },
         { id: 'ev_craft_fair', name: 'Craft Fair', items: ['Spirit wear', 'Lucky Bag', 'Hat', 'Socks', 'Food', 'Open'], startDate: '', endDate: '' },
@@ -338,6 +346,13 @@
             if (defaultIndex >= 0) eventsConfig[defaultIndex] = se;
             else eventsConfig.push(se);
         });
+    }
+
+    // --- FORCE FIX: Ensure Pre-Order exists in Book Fair if browser remembered an old version ---
+    let bookFairCheck = eventsConfig.find(e => e.id === 'ev_book_fair');
+    if (bookFairCheck && !bookFairCheck.items.includes('Pre-Order')) {
+        bookFairCheck.items.splice(3, 0, 'Pre-Order'); // Insert Pre-Order
+        localStorage.setItem(DB_KEYS.EVENTS, JSON.stringify(eventsConfig)); // Save immediately
     }
 
     let records = JSON.parse(localStorage.getItem(DB_KEYS.RECORDS)) || [];
@@ -403,11 +418,6 @@
         document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(sectionId).classList.add('active');
-        const buttons = document.querySelectorAll('.nav-btn');
-        if(sectionId === 'payment') buttons[0].classList.add('active');
-        if(sectionId === 'records') buttons[1].classList.add('active');
-        if(sectionId === 'students') buttons[2].classList.add('active');
-        if(sectionId === 'fees') buttons[3].classList.add('active');
     }
 
     function lockAdmin() {
@@ -471,10 +481,10 @@
         
         let finalItemName = selectedCategory;
 
-        // Pre-Order Logic Trigger
+        // Pre-Order Logic
         if (selectedCategory.toLowerCase() === 'pre-order') {
             let details = prompt("📦 PRE-ORDER: What is the name of the book/item?");
-            if (details === null || details.trim() === "") return; // User cancelled
+            if (details === null || details.trim() === "") return; 
             finalItemName = `Pre-Order: ${details.trim()}`;
         }
 
@@ -502,27 +512,23 @@
         totalDisplay.textContent = "$" + total.toFixed(2);
     }
 
-    function checkout(paymentMethod) {
+    // --- New Checkout & Success Flow ---
+    function processCheckout(paymentMethod) {
         if (!selectedDivision) return alert('Step 1: Select a Division!');
         if (currentCart.length === 0) return alert('Invoice is empty!');
 
         const totalAmount = currentCart.reduce((sum, item) => sum + item.price, 0);
+        let changeDue = 0;
 
-        // Change Calculator Logic
+        // If Cash, ask for amount tendered
         if (paymentMethod === 'Cash') {
             let receivedStr = prompt(`💵 CASH RECEIVED ($)?\nTotal Due is: $${totalAmount.toFixed(2)}`);
-            if (receivedStr === null) return; // Cancelled
+            if (receivedStr === null) return; // User pressed Cancel
             let received = parseFloat(receivedStr);
             if (isNaN(received) || received < totalAmount) {
-                return alert("Amount received is less than Total Due or invalid!");
+                return alert("Error: Amount received is less than Total Due or invalid!");
             }
-            let change = received - totalAmount;
-            // Show custom modal
-            document.getElementById('modalTotalDue').textContent = `$${totalAmount.toFixed(2)}`;
-            document.getElementById('modalChangeDue').textContent = `$${change.toFixed(2)}`;
-            document.getElementById('changeModal').style.display = 'flex';
-        } else {
-            alert(`✅ Paid by ${paymentMethod}!`);
+            changeDue = received - totalAmount;
         }
 
         const fName = document.getElementById('payFirstName').value.trim();
@@ -530,24 +536,65 @@
         let checkedName = (fName || lName) ? `${fName} ${lName}`.trim() : 'N/A';
         const itemsString = currentCart.map(i => `${i.name}($${i.price.toFixed(2)})`).join(', ');
 
+        // Save the record
         records.unshift({
             id: Date.now(), invoiceNo: generateInvoiceNo(), date: new Date().toLocaleString('en-US'),
             division: selectedDivision, studentName: checkedName, items: itemsString, amount: totalAmount, method: paymentMethod,
-            rawItems: [...currentCart] // Save raw array for receipt printing
+            rawItems: [...currentCart] // Save exact array for printing
         });
         
         nextInvSequence++;
-        currentCart = []; selectedCategory = null; currentNumpadValue = "";
-        document.getElementById('payFirstName').value = ""; document.getElementById('payLastName').value = "";
-        clearDivisionSelection(); document.getElementById('numpadDisplay').textContent = "$0.00";
-        document.getElementById('invoiceDivDisplay').textContent = "Div: Not Selected";
-        
         saveData();
+
+        // Show Success Modal
+        showSuccessModal(paymentMethod, changeDue);
     }
 
-    function closeChangeModal() {
-        document.getElementById('changeModal').style.display = 'none';
+    function showSuccessModal(method, change) {
+        const modal = document.getElementById('successModal');
+        const changeSection = document.getElementById('changeSection');
+        const changeDisplay = document.getElementById('modalChangeDue');
+
+        if (method === 'Cash') {
+            changeSection.style.display = 'block';
+            changeDisplay.textContent = `$${change.toFixed(2)}`;
+        } else {
+            changeSection.style.display = 'none';
+        }
+
+        modal.style.display = 'flex';
     }
+
+    function printLastReceipt() {
+        // records[0] is the one we JUST saved
+        const r = records[0];
+        document.getElementById('rptInv').textContent = r.invoiceNo;
+        document.getElementById('rptDate').textContent = r.date;
+        document.getElementById('rptDiv').textContent = r.division;
+        document.getElementById('rptName').textContent = r.studentName;
+        
+        document.getElementById('rptItems').innerHTML = r.rawItems.map(i => `<div style="display:flex; justify-content:space-between;"><span>${i.name}</span><span>$${i.price.toFixed(2)}</span></div>`).join('');
+        document.getElementById('rptTotal').textContent = `$${r.amount.toFixed(2)}`;
+        document.getElementById('rptMethod').textContent = r.method;
+        
+        window.print();
+    }
+
+    function nextCustomer() {
+        // Clear all POS fields and hide modal
+        document.getElementById('successModal').style.display = 'none';
+        currentCart = []; 
+        selectedCategory = null; 
+        currentNumpadValue = "";
+        document.getElementById('payFirstName').value = ""; 
+        document.getElementById('payLastName').value = "";
+        clearDivisionSelection(); 
+        document.getElementById('numpadDisplay').textContent = "$0.00";
+        document.getElementById('invoiceDivDisplay').textContent = "Div: Not Selected";
+        renderCart();
+        updateCashierPOS(); // Removes selected rings
+    }
+    // ------------------------------------
 
     function updateCashierPOS() {
         const eventDisplay = document.getElementById('activeEventDisplay');
@@ -564,124 +611,8 @@
         renderCart();
     }
 
-    // Print Receipt Logic
-    function printReceipt(index) {
-        const r = records[index];
-        document.getElementById('rptInv').textContent = r.invoiceNo;
-        document.getElementById('rptDate').textContent = r.date;
-        document.getElementById('rptDiv').textContent = r.division;
-        document.getElementById('rptName').textContent = r.studentName;
-        
-        // Use rawItems array if available (newer records), otherwise fallback to parsing string
-        if (r.rawItems && Array.isArray(r.rawItems)) {
-            document.getElementById('rptItems').innerHTML = r.rawItems.map(i => `<div style="display:flex; justify-content:space-between;"><span>${i.name}</span><span>$${i.price.toFixed(2)}</span></div>`).join('');
-        } else {
-            document.getElementById('rptItems').innerHTML = r.items;
-        }
-
-        document.getElementById('rptTotal').textContent = `$${r.amount.toFixed(2)}`;
-        document.getElementById('rptMethod').textContent = r.method;
-        
-        // Trigger browser print
-        window.print();
-    }
-
-    // --- Records & Settings Logic ---
-    function renderRecords() {
-        const tbody = document.getElementById('recordsTableBody');
-        if (records.length === 0) return tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No transactions yet.</td></tr>';
-        tbody.innerHTML = records.map((r, index) => `
-            <tr><td style="font-family:monospace; font-weight:bold;">${r.invoiceNo}</td><td style="font-size:0.85em;">${r.date}</td>
-                <td style="font-weight:bold; color:var(--primary-color);">${r.division}</td><td>${r.studentName}</td>
-                <td style="font-size:0.9em;">${r.items}</td><td><span style="background:${r.method === 'Cash' ? '#2a9d8f' : '#4361ee'}; color:white; padding:4px 8px; border-radius:4px; font-size:0.8em;">${r.method}</span></td>
-                <td style="color: #e63946; font-weight:bold; font-size:1.1em;">$${r.amount.toFixed(2)}</td>
-                <td style="min-width: 180px;">
-                    <button class="btn btn-success" style="padding:6px 10px; margin-right:5px; margin-bottom:5px; font-size:0.9em; background:#2a9d8f;" onclick="printReceipt(${index})">🖨️ Print</button>
-                    <button class="btn btn-warning" style="padding:6px 10px; margin-right:5px; margin-bottom:5px; font-size:0.9em;" onclick="editRecord(${index})">✏️</button>
-                    <button class="btn btn-danger" style="padding:6px 10px; margin-bottom:5px; font-size:0.9em;" onclick="deleteRecord(${index})">🗑️</button>
-                </td></tr>
-        `).join('');
-    }
-
-    function editRecord(index) {
-        const pwd = prompt("🔐 Manager Override. Enter Admin Password:");
-        if (pwd !== "Eagles") return alert("Incorrect Password!");
-        const r = records[index];
-        const newDiv = prompt("Edit Division (Current: " + r.division + "):", r.division);
-        if (newDiv === null) return; 
-        const newName = prompt("Edit Student Name (Current: " + r.studentName + "):", r.studentName);
-        if (newName === null) return;
-        records[index].division = newDiv.trim() || r.division;
-        records[index].studentName = newName.trim() || r.studentName;
-        saveData();
-    }
-
-    function deleteRecord(index) {
-        const pwd = prompt("🔐 Manager Override. Enter Admin Password to VOID:");
-        if (pwd !== "Eagles") return alert("Incorrect Password!");
-        if(confirm(`VOID invoice ${records[index].invoiceNo}?`)) { records.splice(index, 1); saveData(); }
-    }
-
-    function updateDashboard() {
-        const todayStr = new Date().toLocaleDateString('en-US');
-        let todayCash = 0, todayCard = 0, todayCount = 0;
-        records.forEach(r => {
-            if (new Date(r.date).toLocaleDateString('en-US') === todayStr) {
-                todayCount++;
-                if (r.method === 'Cash') todayCash += r.amount;
-                if (r.method === 'Card') todayCard += r.amount;
-            }
-        });
-        document.getElementById('todayCash').textContent = `$${todayCash.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-        document.getElementById('todayCard').textContent = `$${todayCard.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-        document.getElementById('todayTotal').textContent = `$${(todayCash + todayCard).toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-        document.getElementById('todayCount').textContent = todayCount;
-    }
-
-    function addEvent() {
-        const name = document.getElementById('newFeeName').value.trim();
-        const itemsRaw = document.getElementById('newFeeItems').value.trim();
-        const sDate = document.getElementById('newFeeStart').value;
-        const eDate = document.getElementById('newFeeEnd').value;
-        if (!name || !itemsRaw) return alert('Enter Event Name and Sale Items.');
-        const itemsArray = itemsRaw.split(',').map(s => s.trim()).filter(s => s !== "");
-        const existingIndex = eventsConfig.findIndex(ev => ev.name.toLowerCase() === name.toLowerCase());
-        
-        if (existingIndex >= 0) {
-            eventsConfig[existingIndex].items = itemsArray;
-            eventsConfig[existingIndex].startDate = sDate;
-            eventsConfig[existingIndex].endDate = eDate;
-        } else {
-            eventsConfig.push({ id: 'ev' + Date.now(), name: name, items: itemsArray, startDate: sDate, endDate: eDate });
-        }
-        document.getElementById('newFeeName').value = ''; document.getElementById('newFeeItems').value = '';
-        document.getElementById('newFeeStart').value = ''; document.getElementById('newFeeEnd').value = '';
-        autoCheckEventDate(); saveData(); 
-    }
-
-    function setActiveEvent(id) { activeEventId = id; saveData(); }
-
-    function renderEventsAdmin() {
-        document.getElementById('feeTableBody').innerHTML = eventsConfig.map((e, index) => {
-            const isActive = (e.id === activeEventId);
-            const dateStr = (e.startDate) ? `${e.startDate} to ${e.endDate || e.startDate}` : '<span style="color:#aaa;">No Date Set</span>';
-            const isPreset = (e.id.startsWith('ev_'));
-            return `<tr><td style="${isActive ? 'font-weight:bold; color:var(--primary-color);' : ''}">${e.name} ${isPreset ? '📌' : ''}</td>
-                <td style="font-size:0.9em; color:#444;">${dateStr}</td><td style="color:#555; font-size:0.9em;">${e.items.join(', ')}</td>
-                <td><button class="btn ${isActive ? 'btn-primary' : 'btn-warning'}" style="padding: 6px 12px; font-size: 0.9em;" onclick="setActiveEvent('${e.id}')">${isActive ? '🌟 Active' : 'Set Active'}</button></td>
-                <td>${isPreset ? '' : `<button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.9em;" onclick="if(confirm('Delete event?')){eventsConfig.splice(${index}, 1); saveData();}">Del</button>`}</td></tr>`;
-        }).join('');
-    }
-
-    // --- CSV Exports ---
-    function exportSalesToExcel() {
-        if (records.length === 0) return alert("No data to export.");
-        let csvContent = "\uFEFFInvoice No.,Date & Time,Division,Student Name,Items Purchased,Payment Method,Total Amount\n";
-        records.forEach(r => { csvContent += `"${r.invoiceNo}","${r.date}","${r.division}","${r.studentName}","${r.items.replace(/"/g, '""')}","${r.method}",${r.amount}\n`; });
-        downloadCSV(csvContent, `Anderson_Sales_Station_${stationPrefix}_${new Date().toLocaleDateString().replace(/\//g,'-')}.csv`);
-    }
-    
-    function addStudent() { /* Unchanged from v6.2 */
+    // --- Rest of Admin & Roster Code Remains Unchanged ---
+    function addStudent() { /* Unchanged */
         const fName = document.getElementById('stuFirstName').value.trim(); const lName = document.getElementById('stuLastName').value.trim();
         const div = document.getElementById('stuDivision').value.trim(); const sNum = document.getElementById('stuNumber').value.trim() || 'N/A';
         if (!fName || !lName || !div) return alert('Enter First Name, Last Name, and Division.');
@@ -689,7 +620,7 @@
         document.getElementById('stuFirstName').value = ''; document.getElementById('stuLastName').value = ''; document.getElementById('stuDivision').value = ''; document.getElementById('stuNumber').value = '';
         saveData();
     }
-    function renderStudents() { /* Unchanged from v6.2 */
+    function renderStudents() { /* Unchanged */
         document.getElementById('studentTableBody').innerHTML = students.map((s, index) => `
             <tr><td>${s.studentNum}</td><td>${s.firstName}</td><td>${s.lastName}</td><td style="font-weight:bold; color:var(--primary-color);">${s.division}</td>
             <td><button class="btn btn-danger" style="padding:8px 12px;" onclick="if(confirm('Delete?')){students.splice(${index}, 1); saveData();}">Del</button></td></tr>
@@ -714,11 +645,82 @@
                     addedCount++;
                 }
             }
-            saveData(); alert(`Successfully imported ${addedCount} students!`);
+            saveData(); alert(`Imported ${addedCount} students!`);
         };
         reader.readAsText(file); event.target.value = '';
     }
     function clearRoster() { if(confirm('⚠️ WARNING: Delete ALL students?')) { students = []; saveData(); } }
+
+    function addEvent() {
+        const name = document.getElementById('newFeeName').value.trim();
+        const itemsRaw = document.getElementById('newFeeItems').value.trim();
+        const sDate = document.getElementById('newFeeStart').value;
+        const eDate = document.getElementById('newFeeEnd').value;
+        if (!name || !itemsRaw) return alert('Enter Event Name and Sale Items.');
+        const itemsArray = itemsRaw.split(',').map(s => s.trim()).filter(s => s !== "");
+        const existingIndex = eventsConfig.findIndex(ev => ev.name.toLowerCase() === name.toLowerCase());
+        if (existingIndex >= 0) {
+            eventsConfig[existingIndex].items = itemsArray; eventsConfig[existingIndex].startDate = sDate; eventsConfig[existingIndex].endDate = eDate;
+        } else {
+            eventsConfig.push({ id: 'ev' + Date.now(), name: name, items: itemsArray, startDate: sDate, endDate: eDate });
+        }
+        document.getElementById('newFeeName').value = ''; document.getElementById('newFeeItems').value = '';
+        document.getElementById('newFeeStart').value = ''; document.getElementById('newFeeEnd').value = '';
+        autoCheckEventDate(); saveData(); 
+    }
+
+    function setActiveEvent(id) { activeEventId = id; saveData(); }
+
+    function renderEventsAdmin() {
+        document.getElementById('feeTableBody').innerHTML = eventsConfig.map((e, index) => {
+            const isActive = (e.id === activeEventId);
+            const dateStr = (e.startDate) ? `${e.startDate} to ${e.endDate || e.startDate}` : '<span style="color:#aaa;">No Date Set</span>';
+            const isPreset = (e.id.startsWith('ev_'));
+            return `<tr><td style="${isActive ? 'font-weight:bold; color:var(--primary-color);' : ''}">${e.name} ${isPreset ? '📌' : ''}</td>
+                <td style="font-size:0.9em; color:#444;">${dateStr}</td><td style="color:#555; font-size:0.9em;">${e.items.join(', ')}</td>
+                <td><button class="btn ${isActive ? 'btn-primary' : 'btn-warning'}" style="padding: 6px 12px; font-size: 0.9em;" onclick="setActiveEvent('${e.id}')">${isActive ? '🌟 Active' : 'Set Active'}</button></td>
+                <td>${isPreset ? '' : `<button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.9em;" onclick="if(confirm('Delete event?')){eventsConfig.splice(${index}, 1); saveData();}">Del</button>`}</td></tr>`;
+        }).join('');
+    }
+
+    function renderRecords() {
+        const tbody = document.getElementById('recordsTableBody');
+        if (records.length === 0) return tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No transactions yet.</td></tr>';
+        tbody.innerHTML = records.map((r, index) => `
+            <tr><td style="font-family:monospace; font-weight:bold;">${r.invoiceNo}</td><td style="font-size:0.85em;">${r.date}</td>
+                <td style="font-weight:bold; color:var(--primary-color);">${r.division}</td><td>${r.studentName}</td>
+                <td style="font-size:0.9em;">${r.items}</td><td><span style="background:${r.method === 'Cash' ? '#2a9d8f' : '#4361ee'}; color:white; padding:4px 8px; border-radius:4px; font-size:0.8em;">${r.method}</span></td>
+                <td style="color: #e63946; font-weight:bold; font-size:1.1em;">$${r.amount.toFixed(2)}</td>
+                <td style="min-width: 140px;">
+                    <button class="btn btn-danger" style="padding:6px 10px; font-size:0.9em;" onclick="if(confirm('VOID invoice?')){records.splice(${index}, 1); saveData();}">🗑️ Void</button>
+                </td></tr>
+        `).join('');
+    }
+
+    function updateDashboard() {
+        document.getElementById('totalIncome').textContent = `$${records.reduce((sum, r) => sum + r.amount, 0).toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+        document.getElementById('totalTransactions').textContent = records.length;
+        const todayStr = new Date().toLocaleDateString('en-US');
+        let todayCash = 0, todayCard = 0, todayCount = 0;
+        records.forEach(r => {
+            if (new Date(r.date).toLocaleDateString('en-US') === todayStr) {
+                todayCount++;
+                if (r.method === 'Cash') todayCash += r.amount;
+                if (r.method === 'Card') todayCard += r.amount;
+            }
+        });
+        document.getElementById('todayCash').textContent = `$${todayCash.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+        document.getElementById('todayCard').textContent = `$${todayCard.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+        document.getElementById('todayTotal').textContent = `$${(todayCash + todayCard).toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+        document.getElementById('todayCount').textContent = todayCount;
+    }
+
+    function exportSalesToExcel() {
+        if (records.length === 0) return alert("No data to export.");
+        let csvContent = "\uFEFFInvoice No.,Date & Time,Division,Student Name,Items Purchased,Payment Method,Total Amount\n";
+        records.forEach(r => { csvContent += `"${r.invoiceNo}","${r.date}","${r.division}","${r.studentName}","${r.items.replace(/"/g, '""')}","${r.method}",${r.amount}\n`; });
+        downloadCSV(csvContent, `Anderson_Sales_Station_${stationPrefix}_${new Date().toLocaleDateString().replace(/\//g,'-')}.csv`);
+    }
 
     function downloadCSV(content, filename) {
         const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
