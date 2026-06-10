@@ -167,7 +167,6 @@
     </div>
 
     <div id="records" class="section">
-        
         <h2 style="color: #e63946; border-bottom: 2px solid #e63946; padding-bottom: 10px;">📅 Today's Summary (<span id="todayDateDisplay"></span>)</h2>
         <div class="dashboard-grid">
             <div class="stat-card card-green">
@@ -255,6 +254,8 @@
         </div>
 
         <h3>Event Setup</h3>
+        <button class="btn btn-warning" style="margin-bottom: 15px;" onclick="restoreDefaultEvents()">🔄 Restore Default Events</button>
+        
         <div class="form-group">
             <input type="text" id="newFeeName" placeholder="Event Name (e.g., Spring Fair)" style="margin-bottom: 15px;">
             <input type="text" id="newFeeItems" placeholder="Sale Items separated by commas (e.g., Ticket, Snack, Open)">
@@ -286,7 +287,13 @@
     ];
 
     let students = JSON.parse(localStorage.getItem(DB_KEYS.STUDENTS)) || [];
-    let eventsConfig = JSON.parse(localStorage.getItem(DB_KEYS.EVENTS)) || defaultEvents;
+    let eventsConfig = JSON.parse(localStorage.getItem(DB_KEYS.EVENTS));
+    
+    // Fallback: If empty or undefined from a previous clear, restore defaults automatically
+    if (!eventsConfig || eventsConfig.length === 0) {
+        eventsConfig = [...defaultEvents];
+    }
+
     let records = JSON.parse(localStorage.getItem(DB_KEYS.RECORDS)) || [];
     let activeEventId = localStorage.getItem(DB_KEYS.ACTIVE_EVENT) || 'ev1'; 
     let nextInvSequence = parseInt(localStorage.getItem(DB_KEYS.INV_SEQ)) || 1001;
@@ -297,11 +304,10 @@
     let currentNumpadValue = "";
     let currentCart = []; 
     
-    // Security Session Variable
     let isAdminUnlocked = false; 
 
     window.onload = function() {
-        if(!localStorage.getItem(DB_KEYS.EVENTS)) localStorage.setItem(DB_KEYS.EVENTS, JSON.stringify(eventsConfig));
+        localStorage.setItem(DB_KEYS.EVENTS, JSON.stringify(eventsConfig)); // Ensure saved
         document.getElementById('stationPrefixInput').value = stationPrefix;
         document.getElementById('todayDateDisplay').textContent = new Date().toLocaleDateString('en-US');
         renderDivisionGrid();
@@ -326,17 +332,15 @@
         updateDashboard();
     }
 
-    // --- Access Control Logic ---
     function showSection(sectionId) {
-        // If navigating to any admin tab and not yet unlocked
         if (sectionId !== 'payment' && !isAdminUnlocked) {
             const pwd = prompt("🔐 Manager Access Required. Enter Admin Password:");
             if (pwd !== "Eagles") {
                 alert("Incorrect Password! Access Denied.");
-                return; // Stop navigation
+                return;
             }
-            isAdminUnlocked = true; // Unlock session
-            document.getElementById('lockBtn').style.display = 'inline-block'; // Show lock button
+            isAdminUnlocked = true;
+            document.getElementById('lockBtn').style.display = 'inline-block';
             showNotification('Admin Mode Unlocked');
         }
 
@@ -354,7 +358,7 @@
     function lockAdmin() {
         isAdminUnlocked = false;
         document.getElementById('lockBtn').style.display = 'none';
-        showSection('payment'); // Force back to POS
+        showSection('payment');
         showNotification('System Locked. Volunteer Mode Active.');
     }
 
@@ -551,6 +555,17 @@
         reader.readAsText(file); event.target.value = '';
     }
 
+    // NEW: Restore Default Events
+    function restoreDefaultEvents() {
+        if(confirm('This will restore the 3 original preset events (Book Fair, Craft Fair, School Fundraising). Continue?')) {
+            // Using spread operator to clone defaults so we don't accidentally mutate the original array later
+            eventsConfig = defaultEvents.map(event => ({...event})); 
+            activeEventId = 'ev1';
+            saveData();
+            showNotification('Default Events Restored!');
+        }
+    }
+
     function addEvent() {
         const name = document.getElementById('newFeeName').value.trim();
         const itemsRaw = document.getElementById('newFeeItems').value.trim();
@@ -568,6 +583,9 @@
     function setActiveEvent(id) { activeEventId = id; saveData(); showNotification('Active Event Updated!'); }
 
     function editRecord(index) {
+        const pwd = prompt("🔐 Manager Override. Enter Admin Password:");
+        if (pwd !== "Eagles") return alert("Incorrect Password!");
+
         const r = records[index];
         const newDiv = prompt("Edit Division (Current: " + r.division + "):", r.division);
         if (newDiv === null) return; 
@@ -582,6 +600,9 @@
     }
 
     function deleteRecord(index) {
+        const pwd = prompt("🔐 Manager Override. Enter Admin Password to VOID:");
+        if (pwd !== "Eagles") return alert("Incorrect Password!");
+
         if(confirm(`Are you absolutely sure you want to VOID invoice ${records[index].invoiceNo}?`)) {
             records.splice(index, 1);
             saveData();
@@ -605,18 +626,15 @@
     }
 
     function updateDashboard() {
-        // All Time
         document.getElementById('totalIncome').textContent = `$${records.reduce((sum, r) => sum + r.amount, 0).toLocaleString('en-US', {minimumFractionDigits: 2})}`;
         document.getElementById('totalTransactions').textContent = records.length;
 
-        // Today's Summary Logic
         const todayStr = new Date().toLocaleDateString('en-US');
         let todayCash = 0;
         let todayCard = 0;
         let todayCount = 0;
 
         records.forEach(r => {
-            // Check if the record date matches today's date
             const recDate = new Date(r.date).toLocaleDateString('en-US');
             if (recDate === todayStr) {
                 todayCount++;
