@@ -31,7 +31,7 @@
 
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 1.1em;}
-        input, select { width: 100%; padding: 15px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 1.1em; }
+        input, select { width: 100%; padding: 15px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 1.2em; }
         .name-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
         .name-row .form-group { flex: 1; min-width: 200px; margin-bottom: 0; }
 
@@ -69,7 +69,6 @@
 
         .btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; font-size: 1.1em;}
         .btn-primary { background-color: var(--primary-color); }
-        .btn-success { background-color: var(--item-color); }
         .btn-danger { background-color: #e63946; }
         .btn-warning { background-color: var(--highlight-color); color: #333; }
         
@@ -84,20 +83,24 @@
         .card-green { background: #2a9d8f; }
         .card-gold { background: var(--highlight-color); color: #333; }
 
-        /* Print Settings for Receipts */
+        /* Custom BIG Modals for iPad Volunteers */
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-box { background: white; padding: 40px; border-radius: 15px; text-align: center; width: 90%; max-width: 600px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);}
+        .modal-title { font-size: 2.2em; color: var(--primary-color); margin-top: 0; margin-bottom: 20px; }
+        .modal-input { font-size: 2em; padding: 15px; width: 100%; margin-bottom: 20px; text-align: center; border: 3px solid #ccc; border-radius: 10px; }
+        .modal-btn-row { display: flex; gap: 20px; justify-content: center; }
+        .modal-btn { flex: 1; padding: 20px; font-size: 1.5em; font-weight: bold; border-radius: 10px; border: none; cursor: pointer; color: white; }
+        
+        .change-huge { font-size: 4em; color: #e63946; font-weight: bold; margin: 10px 0; }
+
+        /* Print Settings */
         @media print {
             body * { visibility: hidden; }
-            #printReceiptArea, #printReceiptArea * { visibility: visible; }
-            #printReceiptArea { position: absolute; left: 0; top: 0; width: 100%; font-family: monospace; font-size: 14px;}
+            #printArea, #printArea * { visibility: visible; }
+            #printArea { position: absolute; left: 0; top: 0; width: 100%; font-family: monospace; font-size: 14px;}
             .no-print { display: none !important; }
         }
-        
-        #printReceiptArea { display: none; padding: 20px; max-width: 300px; border: 1px solid #ccc; margin: 0 auto; background: #fff;}
-
-        /* Custom Modal for Payment Success & Next Customer */
-        #successModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
-        .success-modal-content { background: white; padding: 40px; border-radius: 15px; text-align: center; min-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);}
-        .change-huge { font-size: 3.5em; color: #e63946; font-weight: bold; margin: 15px 0; }
+        #printArea { display: none; padding: 20px; max-width: 300px; border: 1px solid #ccc; margin: 0 auto; background: #fff;}
     </style>
 </head>
 <body>
@@ -151,7 +154,7 @@
                     <button class="num-btn btn-action" onclick="inputNumpad('C')">Clear</button>
                     <button class="num-btn" onclick="inputNumpad('0')">0</button>
                     <button class="num-btn btn-action" onclick="inputNumpad('.')">.</button>
-                    <button class="num-btn btn-enter" onclick="addToInvoice()">➕ Add to Invoice</button>
+                    <button class="num-btn btn-enter" onclick="triggerAdd()">➕ Add to Invoice</button>
                 </div>
             </div>
 
@@ -169,7 +172,7 @@
                     
                     <label style="text-align: left; margin-bottom: 10px;">Step 4: Payment</label>
                     <div class="payment-methods">
-                        <button class="pay-btn btn-cash" onclick="processCheckout('Cash')">💵 CASH</button>
+                        <button class="pay-btn btn-cash" onclick="triggerCash()">💵 CASH</button>
                         <button class="pay-btn btn-card" onclick="processCheckout('Card')">💳 CARD</button>
                     </div>
                 </div>
@@ -194,9 +197,29 @@
             </div>
         </div>
 
-        <h2 style="margin-top: 40px; border-bottom: 2px solid #ccc; padding-bottom: 10px;">📊 Transaction History</h2>
+        <h2 style="margin-top: 40px; border-bottom: 2px solid #2a9d8f; color: #2a9d8f; padding-bottom: 10px;">📦 發貨與單品總表 (Itemized & Pre-Orders)</h2>
+        <div style="display: flex; gap: 10px; margin-bottom: 15px; align-items: center; flex-wrap: wrap;">
+            <label style="margin: 0; font-size: 1.1em; font-weight:bold;">Filter By:</label>
+            <select id="itemFilter" style="width: 250px; font-size: 1em; padding: 10px;" onchange="renderItemizedReport()">
+                <option value="ALL">All Items (顯示全部)</option>
+                <option value="PRE-ORDER">📌 Pre-Orders Only (僅顯示預購)</option>
+            </select>
+            <button class="btn btn-warning" onclick="exportItemizedToExcel()">📥 Export List</button>
+            <button class="btn btn-primary" onclick="printItemizedList()">🖨️ Print List</button>
+        </div>
+        
+        <div style="overflow-x:auto; margin-bottom: 40px;">
+            <table>
+                <thead>
+                    <tr><th>Item Name (書名/品項)</th><th>Inv No.</th><th>Date</th><th>Div</th><th>Buyer Name</th><th>Price</th></tr>
+                </thead>
+                <tbody id="itemizedTableBody"></tbody>
+            </table>
+        </div>
+
+        <h2 style="border-bottom: 2px solid #ccc; padding-bottom: 10px;">📊 All-Time Invoices (收據總表)</h2>
         <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-            <button class="btn btn-warning" onclick="exportSalesToExcel()">📥 Export Sales (CSV)</button>
+            <button class="btn btn-warning" onclick="exportSalesToExcel()">📥 Export All Invoices (CSV)</button>
         </div>
         
         <div style="overflow-x:auto;">
@@ -222,7 +245,7 @@
         </div>
 
         <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
-            <button class="btn btn-warning" onclick="exportStudentsToExcel()">📥 Export Roster (CSV)</button>
+            <button class="btn btn-warning" onclick="exportStudentsToExcel()">📥 Export Roster</button>
             <input type="file" id="importCsvFile" accept=".csv" style="display: none;" onchange="importStudentsFromCSV(event)">
             <button class="btn btn-primary" style="background-color: #2a9d8f;" onclick="document.getElementById('importCsvFile').click()">📤 Import Roster</button>
             <button class="btn btn-danger" onclick="clearRoster()">⚠️ Clear Roster</button>
@@ -248,7 +271,7 @@
             </div>
         </div>
 
-        <h3>Event Setup (Auto-Date Support)</h3>
+        <h3>Event Setup</h3>
         <div style="background: #f8f9fa; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
             <div class="name-row">
                 <div class="form-group"><input type="text" id="newFeeName" placeholder="Event Name"></div>
@@ -274,60 +297,57 @@
     </div>
 </div>
 
-<div id="successModal">
-    <div class="success-modal-content">
-        <h2 style="font-size: 2.5em; margin-top: 0; color: #2a9d8f;">✅ Payment Successful!</h2>
+<div id="preOrderModal" class="overlay">
+    <div class="modal-box">
+        <h2 class="modal-title">📦 Pre-Order Item</h2>
+        <p style="font-size: 1.3em; margin-bottom: 20px; color:#555;">Please enter the Book or Item Name:</p>
+        <input type="text" id="preOrderInput" class="modal-input" placeholder="e.g. Dog Man Vol. 10">
+        <div class="modal-btn-row">
+            <button class="modal-btn" style="background:#e63946;" onclick="closeModal('preOrderModal')">✖ Cancel</button>
+            <button class="modal-btn" style="background:#2a9d8f;" onclick="confirmPreOrder()">✔️ Confirm</button>
+        </div>
+    </div>
+</div>
+
+<div id="cashModal" class="overlay">
+    <div class="modal-box">
+        <h2 class="modal-title">💵 Cash Received</h2>
+        <p style="font-size: 1.5em; margin-bottom: 10px; color:#555;">Total Due: <strong id="cashModalTotalDue" style="color:var(--primary-color);">$0.00</strong></p>
+        <p style="font-size: 1.2em; margin-bottom: 20px; color:#666;">Enter amount handed by customer:</p>
+        <input type="number" id="cashInput" class="modal-input" placeholder="e.g. 50">
+        <div class="modal-btn-row">
+            <button class="modal-btn" style="background:#e63946;" onclick="closeModal('cashModal')">✖ Cancel</button>
+            <button class="modal-btn" style="background:#2a9d8f;" onclick="confirmCash()">✔️ Calculate</button>
+        </div>
+    </div>
+</div>
+
+<div id="successModal" class="overlay">
+    <div class="modal-box" style="max-width: 700px;">
+        <h2 style="font-size: 3em; margin-top: 0; color: #2a9d8f;">✅ Payment Successful!</h2>
         
-        <div id="changeSection" style="display: none; background: #fdfdfd; border: 2px dashed #ccc; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-            <p style="font-size: 1.5em; color: #666; margin: 0;">Change Due (找零)</p>
+        <div id="changeSection" style="display: none; background: #fdfdfd; border: 3px dashed #ccc; padding: 20px; border-radius: 10px; margin-bottom: 25px;">
+            <p style="font-size: 1.8em; color: #666; margin: 0; font-weight:bold;">Change Due (找零)</p>
             <div class="change-huge" id="modalChangeDue">$0.00</div>
         </div>
         
-        <p style="font-size: 1.2em; color: #555;">What would you like to do next?</p>
-        
-        <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-            <button class="btn btn-primary" style="font-size: 1.3em; padding: 20px; flex: 1; background-color: #0077b6;" onclick="printLastReceipt()">🖨️ Print Receipt</button>
-            <button class="btn btn-success" style="font-size: 1.3em; padding: 20px; flex: 1; background-color: #fca311; color: #333;" onclick="nextCustomer()">➡️ Next Customer</button>
+        <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+            <button class="modal-btn" style="background-color: #0077b6;" onclick="printLastReceipt()">🖨️ Print Receipt</button>
+            <button class="modal-btn" style="background-color: #fca311; color: #333;" onclick="nextCustomer()">➡️ Next Customer</button>
         </div>
     </div>
 </div>
 
-<div id="printReceiptArea">
-    <div style="text-align: center; border-bottom: 2px dashed #000; padding-bottom: 10px; margin-bottom: 10px;">
-        <h2 style="margin: 0;">Anderson PAC</h2>
-        <p style="margin: 5px 0 0 0; font-size: 12px;">Thank you for your support!</p>
-    </div>
-    <div style="margin-bottom: 10px; font-size: 14px;">
-        <div><strong>Invoice:</strong> <span id="rptInv"></span></div>
-        <div><strong>Date:</strong> <span id="rptDate"></span></div>
-        <div><strong>Div:</strong> <span id="rptDiv"></span></div>
-        <div><strong>Name:</strong> <span id="rptName"></span></div>
-    </div>
-    <div style="border-bottom: 1px solid #000; padding-bottom: 5px; margin-bottom: 5px;"><strong>Items:</strong></div>
-    <div id="rptItems" style="margin-bottom: 15px; font-size: 14px; line-height: 1.5;"></div>
-    <div style="text-align: right; font-size: 16px; border-top: 2px dashed #000; padding-top: 10px;">
-        <strong>Total: <span id="rptTotal"></span></strong>
-    </div>
-    <div style="text-align: right; font-size: 14px; margin-top: 5px;">
-        Paid by: <span id="rptMethod"></span>
-    </div>
-</div>
+<div id="printArea"></div>
 
 <script>
-    // --- Anti-Slip Protection ---
     window.addEventListener('beforeunload', function (e) {
-        if (currentCart && currentCart.length > 0) {
-            e.preventDefault(); e.returnValue = ''; 
-        }
+        if (currentCart && currentCart.length > 0) { e.preventDefault(); e.returnValue = ''; }
     });
 
     const DB_KEYS = {
-        STUDENTS: 'anderson_students',
-        EVENTS: 'anderson_events',
-        RECORDS: 'anderson_records',
-        ACTIVE_EVENT: 'anderson_active_event',
-        INV_SEQ: 'anderson_inv_sequence',
-        STATION_PREFIX: 'anderson_station_prefix'
+        STUDENTS: 'anderson_students', EVENTS: 'anderson_events', RECORDS: 'anderson_records',
+        ACTIVE_EVENT: 'anderson_active_event', INV_SEQ: 'anderson_inv_sequence', STATION_PREFIX: 'anderson_station_prefix'
     };
 
     const defaultEvents = [
@@ -338,21 +358,19 @@
 
     let students = JSON.parse(localStorage.getItem(DB_KEYS.STUDENTS)) || [];
     let savedEvents = JSON.parse(localStorage.getItem(DB_KEYS.EVENTS));
-    
     let eventsConfig = [...defaultEvents];
     if (savedEvents && Array.isArray(savedEvents)) {
         savedEvents.forEach(se => {
             const defaultIndex = eventsConfig.findIndex(de => de.id === se.id);
-            if (defaultIndex >= 0) eventsConfig[defaultIndex] = se;
-            else eventsConfig.push(se);
+            if (defaultIndex >= 0) eventsConfig[defaultIndex] = se; else eventsConfig.push(se);
         });
     }
 
-    // --- FORCE FIX: Ensure Pre-Order exists in Book Fair if browser remembered an old version ---
+    // Force inject Pre-Order to Book Fair if missing
     let bookFairCheck = eventsConfig.find(e => e.id === 'ev_book_fair');
-    if (bookFairCheck && !bookFairCheck.items.includes('Pre-Order')) {
-        bookFairCheck.items.splice(3, 0, 'Pre-Order'); // Insert Pre-Order
-        localStorage.setItem(DB_KEYS.EVENTS, JSON.stringify(eventsConfig)); // Save immediately
+    if (bookFairCheck && !bookFairCheck.items.some(i => i.toLowerCase() === 'pre-order')) {
+        bookFairCheck.items.splice(3, 0, 'Pre-Order');
+        localStorage.setItem(DB_KEYS.EVENTS, JSON.stringify(eventsConfig));
     }
 
     let records = JSON.parse(localStorage.getItem(DB_KEYS.RECORDS)) || [];
@@ -360,18 +378,14 @@
     let nextInvSequence = parseInt(localStorage.getItem(DB_KEYS.INV_SEQ)) || 1001;
     let stationPrefix = localStorage.getItem(DB_KEYS.STATION_PREFIX) || 'A'; 
 
-    let selectedDivision = null; 
-    let selectedCategory = null;
-    let currentNumpadValue = "";
-    let currentCart = []; 
+    let selectedDivision = null, selectedCategory = null, currentNumpadValue = "", currentCart = []; 
     let isAdminUnlocked = false; 
+    let tempPrice = 0, tempTotalDue = 0; // For Modals
 
     window.onload = function() {
         document.getElementById('stationPrefixInput').value = stationPrefix;
         document.getElementById('todayDateDisplay').textContent = new Date().toLocaleDateString('en-US');
-        autoCheckEventDate();
-        renderDivisionGrid();
-        renderAll();
+        autoCheckEventDate(); renderDivisionGrid(); renderAll();
     };
 
     function saveData() {
@@ -385,233 +399,291 @@
     }
 
     function renderAll() {
-        renderStudents();
-        renderEventsAdmin();
-        renderRecords();
-        updateCashierPOS();
-        updateDashboard();
+        renderStudents(); renderEventsAdmin(); renderRecords(); updateCashierPOS(); updateDashboard(); renderItemizedReport();
     }
 
     function autoCheckEventDate() {
-        const d = new Date();
-        const todayStr = [d.getFullYear(), (''+(d.getMonth()+1)).padStart(2,'0'), (''+d.getDate()).padStart(2,'0')].join('-');
+        const d = new Date(), todayStr = [d.getFullYear(), (''+(d.getMonth()+1)).padStart(2,'0'), (''+d.getDate()).padStart(2,'0')].join('-');
         let matchedEventId = null;
         eventsConfig.forEach(ev => {
-            if (ev.startDate) {
-                const end = ev.endDate || ev.startDate;
-                if (todayStr >= ev.startDate && todayStr <= end) matchedEventId = ev.id;
-            }
+            if (ev.startDate) { if (todayStr >= ev.startDate && todayStr <= (ev.endDate || ev.startDate)) matchedEventId = ev.id; }
         });
-        if (matchedEventId && activeEventId !== matchedEventId) {
-            activeEventId = matchedEventId;
-            localStorage.setItem(DB_KEYS.ACTIVE_EVENT, activeEventId);
-        }
+        if (matchedEventId && activeEventId !== matchedEventId) { activeEventId = matchedEventId; localStorage.setItem(DB_KEYS.ACTIVE_EVENT, activeEventId); }
     }
 
     function showSection(sectionId) {
         if (sectionId !== 'payment' && !isAdminUnlocked) {
             const pwd = prompt("🔐 Manager Access Required. Enter Admin Password:");
             if (pwd !== "Eagles") return alert("Incorrect Password! Access Denied.");
-            isAdminUnlocked = true;
-            document.getElementById('lockBtn').style.display = 'inline-block';
+            isAdminUnlocked = true; document.getElementById('lockBtn').style.display = 'inline-block';
         }
         document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(sectionId).classList.add('active');
     }
 
-    function lockAdmin() {
-        isAdminUnlocked = false;
-        document.getElementById('lockBtn').style.display = 'none';
-        showSection('payment');
-    }
-
-    function saveStationPrefix() {
-        const val = document.getElementById('stationPrefixInput').value.trim().toUpperCase();
-        if(!val) return alert("Please enter a valid prefix.");
-        stationPrefix = val; saveData(); alert("Prefix Saved!");
-    }
-
+    function lockAdmin() { isAdminUnlocked = false; document.getElementById('lockBtn').style.display = 'none'; showSection('payment'); }
+    function saveStationPrefix() { stationPrefix = document.getElementById('stationPrefixInput').value.trim().toUpperCase() || 'A'; saveData(); alert("Prefix Saved!"); }
     function generateInvoiceNo() { return `INV-${stationPrefix}-${nextInvSequence}`; }
 
+    // --- POS Logic ---
     function renderDivisionGrid() {
-        const grid = document.getElementById('divisionGrid');
-        grid.innerHTML = '';
+        const grid = document.getElementById('divisionGrid'); grid.innerHTML = '';
         for(let i = 1; i <= 30; i++) {
-            const circle = document.createElement('div');
-            circle.className = 'division-circle';
-            const displayLabel = (i === 30) ? 'N/A' : i;
-            circle.textContent = displayLabel;
-            circle.onclick = () => selectDivision(displayLabel);
-            grid.appendChild(circle);
+            let c = document.createElement('div'); c.className = 'division-circle';
+            c.textContent = i === 30 ? 'N/A' : i;
+            c.onclick = () => { selectedDivision = c.textContent; document.querySelectorAll('.division-circle').forEach(el => el.classList.remove('selected')); c.classList.add('selected'); document.getElementById('invoiceDivDisplay').textContent = `Div: ${c.textContent}`; };
+            grid.appendChild(c);
         }
     }
 
-    function selectDivision(label) {
-        selectedDivision = label;
-        document.querySelectorAll('.division-circle').forEach(el => {
-            if(el.textContent == label) el.classList.add('selected');
-            else el.classList.remove('selected');
-        });
-        document.getElementById('invoiceDivDisplay').textContent = `Div: ${label}`;
-    }
-
-    function selectCategory(categoryName) {
-        selectedCategory = categoryName;
-        document.querySelectorAll('.item-circle').forEach(el => {
-            if(el.textContent === categoryName) el.classList.add('selected');
-            else el.classList.remove('selected');
-        });
+    function selectCategory(cat) {
+        selectedCategory = cat;
+        document.querySelectorAll('.item-circle').forEach(el => { el.classList.remove('selected'); if(el.textContent === cat) el.classList.add('selected'); });
     }
 
     function inputNumpad(val) {
-        if (val === 'C') currentNumpadValue = "";
-        else if (val === '.') { if (!currentNumpadValue.includes('.')) currentNumpadValue += val; } 
-        else {
-            if(currentNumpadValue.includes('.') && currentNumpadValue.split('.')[1].length >= 2) return;
-            currentNumpadValue += val;
-        }
+        if (val === 'C') currentNumpadValue = ""; else if (val === '.') { if (!currentNumpadValue.includes('.')) currentNumpadValue += val; } 
+        else { if(currentNumpadValue.includes('.') && currentNumpadValue.split('.')[1].length >= 2) return; currentNumpadValue += val; }
         document.getElementById('numpadDisplay').textContent = currentNumpadValue === "" ? "$0.00" : "$" + currentNumpadValue;
     }
 
-    function addToInvoice() {
+    // --- GIANT MODAL CONTROLS ---
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    function triggerAdd() {
         if (!selectedCategory) return alert("Select an Item Category (Green Circle)!");
-        let price = parseFloat(currentNumpadValue);
-        if (isNaN(price) || price <= 0) return alert("Enter a valid price greater than 0.");
+        tempPrice = parseFloat(currentNumpadValue);
+        if (isNaN(tempPrice) || tempPrice <= 0) return alert("Enter a valid price greater than 0.");
         
-        let finalItemName = selectedCategory;
-
-        // Pre-Order Logic
         if (selectedCategory.toLowerCase() === 'pre-order') {
-            let details = prompt("📦 PRE-ORDER: What is the name of the book/item?");
-            if (details === null || details.trim() === "") return; 
-            finalItemName = `Pre-Order: ${details.trim()}`;
+            document.getElementById('preOrderInput').value = '';
+            document.getElementById('preOrderModal').style.display = 'flex';
+            document.getElementById('preOrderInput').focus();
+        } else {
+            pushToCart(selectedCategory);
         }
-
-        currentCart.push({ id: Date.now(), name: finalItemName, price: price });
-        currentNumpadValue = ""; document.getElementById('numpadDisplay').textContent = "$0.00";
-        renderCart();
     }
 
-    function removeFromCart(cartId) {
-        currentCart = currentCart.filter(item => item.id !== cartId); renderCart();
+    function confirmPreOrder() {
+        const name = document.getElementById('preOrderInput').value.trim();
+        if(!name) return alert("Please enter the book/item name.");
+        closeModal('preOrderModal');
+        pushToCart(`Pre-Order: ${name}`);
+    }
+
+    function pushToCart(finalName) {
+        currentCart.push({ id: Date.now(), name: finalName, price: tempPrice });
+        currentNumpadValue = ""; document.getElementById('numpadDisplay').textContent = "$0.00"; renderCart();
     }
 
     function renderCart() {
-        const list = document.getElementById('invoiceList');
-        const totalDisplay = document.getElementById('cartTotalDisplay');
-        if (currentCart.length === 0) {
-            list.innerHTML = '<div style="text-align:center; color:#999; margin-top:20px;">Cart is empty.</div>';
-            totalDisplay.textContent = "$0.00"; return;
-        }
+        const list = document.getElementById('invoiceList'), totalDisplay = document.getElementById('cartTotalDisplay');
+        if (currentCart.length === 0) { list.innerHTML = '<div style="text-align:center; color:#999; margin-top:20px;">Cart is empty.</div>'; totalDisplay.textContent = "$0.00"; return; }
         let total = 0;
         list.innerHTML = currentCart.map(item => {
-            total += item.price;
-            return `<div class="invoice-item"><span>✔️ ${item.name}</span><div><strong>$${item.price.toFixed(2)}</strong><span class="del-btn" onclick="removeFromCart(${item.id})">✖</span></div></div>`;
+            total += item.price; return `<div class="invoice-item"><span>✔️ ${item.name}</span><div><strong>$${item.price.toFixed(2)}</strong><span class="del-btn" onclick="currentCart=currentCart.filter(i=>i.id!==${item.id}); renderCart();">✖</span></div></div>`;
         }).join('');
         totalDisplay.textContent = "$" + total.toFixed(2);
     }
 
-    // --- New Checkout & Success Flow ---
-    function processCheckout(paymentMethod) {
+    // --- CHECKOUT & SUCCESS ---
+    function triggerCash() {
         if (!selectedDivision) return alert('Step 1: Select a Division!');
         if (currentCart.length === 0) return alert('Invoice is empty!');
+        tempTotalDue = currentCart.reduce((sum, item) => sum + item.price, 0);
+        document.getElementById('cashModalTotalDue').textContent = `$${tempTotalDue.toFixed(2)}`;
+        document.getElementById('cashInput').value = '';
+        document.getElementById('cashModal').style.display = 'flex';
+        document.getElementById('cashInput').focus();
+    }
 
+    function confirmCash() {
+        const received = parseFloat(document.getElementById('cashInput').value);
+        if (isNaN(received) || received < tempTotalDue) return alert("Amount received is less than Total Due!");
+        closeModal('cashModal');
+        processCheckoutFinal('Cash', received - tempTotalDue);
+    }
+
+    function processCheckout(method) {
+        if (!selectedDivision) return alert('Step 1: Select a Division!');
+        if (currentCart.length === 0) return alert('Invoice is empty!');
+        processCheckoutFinal(method, 0);
+    }
+
+    function processCheckoutFinal(method, changeDue) {
+        const fName = document.getElementById('payFirstName').value.trim(), lName = document.getElementById('payLastName').value.trim();
+        const checkedName = (fName || lName) ? `${fName} ${lName}`.trim() : 'N/A';
         const totalAmount = currentCart.reduce((sum, item) => sum + item.price, 0);
-        let changeDue = 0;
-
-        // If Cash, ask for amount tendered
-        if (paymentMethod === 'Cash') {
-            let receivedStr = prompt(`💵 CASH RECEIVED ($)?\nTotal Due is: $${totalAmount.toFixed(2)}`);
-            if (receivedStr === null) return; // User pressed Cancel
-            let received = parseFloat(receivedStr);
-            if (isNaN(received) || received < totalAmount) {
-                return alert("Error: Amount received is less than Total Due or invalid!");
-            }
-            changeDue = received - totalAmount;
-        }
-
-        const fName = document.getElementById('payFirstName').value.trim();
-        const lName = document.getElementById('payLastName').value.trim();
-        let checkedName = (fName || lName) ? `${fName} ${lName}`.trim() : 'N/A';
         const itemsString = currentCart.map(i => `${i.name}($${i.price.toFixed(2)})`).join(', ');
 
-        // Save the record
         records.unshift({
             id: Date.now(), invoiceNo: generateInvoiceNo(), date: new Date().toLocaleString('en-US'),
-            division: selectedDivision, studentName: checkedName, items: itemsString, amount: totalAmount, method: paymentMethod,
-            rawItems: [...currentCart] // Save exact array for printing
+            division: selectedDivision, studentName: checkedName, items: itemsString, amount: totalAmount, method: method, rawItems: [...currentCart]
         });
         
-        nextInvSequence++;
-        saveData();
-
+        nextInvSequence++; saveData();
+        
         // Show Success Modal
-        showSuccessModal(paymentMethod, changeDue);
-    }
-
-    function showSuccessModal(method, change) {
-        const modal = document.getElementById('successModal');
-        const changeSection = document.getElementById('changeSection');
-        const changeDisplay = document.getElementById('modalChangeDue');
-
-        if (method === 'Cash') {
-            changeSection.style.display = 'block';
-            changeDisplay.textContent = `$${change.toFixed(2)}`;
-        } else {
-            changeSection.style.display = 'none';
-        }
-
-        modal.style.display = 'flex';
-    }
-
-    function printLastReceipt() {
-        // records[0] is the one we JUST saved
-        const r = records[0];
-        document.getElementById('rptInv').textContent = r.invoiceNo;
-        document.getElementById('rptDate').textContent = r.date;
-        document.getElementById('rptDiv').textContent = r.division;
-        document.getElementById('rptName').textContent = r.studentName;
-        
-        document.getElementById('rptItems').innerHTML = r.rawItems.map(i => `<div style="display:flex; justify-content:space-between;"><span>${i.name}</span><span>$${i.price.toFixed(2)}</span></div>`).join('');
-        document.getElementById('rptTotal').textContent = `$${r.amount.toFixed(2)}`;
-        document.getElementById('rptMethod').textContent = r.method;
-        
-        window.print();
+        document.getElementById('successModal').style.display = 'flex';
+        const changeSec = document.getElementById('changeSection');
+        if(method === 'Cash') { changeSec.style.display = 'block'; document.getElementById('modalChangeDue').textContent = `$${changeDue.toFixed(2)}`; }
+        else { changeSec.style.display = 'none'; }
     }
 
     function nextCustomer() {
-        // Clear all POS fields and hide modal
-        document.getElementById('successModal').style.display = 'none';
-        currentCart = []; 
-        selectedCategory = null; 
-        currentNumpadValue = "";
-        document.getElementById('payFirstName').value = ""; 
-        document.getElementById('payLastName').value = "";
-        clearDivisionSelection(); 
-        document.getElementById('numpadDisplay').textContent = "$0.00";
+        closeModal('successModal');
+        currentCart = []; selectedCategory = null; currentNumpadValue = ""; document.getElementById('numpadDisplay').textContent = "$0.00";
+        document.getElementById('payFirstName').value = ""; document.getElementById('payLastName').value = "";
+        document.querySelectorAll('.division-circle').forEach(el => el.classList.remove('selected')); selectedDivision = null;
         document.getElementById('invoiceDivDisplay').textContent = "Div: Not Selected";
-        renderCart();
-        updateCashierPOS(); // Removes selected rings
+        renderCart(); updateCashierPOS();
     }
-    // ------------------------------------
+
+    // --- RECEIPT PRINTING ---
+    function printLastReceipt() {
+        const r = records[0], p = document.getElementById('printArea');
+        p.innerHTML = `
+            <div style="text-align: center; border-bottom: 2px dashed #000; padding-bottom: 10px; margin-bottom: 10px;">
+                <h2 style="margin: 0;">Anderson PAC</h2><p style="margin: 5px 0 0 0; font-size: 12px;">Thank you for your support!</p>
+            </div>
+            <div style="margin-bottom: 10px; font-size: 14px;">
+                <div><strong>Invoice:</strong> ${r.invoiceNo}</div><div><strong>Date:</strong> ${r.date}</div>
+                <div><strong>Div:</strong> ${r.division}</div><div><strong>Name:</strong> ${r.studentName}</div>
+            </div>
+            <div style="border-bottom: 1px solid #000; padding-bottom: 5px; margin-bottom: 5px;"><strong>Items:</strong></div>
+            <div style="margin-bottom: 15px; font-size: 14px; line-height: 1.5;">
+                ${r.rawItems.map(i => `<div style="display:flex; justify-content:space-between;"><span>${i.name}</span><span>$${i.price.toFixed(2)}</span></div>`).join('')}
+            </div>
+            <div style="text-align: right; font-size: 16px; border-top: 2px dashed #000; padding-top: 10px;"><strong>Total: $${r.amount.toFixed(2)}</strong></div>
+            <div style="text-align: right; font-size: 14px; margin-top: 5px;">Paid by: ${r.method}</div>
+        `;
+        window.print();
+    }
 
     function updateCashierPOS() {
-        const eventDisplay = document.getElementById('activeEventDisplay');
-        document.getElementById('invoiceNoDisplay').textContent = generateInvoiceNo();
+        const eventDisplay = document.getElementById('activeEventDisplay'); document.getElementById('invoiceNoDisplay').textContent = generateInvoiceNo();
         const activeEvent = eventsConfig.find(e => e.id === activeEventId);
-        
-        if (activeEvent) {
-            eventDisplay.innerHTML = `🛒 ${activeEvent.name}`;
-            document.getElementById('itemGrid').innerHTML = activeEvent.items.map(item => `<div class="item-circle" onclick="selectCategory('${item}')">${item}</div>`).join('');
-        } else {
-            eventDisplay.innerHTML = `⚠️ No Event Set`;
-            document.getElementById('itemGrid').innerHTML = '';
-        }
-        renderCart();
+        if (activeEvent) { eventDisplay.innerHTML = `🛒 ${activeEvent.name}`; document.getElementById('itemGrid').innerHTML = activeEvent.items.map(item => `<div class="item-circle" onclick="selectCategory('${item}')">${item}</div>`).join(''); } 
+        else { eventDisplay.innerHTML = `⚠️ No Event Set`; document.getElementById('itemGrid').innerHTML = ''; }
+        document.querySelectorAll('.item-circle').forEach(el => el.classList.remove('selected'));
     }
 
-    // --- Rest of Admin & Roster Code Remains Unchanged ---
+    // --- ENHANCED ITEMIZED REPORT (PRE-ORDERS) ---
+    function renderItemizedReport() {
+        const tbody = document.getElementById('itemizedTableBody');
+        const filter = document.getElementById('itemFilter').value;
+        let itemRows = [];
+
+        records.forEach(r => {
+            if(r.rawItems) {
+                r.rawItems.forEach(i => {
+                    itemRows.push({ inv: r.invoiceNo, date: r.date, name: r.studentName, div: r.division, item: i.name, price: i.price });
+                });
+            }
+        });
+
+        // Filter
+        if(filter === 'PRE-ORDER') itemRows = itemRows.filter(row => row.item.toLowerCase().includes('pre-order'));
+
+        // Sort alphabetically by Item Name
+        itemRows.sort((a,b) => a.item.localeCompare(b.item));
+
+        if(itemRows.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No items found.</td></tr>'; return; }
+
+        tbody.innerHTML = itemRows.map(r => `
+            <tr>
+                <td style="font-weight:bold; color:var(--primary-color);">${r.item}</td>
+                <td style="font-family:monospace;">${r.inv}</td><td>${r.date.split(',')[0]}</td>
+                <td><b>${r.div}</b></td><td>${r.name}</td><td style="color:#e63946;">$${r.price.toFixed(2)}</td>
+            </tr>
+        `).join('');
+    }
+
+    function printItemizedList() {
+        const filter = document.getElementById('itemFilter').options[document.getElementById('itemFilter').selectedIndex].text;
+        const p = document.getElementById('printArea');
+        p.style.maxWidth = '100%'; // Maximize for full page print
+        p.innerHTML = `
+            <h2>Anderson PAC - Fulfillment List</h2>
+            <h3>Filter: ${filter}</h3>
+            <table style="width:100%; border-collapse:collapse; text-align:left;">
+                <thead><tr style="border-bottom:2px solid #000;"><th>Item Name</th><th>Inv No.</th><th>Div</th><th>Buyer Name</th><th>Price</th></tr></thead>
+                <tbody>
+                    ${Array.from(document.getElementById('itemizedTableBody').rows).map(r => {
+                        if(r.cells.length < 6) return '';
+                        return `<tr style="border-bottom:1px solid #ccc;"><td>${r.cells[0].innerText}</td><td>${r.cells[1].innerText}</td><td>${r.cells[3].innerText}</td><td>${r.cells[4].innerText}</td><td>${r.cells[5].innerText}</td></tr>`;
+                    }).join('')}
+                </tbody>
+            </table>
+        `;
+        window.print();
+        setTimeout(() => p.style.maxWidth = '300px', 1000); // Reset after print
+    }
+
+    function exportItemizedToExcel() {
+        let rows = Array.from(document.getElementById('itemizedTableBody').rows);
+        if (rows.length === 0 || rows[0].cells.length < 6) return alert("No data to export.");
+        let csvContent = "\uFEFFItem Name,Invoice No.,Date,Division,Buyer Name,Price\n";
+        rows.forEach(r => {
+            csvContent += `"${r.cells[0].innerText}","${r.cells[1].innerText}","${r.cells[2].innerText}","${r.cells[3].innerText}","${r.cells[4].innerText}","${r.cells[5].innerText.replace('$','')}"\n`;
+        });
+        downloadCSV(csvContent, `Itemized_List_${new Date().toLocaleDateString().replace(/\//g,'-')}.csv`);
+    }
+
+    // --- Records & Settings Logic (Truncated for brevity, functions remain the same) ---
+    function renderRecords() {
+        const tbody = document.getElementById('recordsTableBody');
+        if (records.length === 0) return tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No transactions yet.</td></tr>';
+        tbody.innerHTML = records.map((r, index) => `
+            <tr><td style="font-family:monospace; font-weight:bold;">${r.invoiceNo}</td><td style="font-size:0.85em;">${r.date}</td>
+                <td style="font-weight:bold; color:var(--primary-color);">${r.division}</td><td>${r.studentName}</td>
+                <td style="font-size:0.9em;">${r.items}</td><td><span style="background:${r.method === 'Cash' ? '#2a9d8f' : '#4361ee'}; color:white; padding:4px 8px; border-radius:4px; font-size:0.8em;">${r.method}</span></td>
+                <td style="color: #e63946; font-weight:bold; font-size:1.1em;">$${r.amount.toFixed(2)}</td>
+                <td style="min-width: 140px;"><button class="btn btn-danger" style="padding:6px 10px; font-size:0.9em;" onclick="if(confirm('VOID invoice?')){records.splice(${index}, 1); saveData();}">🗑️ Void</button></td></tr>
+        `).join('');
+    }
+
+    function updateDashboard() {
+        document.getElementById('totalIncome').textContent = `$${records.reduce((sum, r) => sum + r.amount, 0).toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+        document.getElementById('totalTransactions').textContent = records.length;
+        const todayStr = new Date().toLocaleDateString('en-US'); let todayCash = 0, todayCard = 0, todayCount = 0;
+        records.forEach(r => { if (new Date(r.date).toLocaleDateString('en-US') === todayStr) { todayCount++; if (r.method === 'Cash') todayCash += r.amount; if (r.method === 'Card') todayCard += r.amount; } });
+        document.getElementById('todayCash').textContent = `$${todayCash.toLocaleString('en-US', {minimumFractionDigits: 2})}`; document.getElementById('todayCard').textContent = `$${todayCard.toLocaleString('en-US', {minimumFractionDigits: 2})}`; document.getElementById('todayTotal').textContent = `$${(todayCash + todayCard).toLocaleString('en-US', {minimumFractionDigits: 2})}`; document.getElementById('todayCount').textContent = todayCount;
+    }
+
+    function addEvent() {
+        const name = document.getElementById('newFeeName').value.trim(), itemsRaw = document.getElementById('newFeeItems').value.trim(), sDate = document.getElementById('newFeeStart').value, eDate = document.getElementById('newFeeEnd').value;
+        if (!name || !itemsRaw) return alert('Enter Event Name and Sale Items.');
+        const itemsArray = itemsRaw.split(',').map(s => s.trim()).filter(s => s !== "");
+        const existingIndex = eventsConfig.findIndex(ev => ev.name.toLowerCase() === name.toLowerCase());
+        if (existingIndex >= 0) { eventsConfig[existingIndex].items = itemsArray; eventsConfig[existingIndex].startDate = sDate; eventsConfig[existingIndex].endDate = eDate; } 
+        else { eventsConfig.push({ id: 'ev' + Date.now(), name: name, items: itemsArray, startDate: sDate, endDate: eDate }); }
+        document.getElementById('newFeeName').value = ''; document.getElementById('newFeeItems').value = ''; document.getElementById('newFeeStart').value = ''; document.getElementById('newFeeEnd').value = '';
+        autoCheckEventDate(); saveData(); 
+    }
+
+    function renderEventsAdmin() {
+        document.getElementById('feeTableBody').innerHTML = eventsConfig.map((e, index) => {
+            const isActive = (e.id === activeEventId), dateStr = (e.startDate) ? `${e.startDate} to ${e.endDate || e.startDate}` : '<span style="color:#aaa;">No Date Set</span>', isPreset = (e.id.startsWith('ev_'));
+            return `<tr><td style="${isActive ? 'font-weight:bold; color:var(--primary-color);' : ''}">${e.name} ${isPreset ? '📌' : ''}</td>
+                <td style="font-size:0.9em; color:#444;">${dateStr}</td><td style="color:#555; font-size:0.9em;">${e.items.join(', ')}</td>
+                <td><button class="btn ${isActive ? 'btn-primary' : 'btn-warning'}" style="padding: 6px 12px; font-size: 0.9em;" onclick="activeEventId='${e.id}'; saveData(); showNotification('Active Event Updated!');">${isActive ? '🌟 Active' : 'Set Active'}</button></td>
+                <td>${isPreset ? '' : `<button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.9em;" onclick="if(confirm('Delete event?')){eventsConfig.splice(${index}, 1); saveData();}">Del</button>`}</td></tr>`;
+        }).join('');
+    }
+
+    function exportSalesToExcel() {
+        if (records.length === 0) return alert("No data to export.");
+        let csvContent = "\uFEFFInvoice No.,Date & Time,Division,Student Name,Items Purchased,Payment Method,Total Amount\n";
+        records.forEach(r => { csvContent += `"${r.invoiceNo}","${r.date}","${r.division}","${r.studentName}","${r.items.replace(/"/g, '""')}","${r.method}",${r.amount}\n`; });
+        downloadCSV(csvContent, `Anderson_Sales_Station_${stationPrefix}_${new Date().toLocaleDateString().replace(/\//g,'-')}.csv`);
+    }
+
+    function downloadCSV(content, filename) {
+        const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = filename; document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    }
+    
     function addStudent() { /* Unchanged */
         const fName = document.getElementById('stuFirstName').value.trim(); const lName = document.getElementById('stuLastName').value.trim();
         const div = document.getElementById('stuDivision').value.trim(); const sNum = document.getElementById('stuNumber').value.trim() || 'N/A';
@@ -650,83 +722,6 @@
         reader.readAsText(file); event.target.value = '';
     }
     function clearRoster() { if(confirm('⚠️ WARNING: Delete ALL students?')) { students = []; saveData(); } }
-
-    function addEvent() {
-        const name = document.getElementById('newFeeName').value.trim();
-        const itemsRaw = document.getElementById('newFeeItems').value.trim();
-        const sDate = document.getElementById('newFeeStart').value;
-        const eDate = document.getElementById('newFeeEnd').value;
-        if (!name || !itemsRaw) return alert('Enter Event Name and Sale Items.');
-        const itemsArray = itemsRaw.split(',').map(s => s.trim()).filter(s => s !== "");
-        const existingIndex = eventsConfig.findIndex(ev => ev.name.toLowerCase() === name.toLowerCase());
-        if (existingIndex >= 0) {
-            eventsConfig[existingIndex].items = itemsArray; eventsConfig[existingIndex].startDate = sDate; eventsConfig[existingIndex].endDate = eDate;
-        } else {
-            eventsConfig.push({ id: 'ev' + Date.now(), name: name, items: itemsArray, startDate: sDate, endDate: eDate });
-        }
-        document.getElementById('newFeeName').value = ''; document.getElementById('newFeeItems').value = '';
-        document.getElementById('newFeeStart').value = ''; document.getElementById('newFeeEnd').value = '';
-        autoCheckEventDate(); saveData(); 
-    }
-
-    function setActiveEvent(id) { activeEventId = id; saveData(); }
-
-    function renderEventsAdmin() {
-        document.getElementById('feeTableBody').innerHTML = eventsConfig.map((e, index) => {
-            const isActive = (e.id === activeEventId);
-            const dateStr = (e.startDate) ? `${e.startDate} to ${e.endDate || e.startDate}` : '<span style="color:#aaa;">No Date Set</span>';
-            const isPreset = (e.id.startsWith('ev_'));
-            return `<tr><td style="${isActive ? 'font-weight:bold; color:var(--primary-color);' : ''}">${e.name} ${isPreset ? '📌' : ''}</td>
-                <td style="font-size:0.9em; color:#444;">${dateStr}</td><td style="color:#555; font-size:0.9em;">${e.items.join(', ')}</td>
-                <td><button class="btn ${isActive ? 'btn-primary' : 'btn-warning'}" style="padding: 6px 12px; font-size: 0.9em;" onclick="setActiveEvent('${e.id}')">${isActive ? '🌟 Active' : 'Set Active'}</button></td>
-                <td>${isPreset ? '' : `<button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.9em;" onclick="if(confirm('Delete event?')){eventsConfig.splice(${index}, 1); saveData();}">Del</button>`}</td></tr>`;
-        }).join('');
-    }
-
-    function renderRecords() {
-        const tbody = document.getElementById('recordsTableBody');
-        if (records.length === 0) return tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No transactions yet.</td></tr>';
-        tbody.innerHTML = records.map((r, index) => `
-            <tr><td style="font-family:monospace; font-weight:bold;">${r.invoiceNo}</td><td style="font-size:0.85em;">${r.date}</td>
-                <td style="font-weight:bold; color:var(--primary-color);">${r.division}</td><td>${r.studentName}</td>
-                <td style="font-size:0.9em;">${r.items}</td><td><span style="background:${r.method === 'Cash' ? '#2a9d8f' : '#4361ee'}; color:white; padding:4px 8px; border-radius:4px; font-size:0.8em;">${r.method}</span></td>
-                <td style="color: #e63946; font-weight:bold; font-size:1.1em;">$${r.amount.toFixed(2)}</td>
-                <td style="min-width: 140px;">
-                    <button class="btn btn-danger" style="padding:6px 10px; font-size:0.9em;" onclick="if(confirm('VOID invoice?')){records.splice(${index}, 1); saveData();}">🗑️ Void</button>
-                </td></tr>
-        `).join('');
-    }
-
-    function updateDashboard() {
-        document.getElementById('totalIncome').textContent = `$${records.reduce((sum, r) => sum + r.amount, 0).toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-        document.getElementById('totalTransactions').textContent = records.length;
-        const todayStr = new Date().toLocaleDateString('en-US');
-        let todayCash = 0, todayCard = 0, todayCount = 0;
-        records.forEach(r => {
-            if (new Date(r.date).toLocaleDateString('en-US') === todayStr) {
-                todayCount++;
-                if (r.method === 'Cash') todayCash += r.amount;
-                if (r.method === 'Card') todayCard += r.amount;
-            }
-        });
-        document.getElementById('todayCash').textContent = `$${todayCash.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-        document.getElementById('todayCard').textContent = `$${todayCard.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-        document.getElementById('todayTotal').textContent = `$${(todayCash + todayCard).toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-        document.getElementById('todayCount').textContent = todayCount;
-    }
-
-    function exportSalesToExcel() {
-        if (records.length === 0) return alert("No data to export.");
-        let csvContent = "\uFEFFInvoice No.,Date & Time,Division,Student Name,Items Purchased,Payment Method,Total Amount\n";
-        records.forEach(r => { csvContent += `"${r.invoiceNo}","${r.date}","${r.division}","${r.studentName}","${r.items.replace(/"/g, '""')}","${r.method}",${r.amount}\n`; });
-        downloadCSV(csvContent, `Anderson_Sales_Station_${stationPrefix}_${new Date().toLocaleDateString().replace(/\//g,'-')}.csv`);
-    }
-
-    function downloadCSV(content, filename) {
-        const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = filename;
-        document.body.appendChild(link); link.click(); document.body.removeChild(link);
-    }
 </script>
 
 </body>
