@@ -213,7 +213,7 @@
 
     <div id="students" class="section">
         <h2>Student Roster Management</h2>
-        <p style="color: #666;">Tip: You can prepare this list in Excel (CSV) and import it, or export it to transfer to another iPad.</p>
+        <p style="color: #666;">Tip: Prepare this list in Excel (CSV) and import it, or export it to transfer to another iPad.</p>
         
         <div style="background: #e9ecef; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
             <div class="name-row">
@@ -253,16 +253,29 @@
             </div>
         </div>
 
-        <h3>Event Setup</h3>
-        <button class="btn btn-warning" style="margin-bottom: 15px;" onclick="restoreDefaultEvents()">🔄 Restore Default Events</button>
+        <h3>Event Setup (Auto-Date Support)</h3>
+        <p style="color: #666; font-size: 0.9em; margin-bottom: 15px;">Set event dates. The system will automatically activate the matching event on the cash register today!</p>
         
-        <div class="form-group">
-            <input type="text" id="newFeeName" placeholder="Event Name (e.g., Spring Fair)" style="margin-bottom: 15px;">
-            <input type="text" id="newFeeItems" placeholder="Sale Items separated by commas (e.g., Ticket, Snack, Open)">
-            <button class="btn btn-primary" onclick="addEvent()" style="margin-top: 15px;">Create Event</button>
+        <div style="background: #f8f9fa; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <div class="name-row">
+                <div class="form-group"><input type="text" id="newFeeName" placeholder="Event Name (e.g., Spring Fair)"></div>
+                <div class="form-group"><input type="text" id="newFeeItems" placeholder="Sale Items (e.g., Book, Ticket, Open)"></div>
+            </div>
+            <div class="name-row">
+                <div class="form-group">
+                    <label style="font-size: 0.9em; color:#555;">Start Date:</label>
+                    <input type="date" id="newFeeStart">
+                </div>
+                <div class="form-group">
+                    <label style="font-size: 0.9em; color:#555;">End Date (Optional):</label>
+                    <input type="date" id="newFeeEnd">
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="addEvent()">➕ Create / Update Event</button>
         </div>
+        
         <table>
-            <thead><tr><th>Event Name</th><th>Sale Items</th><th>Status</th><th>Action</th></tr></thead>
+            <thead><tr><th>Event Name</th><th>Dates</th><th>Sale Items</th><th>Status</th><th>Action</th></tr></thead>
             <tbody id="feeTableBody"></tbody>
         </table>
     </div>
@@ -280,22 +293,34 @@
         STATION_PREFIX: 'anderson_station_prefix'
     };
 
+    // The 3 Permanent Defaults - Now with Date fields
     const defaultEvents = [
-        { id: 'ev1', name: 'Book Fair', items: ['Book', 'Stationary', 'Poster', 'Open'] },
-        { id: 'ev2', name: 'Craft Fair', items: ['Spirit wear', 'Lucky Bag', 'Hat', 'Socks', 'Food', 'Open'] },
-        { id: 'ev3', name: 'School Fundraising', items: ['Spirit wear', 'Open'] }
+        { id: 'ev_book_fair', name: 'Book Fair', items: ['Book', 'Stationary', 'Poster', 'Open'], startDate: '', endDate: '' },
+        { id: 'ev_craft_fair', name: 'Craft Fair', items: ['Spirit wear', 'Lucky Bag', 'Hat', 'Socks', 'Food', 'Open'], startDate: '', endDate: '' },
+        { id: 'ev_school_fund', name: 'School Fundraising', items: ['Spirit wear', 'Open'], startDate: '', endDate: '' }
     ];
 
     let students = JSON.parse(localStorage.getItem(DB_KEYS.STUDENTS)) || [];
-    let eventsConfig = JSON.parse(localStorage.getItem(DB_KEYS.EVENTS));
+    let savedEvents = JSON.parse(localStorage.getItem(DB_KEYS.EVENTS));
     
-    // Fallback: If empty or undefined from a previous clear, restore defaults automatically
-    if (!eventsConfig || eventsConfig.length === 0) {
-        eventsConfig = [...defaultEvents];
+    // Core Logic to merge saved events with the 3 defaults (ensuring defaults are ALWAYS there)
+    let eventsConfig = [...defaultEvents];
+    if (savedEvents && Array.isArray(savedEvents)) {
+        // We add any custom events that the user made that ARE NOT the 3 defaults
+        savedEvents.forEach(se => {
+            const defaultIndex = eventsConfig.findIndex(de => de.id === se.id);
+            if (defaultIndex >= 0) {
+                // If it's a default event, overwrite with their saved dates/items
+                eventsConfig[defaultIndex] = se;
+            } else {
+                // If it's a completely new custom event, push it to the list
+                eventsConfig.push(se);
+            }
+        });
     }
 
     let records = JSON.parse(localStorage.getItem(DB_KEYS.RECORDS)) || [];
-    let activeEventId = localStorage.getItem(DB_KEYS.ACTIVE_EVENT) || 'ev1'; 
+    let activeEventId = localStorage.getItem(DB_KEYS.ACTIVE_EVENT) || 'ev_book_fair'; 
     let nextInvSequence = parseInt(localStorage.getItem(DB_KEYS.INV_SEQ)) || 1001;
     let stationPrefix = localStorage.getItem(DB_KEYS.STATION_PREFIX) || 'A'; 
 
@@ -307,9 +332,9 @@
     let isAdminUnlocked = false; 
 
     window.onload = function() {
-        localStorage.setItem(DB_KEYS.EVENTS, JSON.stringify(eventsConfig)); // Ensure saved
         document.getElementById('stationPrefixInput').value = stationPrefix;
         document.getElementById('todayDateDisplay').textContent = new Date().toLocaleDateString('en-US');
+        autoCheckEventDate(); // Check dates on load!
         renderDivisionGrid();
         renderAll();
     };
@@ -332,6 +357,34 @@
         updateDashboard();
     }
 
+    // --- Smart Date Logic ---
+    function autoCheckEventDate() {
+        const d = new Date();
+        const month = '' + (d.getMonth() + 1);
+        const day = '' + d.getDate();
+        const year = d.getFullYear();
+        // Get Local Today String format YYYY-MM-DD
+        const todayStr = [year, month.padStart(2, '0'), day.padStart(2, '0')].join('-');
+
+        let matchedEventId = null;
+        eventsConfig.forEach(ev => {
+            if (ev.startDate) {
+                const start = ev.startDate;
+                const end = ev.endDate || ev.startDate; // If no end date, assume 1 day event
+                if (todayStr >= start && todayStr <= end) {
+                    matchedEventId = ev.id;
+                }
+            }
+        });
+
+        // If today falls into an event's range, automatically activate it
+        if (matchedEventId && activeEventId !== matchedEventId) {
+            activeEventId = matchedEventId;
+            localStorage.setItem(DB_KEYS.ACTIVE_EVENT, activeEventId);
+        }
+    }
+
+    // --- Access Control Logic ---
     function showSection(sectionId) {
         if (sectionId !== 'payment' && !isAdminUnlocked) {
             const pwd = prompt("🔐 Manager Access Required. Enter Admin Password:");
@@ -555,32 +608,71 @@
         reader.readAsText(file); event.target.value = '';
     }
 
-    // NEW: Restore Default Events
-    function restoreDefaultEvents() {
-        if(confirm('This will restore the 3 original preset events (Book Fair, Craft Fair, School Fundraising). Continue?')) {
-            // Using spread operator to clone defaults so we don't accidentally mutate the original array later
-            eventsConfig = defaultEvents.map(event => ({...event})); 
-            activeEventId = 'ev1';
-            saveData();
-            showNotification('Default Events Restored!');
-        }
-    }
-
+    // Modify/Add Event with Dates
     function addEvent() {
         const name = document.getElementById('newFeeName').value.trim();
         const itemsRaw = document.getElementById('newFeeItems').value.trim();
-        if (!name || !itemsRaw) return alert('Enter Event Name and Items.');
+        const sDate = document.getElementById('newFeeStart').value;
+        const eDate = document.getElementById('newFeeEnd').value;
+        
+        if (!name || !itemsRaw) return alert('Enter Event Name and Sale Items.');
         const itemsArray = itemsRaw.split(',').map(s => s.trim()).filter(s => s !== "");
-        eventsConfig.push({ id: 'ev' + Date.now(), name: name, items: itemsArray });
-        document.getElementById('newFeeName').value = ''; document.getElementById('newFeeItems').value = '';
-        saveData(); showNotification(`Event Created: ${name}`);
+
+        // Check if we are updating a default event by name matching
+        const existingIndex = eventsConfig.findIndex(ev => ev.name.toLowerCase() === name.toLowerCase());
+        
+        if (existingIndex >= 0) {
+            eventsConfig[existingIndex].items = itemsArray;
+            eventsConfig[existingIndex].startDate = sDate;
+            eventsConfig[existingIndex].endDate = eDate;
+            showNotification(`Event Updated: ${name}`);
+        } else {
+            eventsConfig.push({ id: 'ev' + Date.now(), name: name, items: itemsArray, startDate: sDate, endDate: eDate });
+            showNotification(`Event Created: ${name}`);
+        }
+
+        document.getElementById('newFeeName').value = ''; 
+        document.getElementById('newFeeItems').value = '';
+        document.getElementById('newFeeStart').value = ''; 
+        document.getElementById('newFeeEnd').value = '';
+        
+        // Check dates again in case the new event should be active today
+        autoCheckEventDate();
+        saveData(); 
     }
 
     function deleteEvent(index) {
-        if(confirm('Delete event?')) { if(activeEventId === eventsConfig[index].id) activeEventId = null; eventsConfig.splice(index, 1); saveData(); }
+        // Prevent deleting the 3 core defaults, just clear their dates and items instead if needed, 
+        // but user asked for them to be permanent. So we just prevent deletion of core IDs.
+        const evId = eventsConfig[index].id;
+        if(evId === 'ev_book_fair' || evId === 'ev_craft_fair' || evId === 'ev_school_fund') {
+            alert("This is a permanent preset event! You can edit its dates or items, but you cannot delete it.");
+            return;
+        }
+
+        if(confirm('Delete event?')) { 
+            if(activeEventId === eventsConfig[index].id) activeEventId = null; 
+            eventsConfig.splice(index, 1); 
+            saveData(); 
+        }
     }
 
     function setActiveEvent(id) { activeEventId = id; saveData(); showNotification('Active Event Updated!'); }
+
+    function renderEventsAdmin() {
+        document.getElementById('feeTableBody').innerHTML = eventsConfig.map((e, index) => {
+            const isActive = (e.id === activeEventId);
+            const dateStr = (e.startDate) ? `${e.startDate} to ${e.endDate || e.startDate}` : '<span style="color:#aaa;">No Date Set</span>';
+            const isPreset = (e.id === 'ev_book_fair' || e.id === 'ev_craft_fair' || e.id === 'ev_school_fund');
+            const delButton = isPreset ? '' : `<button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.9em;" onclick="deleteEvent(${index})">Del</button>`;
+            
+            return `<tr><td style="${isActive ? 'font-weight:bold; color:var(--primary-color);' : ''}">${e.name} ${isPreset ? '📌' : ''}</td>
+                <td style="font-size:0.9em; color:#444;">${dateStr}</td>
+                <td style="color:#555; font-size:0.9em;">${e.items.join(', ')}</td>
+                <td><button class="btn ${isActive ? 'btn-primary' : 'btn-warning'}" style="padding: 6px 12px; font-size: 0.9em;" onclick="setActiveEvent('${e.id}')">${isActive ? '🌟 Active' : 'Set Active'}</button></td>
+                <td>${delButton}</td></tr>`;
+        }).join('');
+    }
 
     function editRecord(index) {
         const pwd = prompt("🔐 Manager Override. Enter Admin Password:");
