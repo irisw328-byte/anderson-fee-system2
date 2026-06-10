@@ -3,108 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>School POS Checkout System v4.0</title>
+    <title>Anderson POS System</title>
     <style>
         :root {
-            --primary-color: #4361ee;
-            --secondary-color: #3f37c9;
+            --primary-color: #023e8a;
+            --secondary-color: #0077b6;
             --item-color: #2a9d8f;
             --numpad-color: #2b2d42;
             --highlight-color: #fca311;
             --bg-color: #f8f9fa;
             --card-bg: #ffffff;
             --text-color: #333;
-            --border-radius: 8px;
+            --border-radius: 10px;
         }
 
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 15px; }
         .container { max-width: 1200px; margin: 0 auto; }
         header { text-align: center; margin-bottom: 20px; }
-        h1 { color: var(--primary-color); margin-bottom: 10px;}
+        h1 { color: var(--primary-color); margin-bottom: 10px; font-size: 2.2em;}
 
-        /* Navigation */
-        .nav-tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .nav-btn { padding: 10px 20px; border: none; background-color: #e0e0e0; cursor: pointer; border-radius: var(--border-radius); font-weight: bold; transition: 0.3s; }
-        .nav-btn.active { background-color: var(--primary-color); color: white; }
+        .nav-tabs { display: flex; justify-content: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+        .nav-btn { padding: 15px 25px; border: none; background-color: #e0e0e0; cursor: pointer; border-radius: var(--border-radius); font-weight: bold; font-size: 1.1em; transition: 0.3s; }
+        .nav-btn.active { background-color: var(--primary-color); color: white; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
 
-        /* Sections */
-        .section { display: none; background: var(--card-bg); padding: 25px; border-radius: var(--border-radius); box-shadow: 0 4px 6px rgba(0,0,0,0.1); animation: fadeIn 0.3s; }
+        .section { display: none; background: var(--card-bg); padding: 25px; border-radius: var(--border-radius); box-shadow: 0 4px 10px rgba(0,0,0,0.1); animation: fadeIn 0.3s; }
         .section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Forms & Inputs */
         .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
-        .name-row { display: flex; gap: 15px; margin-bottom: 15px; }
-        .name-row .form-group { flex: 1; margin-bottom: 0; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 1.1em;}
+        input, select { width: 100%; padding: 15px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 1.1em; }
+        .name-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
+        .name-row .form-group { flex: 1; min-width: 200px; margin-bottom: 0; }
 
-        /* Circle Grids System */
         .grid-container { display: flex; justify-content: center; margin-top: 10px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
-        
-        /* 1. Division Circles (Blue) */
-        .division-grid { display: grid; grid-template-columns: repeat(10, 50px); gap: 10px; justify-content: center;}
-        .division-circle { width: 50px; height: 50px; background-color: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1em; font-weight: bold; cursor: pointer; user-select: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        .division-circle.selected { background-color: var(--highlight-color); color: #333; transform: scale(1.1); border: 2px solid #fff; }
+        .division-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(55px, 1fr)); gap: 12px; justify-content: center;}
+        .division-circle { width: 55px; height: 55px; background-color: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2em; font-weight: bold; cursor: pointer; user-select: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .division-circle.selected { background-color: var(--highlight-color); color: #333; transform: scale(1.15); border: 3px solid #fff; }
 
-        /* 2. Item Circles (Green) */
         .item-grid { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
-        .item-circle { width: 80px; height: 80px; background-color: var(--item-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 0.9em; font-weight: bold; cursor: pointer; user-select: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2); padding: 5px; word-break: break-word;}
-        .item-circle.selected { background-color: var(--highlight-color); color: #333; transform: scale(1.1); border: 2px solid #fff; }
+        .item-circle { width: 90px; height: 90px; background-color: var(--item-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 1em; font-weight: bold; cursor: pointer; user-select: none; box-shadow: 0 4px 6px rgba(0,0,0,0.2); padding: 5px; word-break: break-word;}
+        .item-circle.selected { background-color: var(--highlight-color); color: #333; transform: scale(1.1); border: 3px solid #fff; }
 
-        /* Layout for POS: Left (Controls) & Right (Invoice) */
         .pos-layout { display: flex; gap: 30px; flex-wrap: wrap; }
-        .pos-controls { flex: 1; min-width: 300px; }
-        .pos-invoice { flex: 1; min-width: 300px; background: #fdfdfd; border: 2px solid #eee; border-radius: 8px; padding: 20px; display: flex; flex-direction: column; }
+        .pos-controls { flex: 1.5; min-width: 350px; }
+        .pos-invoice { flex: 1; min-width: 320px; background: #fdfdfd; border: 2px solid #eee; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; }
 
-        /* 3. Numpad (Black) */
-        .numpad-display { background: #fff; border: 2px solid #ccc; border-radius: 4px; padding: 15px; text-align: right; font-size: 1.8em; font-weight: bold; margin-bottom: 15px; color: #333; letter-spacing: 2px; }
-        .numpad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .num-btn { background-color: var(--numpad-color); color: white; border: none; border-radius: 8px; padding: 15px; font-size: 1.5em; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .numpad-display { background: #fff; border: 2px solid #ccc; border-radius: 8px; padding: 20px; text-align: right; font-size: 2.2em; font-weight: bold; margin-bottom: 15px; color: #333; letter-spacing: 2px; }
+        .numpad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .num-btn { background-color: var(--numpad-color); color: white; border: none; border-radius: 10px; padding: 20px; font-size: 1.8em; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
         .num-btn:active { transform: scale(0.95); }
-        .num-btn.btn-action { background-color: #6c757d; }
-        .num-btn.btn-enter { background-color: var(--item-color); grid-column: span 3; font-size: 1.2em; text-transform: uppercase;}
+        .num-btn.btn-action { background-color: #6c757d; font-size: 1.3em;}
+        .num-btn.btn-enter { background-color: var(--item-color); grid-column: span 3; font-size: 1.5em; text-transform: uppercase; padding: 25px;}
 
-        /* Invoice Area */
         .invoice-header { text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 10px; margin-bottom: 15px; }
-        .invoice-list { flex-grow: 1; overflow-y: auto; max-height: 300px; margin-bottom: 15px; }
-        .invoice-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 1.1em;}
-        .invoice-item .del-btn { color: #e63946; cursor: pointer; font-weight: bold; margin-left: 10px;}
-        .invoice-total-area { border-top: 2px solid #333; padding-top: 15px; text-align: right; }
-        .total-amount { font-size: 2.8em; color: #e63946; font-weight: bold; margin: 10px 0; }
+        .invoice-list { flex-grow: 1; overflow-y: auto; max-height: 350px; margin-bottom: 15px; }
+        .invoice-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; font-size: 1.2em;}
+        .invoice-item .del-btn { color: #e63946; cursor: pointer; font-weight: bold; margin-left: 15px; padding: 0 10px;}
+        .invoice-total-area { border-top: 3px solid #333; padding-top: 15px; text-align: right; }
+        .total-amount { font-size: 3em; color: #e63946; font-weight: bold; margin: 10px 0; }
 
-        /* Payment Buttons */
-        .payment-methods { display: flex; gap: 10px; }
-        .pay-btn { flex: 1; padding: 15px; font-size: 1.3em; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; color: white; transition: 0.2s;}
+        .payment-methods { display: flex; gap: 15px; }
+        .pay-btn { flex: 1; padding: 20px; font-size: 1.5em; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; color: white; transition: 0.2s;}
         .btn-cash { background-color: #2a9d8f; }
         .btn-card { background-color: #4361ee; }
-        .pay-btn:hover { opacity: 0.9; transform: translateY(-2px);}
 
-        /* Buttons Standard */
-        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; }
+        .btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; font-size: 1.1em;}
         .btn-primary { background-color: var(--primary-color); }
+        .btn-success { background-color: var(--item-color); }
         .btn-danger { background-color: #e63946; }
         .btn-warning { background-color: var(--highlight-color); color: #333; }
-        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold; cursor: pointer; border: 2px solid var(--primary-color); color: var(--primary-color); background: transparent; }
-        .status-badge.active-event { background-color: var(--primary-color); color: white; }
-
-        /* Tables */
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #ddd; }
-        th { background-color: #f1f1f1; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 1.1em;}
+        th, td { text-align: left; padding: 15px; border-bottom: 1px solid #ddd; }
+        th { background-color: #e9ecef; }
         .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px; }
-        .stat-card { background: var(--primary-color); color: white; padding: 20px; border-radius: var(--border-radius); text-align: center; }
-        .stat-card h3 { margin: 0; font-size: 2em; }
-        .stat-card p { margin: 5px 0 0 0; opacity: 0.9; }
+        .stat-card { background: var(--primary-color); color: white; padding: 25px; border-radius: var(--border-radius); text-align: center; }
+        .stat-card h3 { margin: 0; font-size: 2.5em; }
 
-        #notification { position: fixed; bottom: 20px; right: 20px; background-color: #2a9d8f; color: white; padding: 15px 25px; border-radius: 4px; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; font-size: 1.2em; font-weight:bold;}
+        #notification { position: fixed; bottom: 30px; right: 30px; background-color: #2a9d8f; color: white; padding: 20px 30px; border-radius: 8px; display: none; box-shadow: 0 6px 16px rgba(0,0,0,0.2); z-index: 1000; font-size: 1.3em; font-weight:bold;}
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <h1>🎓 School POS System</h1>
+        <h1>🦅 Anderson POS System</h1>
         <div class="nav-tabs">
             <button class="nav-btn active" onclick="showSection('payment')">💻 Cashier POS</button>
             <button class="nav-btn" onclick="showSection('records')">📊 Reports & Invoices</button>
@@ -114,28 +98,28 @@
     </header>
 
     <div id="payment" class="section active">
-        <div style="background: #e9ecef; padding: 10px 15px; border-radius: 4px; font-weight: bold; color: var(--secondary-color); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+        <div style="background: #e9ecef; padding: 15px 20px; border-radius: 8px; font-weight: bold; color: var(--primary-color); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; font-size: 1.2em;">
             <span id="activeEventDisplay">Active Event: None</span>
-            <span id="invoiceNoDisplay" style="color: #666; font-family: monospace; font-size: 1.1em;">INV-XXXX</span>
+            <span id="invoiceNoDisplay" style="color: #666; font-family: monospace;">INV-A-XXXX</span>
         </div>
 
-        <label style="text-align: center; font-size: 1.1em; color: var(--primary-color);">Step 1: Select Division</label>
-        <div class="division-grid" id="divisionGrid" style="margin-bottom: 10px;"></div>
+        <label style="text-align: center; font-size: 1.2em; color: var(--primary-color);">Step 1: Select Division</label>
+        <div class="division-grid" id="divisionGrid" style="margin-bottom: 20px;"></div>
 
+        <label>Student Details (Optional):</label>
         <div class="name-row">
-            <div class="form-group"><input type="text" id="payFirstName" placeholder="First Name (Optional)"></div>
-            <div class="form-group"><input type="text" id="payLastName" placeholder="Last Name (Optional)"></div>
+            <div class="form-group"><input type="text" id="payFirstName" placeholder="First Name"></div>
+            <div class="form-group"><input type="text" id="payLastName" placeholder="Last Name"></div>
         </div>
 
-        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+        <hr style="border: 0; border-top: 2px solid #eee; margin: 25px 0;">
 
         <div class="pos-layout">
             <div class="pos-controls">
-                <label style="text-align: center; font-size: 1.1em; color: var(--item-color);">Step 2: Select Item Category</label>
-                <div class="item-grid" id="itemGrid" style="margin-bottom: 25px;">
-                    </div>
+                <label style="text-align: center; font-size: 1.2em; color: var(--item-color);">Step 2: Category</label>
+                <div class="item-grid" id="itemGrid" style="margin-bottom: 30px;"></div>
 
-                <label style="text-align: center; font-size: 1.1em; color: var(--numpad-color);">Step 3: Enter Price & Add</label>
+                <label style="text-align: center; font-size: 1.2em; color: var(--numpad-color);">Step 3: Price & Add</label>
                 <div class="numpad-display" id="numpadDisplay">$0.00</div>
                 <div class="numpad-grid">
                     <button class="num-btn" onclick="inputNumpad('1')">1</button>
@@ -156,18 +140,17 @@
 
             <div class="pos-invoice">
                 <div class="invoice-header">
-                    <h3 style="margin: 0; color: #333;">Current Invoice</h3>
-                    <small id="invoiceDivDisplay" style="color: var(--primary-color); font-weight: bold;">Division: Not Selected</small>
+                    <h3 style="margin: 0; font-size: 1.5em; color: #333;">Current Invoice</h3>
+                    <div id="invoiceDivDisplay" style="color: var(--primary-color); font-weight: bold; font-size: 1.2em; margin-top: 5px;">Div: Not Selected</div>
                 </div>
                 
-                <div class="invoice-list" id="invoiceList">
-                    </div>
+                <div class="invoice-list" id="invoiceList"></div>
 
                 <div class="invoice-total-area">
-                    <div style="font-size: 1.2em; color: #666;">Total Amount Due</div>
+                    <div style="font-size: 1.3em; color: #666;">Total Due</div>
                     <div class="total-amount" id="cartTotalDisplay">$0.00</div>
                     
-                    <label style="text-align: left; margin-bottom: 5px;">Step 4: Select Payment Method</label>
+                    <label style="text-align: left; margin-bottom: 10px;">Step 4: Payment</label>
                     <div class="payment-methods">
                         <button class="pay-btn btn-cash" onclick="checkout('Cash')">💵 CASH</button>
                         <button class="pay-btn btn-card" onclick="checkout('Card')">💳 CARD</button>
@@ -191,24 +174,14 @@
         </div>
         
         <h3>Transaction History</h3>
-        <div class="action-bar">
-            <button class="btn btn-warning" onclick="exportToExcel()">📥 Export to Excel (CSV)</button>
-            <button class="btn btn-danger" onclick="clearAllData()">⚠️ Clear All System Data</button>
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <button class="btn btn-warning" onclick="exportSalesToExcel()">📥 Export Sales (CSV)</button>
         </div>
         
         <div style="overflow-x:auto;">
             <table>
                 <thead>
-                    <tr>
-                        <th>Invoice No.</th>
-                        <th>Date/Time</th>
-                        <th>Div</th>
-                        <th>Name</th>
-                        <th>Items Purchased</th>
-                        <th>Pay Method</th>
-                        <th>Total</th>
-                        <th>Action</th>
-                    </tr>
+                    <tr><th>Inv No.</th><th>Date/Time</th><th>Div</th><th>Name</th><th>Items</th><th>Method</th><th>Total</th><th>Action</th></tr>
                 </thead>
                 <tbody id="recordsTableBody"></tbody>
             </table>
@@ -217,34 +190,54 @@
 
     <div id="students" class="section">
         <h2>Student Roster Management</h2>
-        <div class="form-group" style="display: flex; gap: 10px;">
-            <input type="text" id="newStudentName" placeholder="Enter Full Name">
-            <button class="btn btn-primary" onclick="addStudent()">Add Student</button>
+        <p style="color: #666;">Tip: You can prepare this list in Excel (CSV) and import it, or export it to transfer to another iPad.</p>
+        
+        <div style="background: #e9ecef; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <div class="name-row">
+                <div class="form-group"><input type="text" id="stuFirstName" placeholder="First Name"></div>
+                <div class="form-group"><input type="text" id="stuLastName" placeholder="Last Name"></div>
+                <div class="form-group"><input type="text" id="stuDivision" placeholder="Division (e.g. 1, 2, N/A)"></div>
+                <div class="form-group"><input type="text" id="stuNumber" placeholder="Student No. (Optional)"></div>
+            </div>
+            <button class="btn btn-primary" onclick="addStudent()">➕ Add Student</button>
         </div>
-        <table>
-            <thead><tr><th>Student ID</th><th>Full Name</th><th>Action</th></tr></thead>
-            <tbody id="studentTableBody"></tbody>
-        </table>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+            <button class="btn btn-warning" onclick="exportStudentsToExcel()">📥 Export Roster (CSV)</button>
+            <input type="file" id="importCsvFile" accept=".csv" style="display: none;" onchange="importStudentsFromCSV(event)">
+            <button class="btn btn-success" onclick="document.getElementById('importCsvFile').click()">📤 Import Roster from CSV</button>
+            <button class="btn btn-danger" onclick="clearRoster()">⚠️ Clear Roster</button>
+        </div>
+
+        <div style="overflow-x:auto;">
+            <table>
+                <thead><tr><th>Student No.</th><th>First Name</th><th>Last Name</th><th>Division</th><th>Actions</th></tr></thead>
+                <tbody id="studentTableBody"></tbody>
+            </table>
+        </div>
     </div>
 
     <div id="fees" class="section">
-        <h2>Admin: Event Configurations</h2>
-        <p style="color: #666; margin-bottom: 20px;">Create an event and define the item categories available for sale (separated by commas).</p>
+        <h2>Admin Configurations</h2>
         
+        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 5px solid #ffc107; margin-bottom: 25px;">
+            <h3 style="margin-top: 0; color: #856404;">🖥️ Multi-Station Setup</h3>
+            <p style="color: #856404; margin-bottom: 10px;">Using multiple iPads? Set a unique letter for each device so invoice numbers don't overlap when you merge the Excel files.</p>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <label style="margin: 0; min-width: 150px;">Station Prefix:</label>
+                <input type="text" id="stationPrefixInput" maxlength="3" placeholder="e.g., A, B, C" style="width: 100px; text-transform: uppercase;">
+                <button class="btn btn-primary" onclick="saveStationPrefix()">Save Prefix</button>
+            </div>
+        </div>
+
+        <h3>Event Setup</h3>
         <div class="form-group">
-            <input type="text" id="newFeeName" placeholder="Event Name (e.g., Spring Fair)" style="margin-bottom: 10px;">
+            <input type="text" id="newFeeName" placeholder="Event Name (e.g., Spring Fair)" style="margin-bottom: 15px;">
             <input type="text" id="newFeeItems" placeholder="Sale Items separated by commas (e.g., Ticket, Snack, Open)">
-            <button class="btn btn-primary" onclick="addEvent()" style="margin-top: 10px;">Create Event</button>
+            <button class="btn btn-primary" onclick="addEvent()" style="margin-top: 15px;">Create Event</button>
         </div>
         <table>
-            <thead>
-                <tr>
-                    <th>Event Name</th>
-                    <th>Sale Items Categories</th>
-                    <th>Status Action</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
+            <thead><tr><th>Event Name</th><th>Sale Items</th><th>Status</th><th>Action</th></tr></thead>
             <tbody id="feeTableBody"></tbody>
         </table>
     </div>
@@ -253,16 +246,15 @@
 <div id="notification">Success!</div>
 
 <script>
-    // --- Data Storage Keys ---
     const DB_KEYS = {
-        STUDENTS: 'pos_students',
-        EVENTS: 'pos_events',
-        RECORDS: 'pos_records',
-        ACTIVE_EVENT: 'pos_active_event',
-        INV_SEQ: 'pos_inv_sequence'
+        STUDENTS: 'anderson_students',
+        EVENTS: 'anderson_events',
+        RECORDS: 'anderson_records',
+        ACTIVE_EVENT: 'anderson_active_event',
+        INV_SEQ: 'anderson_inv_sequence',
+        STATION_PREFIX: 'anderson_station_prefix' // New Key for Multi-Station
     };
 
-    // Pre-loaded PAC Events to save time
     const defaultEvents = [
         { id: 'ev1', name: 'Book Fair', items: ['Book', 'Stationary', 'Poster', 'Open'] },
         { id: 'ev2', name: 'Craft Fair', items: ['Spirit wear', 'Lucky Bag', 'Hat', 'Socks', 'Food', 'Open'] },
@@ -272,19 +264,18 @@
     let students = JSON.parse(localStorage.getItem(DB_KEYS.STUDENTS)) || [];
     let eventsConfig = JSON.parse(localStorage.getItem(DB_KEYS.EVENTS)) || defaultEvents;
     let records = JSON.parse(localStorage.getItem(DB_KEYS.RECORDS)) || [];
-    let activeEventId = localStorage.getItem(DB_KEYS.ACTIVE_EVENT) || 'ev1'; // Default to Book fair
+    let activeEventId = localStorage.getItem(DB_KEYS.ACTIVE_EVENT) || 'ev1'; 
     let nextInvSequence = parseInt(localStorage.getItem(DB_KEYS.INV_SEQ)) || 1001;
+    let stationPrefix = localStorage.getItem(DB_KEYS.STATION_PREFIX) || 'A'; // Default to Station A
 
-    // POS State
     let selectedDivision = null; 
     let selectedCategory = null;
     let currentNumpadValue = "";
-    let currentCart = []; // Array of { category, price }
+    let currentCart = []; 
 
-    // --- Initialization ---
     window.onload = function() {
-        // Save defaults if empty
         if(!localStorage.getItem(DB_KEYS.EVENTS)) localStorage.setItem(DB_KEYS.EVENTS, JSON.stringify(eventsConfig));
+        document.getElementById('stationPrefixInput').value = stationPrefix;
         renderDivisionGrid();
         renderAll();
     };
@@ -295,6 +286,7 @@
         localStorage.setItem(DB_KEYS.RECORDS, JSON.stringify(records));
         localStorage.setItem(DB_KEYS.ACTIVE_EVENT, activeEventId);
         localStorage.setItem(DB_KEYS.INV_SEQ, nextInvSequence);
+        localStorage.setItem(DB_KEYS.STATION_PREFIX, stationPrefix);
         renderAll();
     }
 
@@ -306,12 +298,17 @@
         updateDashboard();
     }
 
-    // --- UI Navigation ---
     function showSection(sectionId) {
+        if (sectionId === 'fees') {
+            const pwd = prompt("🔐 Please enter Admin Password:");
+            if (pwd !== "Eagles") {
+                alert("Incorrect Password!");
+                return;
+            }
+        }
         document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(sectionId).classList.add('active');
-        
         const buttons = document.querySelectorAll('.nav-btn');
         if(sectionId === 'payment') buttons[0].classList.add('active');
         if(sectionId === 'records') buttons[1].classList.add('active');
@@ -326,11 +323,16 @@
         setTimeout(() => { notif.style.display = 'none'; }, 2500);
     }
 
-    function generateInvoiceNo() {
-        return `INV-${nextInvSequence}`;
+    function saveStationPrefix() {
+        const val = document.getElementById('stationPrefixInput').value.trim().toUpperCase();
+        if(!val) return alert("Please enter a valid prefix (e.g., A or B)");
+        stationPrefix = val;
+        saveData();
+        showNotification("Station Prefix Saved!");
     }
 
-    // --- Grid Render Logic ---
+    function generateInvoiceNo() { return `INV-${stationPrefix}-${nextInvSequence}`; }
+
     function renderDivisionGrid() {
         const grid = document.getElementById('divisionGrid');
         grid.innerHTML = '';
@@ -350,7 +352,7 @@
             if(el.textContent == label) el.classList.add('selected');
             else el.classList.remove('selected');
         });
-        document.getElementById('invoiceDivDisplay').textContent = `Division: ${label === 'N/A' ? 'N/A' : label}`;
+        document.getElementById('invoiceDivDisplay').textContent = `Div: ${label}`;
     }
 
     function selectCategory(categoryName) {
@@ -361,288 +363,207 @@
         });
     }
 
-    // --- Numpad Logic ---
     function inputNumpad(val) {
-        if (val === 'C') {
-            currentNumpadValue = "";
-        } else if (val === '.') {
-            if (!currentNumpadValue.includes('.')) currentNumpadValue += val;
-        } else {
-            // Prevent too many decimals
+        if (val === 'C') currentNumpadValue = "";
+        else if (val === '.') { if (!currentNumpadValue.includes('.')) currentNumpadValue += val; } 
+        else {
             if(currentNumpadValue.includes('.') && currentNumpadValue.split('.')[1].length >= 2) return;
             currentNumpadValue += val;
         }
-        updateNumpadDisplay();
+        document.getElementById('numpadDisplay').textContent = currentNumpadValue === "" ? "$0.00" : "$" + currentNumpadValue;
     }
 
-    function updateNumpadDisplay() {
-        const display = document.getElementById('numpadDisplay');
-        if (currentNumpadValue === "") {
-            display.textContent = "$0.00";
-        } else {
-            display.textContent = "$" + currentNumpadValue;
-        }
-    }
-
-    // --- Cart/Invoice Logic ---
     function addToInvoice() {
-        if (!selectedCategory) return alert("Please select an Item Category (Green Circle) first!");
+        if (!selectedCategory) return alert("Select an Item Category (Green Circle)!");
         let price = parseFloat(currentNumpadValue);
-        if (isNaN(price) || price <= 0) return alert("Please enter a valid price greater than 0.");
-
-        currentCart.push({
-            id: Date.now(),
-            name: selectedCategory,
-            price: price
-        });
-
-        // Reset numpad but keep category selected for rapid entry
-        currentNumpadValue = "";
-        updateNumpadDisplay();
+        if (isNaN(price) || price <= 0) return alert("Enter a valid price greater than 0.");
+        currentCart.push({ id: Date.now(), name: selectedCategory, price: price });
+        currentNumpadValue = ""; document.getElementById('numpadDisplay').textContent = "$0.00";
         renderCart();
     }
 
     function removeFromCart(cartId) {
-        currentCart = currentCart.filter(item => item.id !== cartId);
-        renderCart();
+        currentCart = currentCart.filter(item => item.id !== cartId); renderCart();
     }
 
     function renderCart() {
         const list = document.getElementById('invoiceList');
         const totalDisplay = document.getElementById('cartTotalDisplay');
-        
         if (currentCart.length === 0) {
-            list.innerHTML = '<div style="text-align:center; color:#999; margin-top:20px;">Cart is empty. Add items to begin.</div>';
-            totalDisplay.textContent = "$0.00";
-            return;
+            list.innerHTML = '<div style="text-align:center; color:#999; margin-top:20px;">Cart is empty.</div>';
+            totalDisplay.textContent = "$0.00"; return;
         }
-
         let total = 0;
         list.innerHTML = currentCart.map(item => {
             total += item.price;
-            return `
-            <div class="invoice-item">
-                <span>✔️ ${item.name}</span>
-                <div>
-                    <strong>$${item.price.toFixed(2)}</strong>
-                    <span class="del-btn" onclick="removeFromCart(${item.id})">✖</span>
-                </div>
-            </div>`;
+            return `<div class="invoice-item"><span>✔️ ${item.name}</span><div><strong>$${item.price.toFixed(2)}</strong><span class="del-btn" onclick="removeFromCart(${item.id})">✖</span></div></div>`;
         }).join('');
-
         totalDisplay.textContent = "$" + total.toFixed(2);
     }
 
-    // --- Checkout Logic ---
     function checkout(paymentMethod) {
-        if (!selectedDivision) return alert('Step 1: Please select a Division.');
-        if (currentCart.length === 0) return alert('Invoice is empty! Please add items first.');
+        if (!selectedDivision) return alert('Select a Division!');
+        if (currentCart.length === 0) return alert('Invoice is empty!');
 
-        const firstName = document.getElementById('payFirstName').value.trim();
-        const lastName = document.getElementById('payLastName').value.trim();
-        let checkedName = 'N/A';
-        if (firstName || lastName) checkedName = `${firstName} ${lastName}`.trim();
-
+        const fName = document.getElementById('payFirstName').value.trim();
+        const lName = document.getElementById('payLastName').value.trim();
+        let checkedName = (fName || lName) ? `${fName} ${lName}`.trim() : 'N/A';
         const totalAmount = currentCart.reduce((sum, item) => sum + item.price, 0);
-        
-        // Format items for DB as a string: "Book($12.75), Poster($5.00)"
         const itemsString = currentCart.map(i => `${i.name}($${i.price.toFixed(2)})`).join(', ');
 
-        const invNo = generateInvoiceNo();
-
-        const record = {
-            id: Date.now(),
-            invoiceNo: invNo,
-            date: new Date().toLocaleString('en-US'),
-            division: selectedDivision,
-            studentName: checkedName,
-            items: itemsString,
-            amount: totalAmount,
-            method: paymentMethod
-        };
-
-        records.unshift(record); // Add to top of records
-        nextInvSequence++; // Increment Invoice Number
+        records.unshift({
+            id: Date.now(), invoiceNo: generateInvoiceNo(), date: new Date().toLocaleString('en-US'),
+            division: selectedDivision, studentName: checkedName, items: itemsString, amount: totalAmount, method: paymentMethod
+        });
         
-        showNotification(`✅ Paid by ${paymentMethod}! Change due?`);
+        nextInvSequence++;
+        showNotification(`✅ Paid by ${paymentMethod}!`);
         
-        // Reset everything for next customer
-        currentCart = [];
-        selectedCategory = null;
-        currentNumpadValue = "";
-        document.getElementById('payFirstName').value = "";
-        document.getElementById('payLastName').value = "";
-        clearDivisionSelection();
-        updateNumpadDisplay();
+        currentCart = []; selectedCategory = null; currentNumpadValue = "";
+        document.getElementById('payFirstName').value = ""; document.getElementById('payLastName').value = "";
+        clearDivisionSelection(); document.getElementById('numpadDisplay').textContent = "$0.00";
+        document.getElementById('invoiceDivDisplay').textContent = "Div: Not Selected";
         
-        saveData(); // Will re-render cart and update invoice number display
+        saveData();
     }
 
-    // --- Cashier Display Updates ---
     function updateCashierPOS() {
         const eventDisplay = document.getElementById('activeEventDisplay');
-        const invDisplay = document.getElementById('invoiceNoDisplay');
-        const itemGrid = document.getElementById('itemGrid');
-        
-        invDisplay.textContent = generateInvoiceNo();
-        
+        document.getElementById('invoiceNoDisplay').textContent = generateInvoiceNo();
         const activeEvent = eventsConfig.find(e => e.id === activeEventId);
+        
         if (activeEvent) {
             eventDisplay.innerHTML = `🛒 ${activeEvent.name}`;
-            
-            // Generate Green Item Circles dynamically based on the Event's categories
-            itemGrid.innerHTML = activeEvent.items.map(item => `
-                <div class="item-circle" onclick="selectCategory('${item}')">${item}</div>
-            `).join('');
-            
+            document.getElementById('itemGrid').innerHTML = activeEvent.items.map(item => `<div class="item-circle" onclick="selectCategory('${item}')">${item}</div>`).join('');
         } else {
             eventDisplay.innerHTML = `⚠️ No Event Set`;
-            itemGrid.innerHTML = '';
+            document.getElementById('itemGrid').innerHTML = '';
         }
         renderCart();
     }
 
-    // --- Admin Event Logic ---
-    function addEvent() {
-        const name = document.getElementById('newFeeName').value.trim();
-        const itemsRaw = document.getElementById('newFeeItems').value.trim();
-        
-        if (!name || !itemsRaw) return alert('Please enter both Event Name and Items.');
-
-        // Split by comma, trim spaces, and remove empty entries
-        const itemsArray = itemsRaw.split(',').map(s => s.trim()).filter(s => s !== "");
-
-        const newId = 'ev' + Date.now();
-        eventsConfig.push({ id: newId, name: name, items: itemsArray });
-        
-        if(eventsConfig.length === 1) activeEventId = newId;
-
-        document.getElementById('newFeeName').value = ''; 
-        document.getElementById('newFeeItems').value = '';
-        saveData();
-        showNotification(`Event Created: ${name}`);
-    }
-
-    function deleteEvent(index) {
-        if(confirm('Delete this event configuration?')) {
-            const removingId = eventsConfig[index].id;
-            eventsConfig.splice(index, 1);
-            if(activeEventId === removingId) activeEventId = null;
-            saveData();
-        }
-    }
-
-    function setActiveEvent(id) {
-        activeEventId = id;
-        saveData();
-        showNotification('Cashier screen updated to new event!');
-    }
-
-    function renderEventsAdmin() {
-        const tbody = document.getElementById('feeTableBody');
-        tbody.innerHTML = eventsConfig.map((e, index) => {
-            const isActive = (e.id === activeEventId);
-            const badgeClass = isActive ? 'status-badge active-event' : 'status-badge';
-            const badgeText = isActive ? '🌟 Active on POS' : 'Set Active';
-            
-            return `
-            <tr>
-                <td style="${isActive ? 'font-weight:bold; color:var(--primary-color);' : ''}">${e.name}</td>
-                <td style="color:#555; font-size:0.9em;">${e.items.join(', ')}</td>
-                <td><button class="${badgeClass}" onclick="setActiveEvent('${e.id}')">${badgeText}</button></td>
-                <td><button class="btn btn-danger" onclick="deleteEvent(${index})">Delete</button></td>
-            </tr>
-            `;
-        }).join('');
-    }
-
-    // --- Roster Logic ---
     function addStudent() {
-        const nameInput = document.getElementById('newStudentName');
-        const name = nameInput.value.trim();
-        const id = 'S' + (students.length + 1).toString().padStart(3, '0');
-        if (!name) return;
-        students.push({ id, name });
-        nameInput.value = ''; saveData();
+        const fName = document.getElementById('stuFirstName').value.trim();
+        const lName = document.getElementById('stuLastName').value.trim();
+        const div = document.getElementById('stuDivision').value.trim();
+        const sNum = document.getElementById('stuNumber').value.trim() || 'N/A';
+        if (!fName || !lName || !div) return alert('Please enter First Name, Last Name, and Division.');
+        students.push({ id: Date.now(), studentNum: sNum, firstName: fName, lastName: lName, division: div });
+        document.getElementById('stuFirstName').value = ''; document.getElementById('stuLastName').value = '';
+        document.getElementById('stuDivision').value = ''; document.getElementById('stuNumber').value = '';
+        saveData(); showNotification('Student Added!');
     }
+
     function deleteStudent(index) {
-        students.splice(index, 1); saveData();
+        if(confirm('Delete this student?')) { students.splice(index, 1); saveData(); }
     }
+
+    function editStudentDiv(index) {
+        const newDiv = prompt("Enter new Division for this student:", students[index].division);
+        if (newDiv !== null && newDiv.trim() !== "") { students[index].division = newDiv.trim(); saveData(); showNotification('Division Updated!'); }
+    }
+
+    function clearRoster() {
+        if(confirm('⚠️ WARNING: Delete ALL students?')) { students = []; saveData(); showNotification('Roster Cleared!'); }
+    }
+
     function renderStudents() {
         const tbody = document.getElementById('studentTableBody');
         tbody.innerHTML = students.map((s, index) => `
-            <tr><td>${s.id}</td><td>${s.name}</td>
-            <td><button class="btn btn-danger" onclick="deleteStudent(${index})">Del</button></td></tr>
-        `).join('');
-    }
-
-    // --- Records & Export Logic ---
-    function renderRecords() {
-        const tbody = document.getElementById('recordsTableBody');
-        if (records.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#888;">No transactions yet.</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = records.map((r, index) => `
             <tr>
-                <td style="font-family:monospace; font-weight:bold;">${r.invoiceNo}</td>
-                <td style="font-size:0.85em; color:#555;">${r.date}</td>
-                <td style="font-weight:bold; color:var(--primary-color);">${r.division === 'N/A' ? 'N/A' : 'Div ' + r.division}</td>
-                <td>${r.studentName}</td>
-                <td style="font-size:0.9em; max-width:200px; word-wrap:break-word;">${r.items}</td>
-                <td><span style="background:${r.method === 'Cash' ? '#2a9d8f' : '#4361ee'}; color:white; padding:2px 6px; border-radius:4px; font-size:0.8em;">${r.method}</span></td>
-                <td style="color: #e63946; font-weight:bold; font-size:1.1em;">$${r.amount.toFixed(2)}</td>
-                <td><button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord(${index})">Void</button></td>
+                <td>${s.studentNum}</td><td>${s.firstName}</td><td>${s.lastName}</td>
+                <td style="font-weight:bold; color:var(--primary-color);">${s.division}</td>
+                <td>
+                    <button class="btn btn-warning" style="padding:8px 12px; margin-right:5px;" onclick="editStudentDiv(${index})">Edit Div</button>
+                    <button class="btn btn-danger" style="padding:8px 12px;" onclick="deleteStudent(${index})">Del</button>
+                </td>
             </tr>
         `).join('');
     }
 
-    function deleteRecord(index) {
-        if(confirm('Void this invoice? Cannot be undone.')) {
-            records.splice(index, 1);
-            saveData();
-        }
+    function exportStudentsToExcel() {
+        if (students.length === 0) return alert("Roster is empty.");
+        let csvContent = "\uFEFFStudent No.,First Name,Last Name,Division\n";
+        students.forEach(s => { csvContent += `"${s.studentNum}","${s.firstName}","${s.lastName}","${s.division}"\n`; });
+        downloadCSV(csvContent, "Anderson_Student_Roster.csv");
+    }
+
+    function importStudentsFromCSV(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const lines = e.target.result.split('\n');
+            let addedCount = 0;
+            for (let i = 1; i < lines.length; i++) {
+                if(lines[i].trim() === "") continue;
+                const cols = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+                if (cols && cols.length >= 4) {
+                    const cleanStr = str => str.replace(/(^"|"$)/g, '').trim();
+                    students.push({ id: Date.now() + i, studentNum: cleanStr(cols[0]), firstName: cleanStr(cols[1]), lastName: cleanStr(cols[2]), division: cleanStr(cols[3]) });
+                    addedCount++;
+                }
+            }
+            saveData(); alert(`Successfully imported ${addedCount} students!`);
+        };
+        reader.readAsText(file); event.target.value = '';
+    }
+
+    function addEvent() {
+        const name = document.getElementById('newFeeName').value.trim();
+        const itemsRaw = document.getElementById('newFeeItems').value.trim();
+        if (!name || !itemsRaw) return alert('Enter Event Name and Items.');
+        const itemsArray = itemsRaw.split(',').map(s => s.trim()).filter(s => s !== "");
+        eventsConfig.push({ id: 'ev' + Date.now(), name: name, items: itemsArray });
+        document.getElementById('newFeeName').value = ''; document.getElementById('newFeeItems').value = '';
+        saveData(); showNotification(`Event Created: ${name}`);
+    }
+
+    function deleteEvent(index) {
+        if(confirm('Delete event?')) { if(activeEventId === eventsConfig[index].id) activeEventId = null; eventsConfig.splice(index, 1); saveData(); }
+    }
+
+    function setActiveEvent(id) { activeEventId = id; saveData(); showNotification('Active Event Updated!'); }
+
+    function renderEventsAdmin() {
+        document.getElementById('feeTableBody').innerHTML = eventsConfig.map((e, index) => {
+            const isActive = (e.id === activeEventId);
+            return `<tr><td style="${isActive ? 'font-weight:bold; color:var(--primary-color);' : ''}">${e.name}</td>
+                <td style="color:#555;">${e.items.join(', ')}</td>
+                <td><button class="btn ${isActive ? 'btn-primary' : 'btn-warning'}" onclick="setActiveEvent('${e.id}')">${isActive ? '🌟 Active' : 'Set Active'}</button></td>
+                <td><button class="btn btn-danger" onclick="deleteEvent(${index})">Del</button></td></tr>`;
+        }).join('');
+    }
+
+    function renderRecords() {
+        const tbody = document.getElementById('recordsTableBody');
+        if (records.length === 0) return tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No transactions yet.</td></tr>';
+        tbody.innerHTML = records.map((r, index) => `
+            <tr><td style="font-family:monospace; font-weight:bold;">${r.invoiceNo}</td><td style="font-size:0.85em;">${r.date}</td>
+                <td style="font-weight:bold; color:var(--primary-color);">${r.division}</td><td>${r.studentName}</td>
+                <td style="font-size:0.9em;">${r.items}</td><td><span style="background:${r.method === 'Cash' ? '#2a9d8f' : '#4361ee'}; color:white; padding:4px 8px; border-radius:4px; font-size:0.8em;">${r.method}</span></td>
+                <td style="color: #e63946; font-weight:bold; font-size:1.1em;">$${r.amount.toFixed(2)}</td>
+                <td><button class="btn btn-danger" onclick="if(confirm('Void this invoice?')) { records.splice(${index}, 1); saveData(); }">Void</button></td></tr>
+        `).join('');
     }
 
     function updateDashboard() {
-        const total = records.reduce((sum, r) => sum + r.amount, 0);
-        document.getElementById('totalIncome').textContent = `$${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        document.getElementById('totalIncome').textContent = `$${records.reduce((sum, r) => sum + r.amount, 0).toLocaleString('en-US', {minimumFractionDigits: 2})}`;
         document.getElementById('totalTransactions').textContent = records.length;
     }
 
-    function clearAllData() {
-        if(confirm('CRITICAL: Erase ALL data and reset system to defaults?')) {
-            localStorage.clear();
-            students = []; records = []; eventsConfig = defaultEvents; activeEventId = 'ev1'; nextInvSequence = 1001;
-            renderAll(); showNotification('System Reset!');
-        }
+    function exportSalesToExcel() {
+        if (records.length === 0) return alert("No data to export.");
+        let csvContent = "\uFEFFInvoice No.,Date & Time,Division,Student Name,Items Purchased,Payment Method,Total Amount\n";
+        records.forEach(r => { csvContent += `"${r.invoiceNo}","${r.date}","${r.division}","${r.studentName}","${r.items.replace(/"/g, '""')}","${r.method}",${r.amount}\n`; });
+        downloadCSV(csvContent, `Anderson_Sales_Station_${stationPrefix}_${new Date().toLocaleDateString().replace(/\//g,'-')}.csv`);
     }
 
-    function exportToExcel() {
-        if (records.length === 0) return alert("No data available to export.");
-        let csvContent = "\uFEFF"; 
-        csvContent += "Invoice No.,Date & Time,Division,Student Name,Items Purchased,Payment Method,Total Amount\n";
-
-        records.forEach(function(row) {
-            // Escape quotes inside items string if any
-            let safeItems = row.items.replace(/"/g, '""');
-            let rowString = `"${row.invoiceNo}","${row.date}","${row.division === 'N/A' ? 'N/A' : 'Div ' + row.division}","${row.studentName}","${safeItems}","${row.method}",${row.amount}`;
-            csvContent += rowString + "\n";
-        });
-
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
+    function downloadCSV(content, filename) {
+        const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
-        const d = new Date();
-        const fileName = `PAC_Sales_Report_${d.getFullYear()}${(d.getMonth()+1).toString().padStart(2,'0')}${d.getDate()}.csv`;
-        
-        link.setAttribute("href", url);
-        link.setAttribute("download", fileName);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        showNotification("Report downloaded!");
+        link.href = URL.createObjectURL(blob);
+        link.download = filename; document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
 </script>
 
