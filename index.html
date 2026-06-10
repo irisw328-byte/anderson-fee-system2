@@ -97,7 +97,7 @@
 
         /* SMART PRINT CSS */
         @media print {
-            body.print-receipt .section, body.print-receipt header { display: none !important; }
+            body.print-receipt .section, body.print-receipt header, body.print-receipt .overlay { display: none !important; }
             body.print-receipt #printReceiptArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; font-family: monospace; font-size: 14px;}
             
             body.print-report #payment, body.print-report #students, body.print-report #fees, body.print-report header { display: none !important; }
@@ -109,7 +109,7 @@
 <body>
 
 <div class="container">
-    <header>
+    <header class="no-print-report">
         <h1>🦅 Anderson POS System</h1>
         <div class="nav-tabs">
             <button class="nav-btn active" onclick="showSection('payment')">💻 Cashier POS</button>
@@ -186,8 +186,23 @@
     </div>
 
     <div id="records" class="section">
-        
-        <h2 style="color: #2a9d8f; border-bottom: 2px solid #2a9d8f; padding-bottom: 10px;">📦 發貨與單品總表 (Itemized Sales & Pre-Orders)</h2>
+        <h2 class="no-print-report" style="color: #e63946; border-bottom: 2px solid #e63946; padding-bottom: 10px;">📅 Today's Summary (<span id="todayDateDisplay"></span>)</h2>
+        <div class="dashboard-grid no-print-report">
+            <div class="stat-card card-green">
+                <h3 id="todayCash">$0.00</h3>
+                <p>💵 Today's Cash</p>
+            </div>
+            <div class="stat-card card-blue">
+                <h3 id="todayCard">$0.00</h3>
+                <p>💳 Today's Card</p>
+            </div>
+            <div class="stat-card card-gold">
+                <h3 id="todayTotal">$0.00</h3>
+                <p>Total Today (<span id="todayCount">0</span> txns)</p>
+            </div>
+        </div>
+
+        <h2 style="margin-top: 40px; border-bottom: 2px solid #2a9d8f; color: #2a9d8f; padding-bottom: 10px;">📦 發貨與單品總表 (Itemized Sales & Pre-Orders)</h2>
         <div class="no-print-report" style="display: flex; gap: 10px; margin-bottom: 15px; align-items: center; flex-wrap: wrap; background: #e9ecef; padding: 15px; border-radius: 8px;">
             <label style="margin: 0; font-size: 1.1em; font-weight:bold;">🔎 Filter Items By:</label>
             <select id="itemFilter" style="width: 250px; font-size: 1.1em; padding: 10px;" onchange="renderItemizedReport()">
@@ -205,8 +220,7 @@
             </table>
         </div>
 
-        <h2 style="margin-top: 40px; border-bottom: 2px solid #ccc; padding-bottom: 10px;">📊 收據總表 (Invoice Overview)</h2>
-        
+        <h2 class="no-print-report" style="margin-top: 40px; border-bottom: 2px solid #ccc; padding-bottom: 10px;">📊 收據總表 (Invoice Overview)</h2>
         <div class="no-print-report" style="margin-bottom: 15px; background: #fff3cd; padding: 15px; border-radius: 8px; display: inline-block;">
             <label style="font-weight: bold; margin-right: 10px;">📅 Show Invoices For:</label>
             <select id="invoiceDateFilter" style="font-size: 1.1em; padding: 8px; width: 200px;" onchange="renderRecords()">
@@ -215,7 +229,7 @@
             </select>
         </div>
 
-        <div class="dashboard-grid">
+        <div class="dashboard-grid no-print-report">
             <div class="stat-card card-gold">
                 <h3 id="overviewTotal">$0.00</h3>
                 <p>Total Revenue (<span id="overviewCount">0</span> txns)</p>
@@ -234,10 +248,10 @@
             <button class="btn btn-warning" onclick="exportSalesToExcel()">📥 Export Invoices (CSV)</button>
         </div>
         
-        <div style="overflow-x:auto;">
+        <div class="no-print-report" style="overflow-x:auto;">
             <table>
                 <thead>
-                    <tr><th>Inv No.</th><th>Date/Time</th><th>Div</th><th>Name</th><th>Items</th><th>Method</th><th>Total</th><th class="no-print-report">Action</th></tr>
+                    <tr><th>Inv No.</th><th>Date/Time</th><th>Div</th><th>Name</th><th>Items</th><th>Method</th><th>Total</th><th>Action</th></tr>
                 </thead>
                 <tbody id="recordsTableBody"></tbody>
             </table>
@@ -290,14 +304,8 @@
                 <div class="form-group"><input type="text" id="newFeeItems" placeholder="Sale Items (e.g., Book, Pre-Order, Open)"></div>
             </div>
             <div class="name-row">
-                <div class="form-group">
-                    <label style="font-size: 0.9em; color:#555;">Start Date:</label>
-                    <input type="date" id="newFeeStart">
-                </div>
-                <div class="form-group">
-                    <label style="font-size: 0.9em; color:#555;">End Date (Optional):</label>
-                    <input type="date" id="newFeeEnd">
-                </div>
+                <div class="form-group"><label style="font-size: 0.9em; color:#555;">Start Date:</label><input type="date" id="newFeeStart"></div>
+                <div class="form-group"><label style="font-size: 0.9em; color:#555;">End Date (Optional):</label><input type="date" id="newFeeEnd"></div>
             </div>
             <button class="btn btn-primary" onclick="addEvent()">➕ Create / Update Event</button>
         </div>
@@ -337,15 +345,13 @@
 <div id="successModal" class="overlay">
     <div class="modal-box" style="max-width: 700px;">
         <h2 style="font-size: 3em; margin-top: 0; color: #2a9d8f;">✅ Payment Successful!</h2>
-        
         <div id="changeSection" style="display: none; background: #fdfdfd; border: 3px dashed #ccc; padding: 20px; border-radius: 10px; margin-bottom: 25px;">
             <p style="font-size: 1.8em; color: #666; margin: 0; font-weight:bold;">Change Due (找 零)</p>
             <div class="change-huge" id="modalChangeDue">$0.00</div>
         </div>
-        
         <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
             <button class="modal-btn" style="background-color: #0077b6; padding: 25px;" onclick="printLastReceipt()">🖨️ Print Receipt</button>
-            <button class="modal-btn" style="background-color: #fca311; color: #333; padding: 25px;" onclick="nextCustomer()">➡️ Next (下一位)</button>
+            <button class="modal-btn" style="background-color: #fca311; color: #333; padding: 25px;" onclick="nextCustomer()">➡️ Next (下一單)</button>
         </div>
     </div>
 </div>
@@ -391,18 +397,24 @@
     let students = JSON.parse(localStorage.getItem(DB_KEYS.STUDENTS)) || [];
     let savedEvents = JSON.parse(localStorage.getItem(DB_KEYS.EVENTS));
     let eventsConfig = [...defaultEvents];
-    if (savedEvents && Array.isArray(savedEvents)) {
-        savedEvents.forEach(se => {
-            const defaultIndex = eventsConfig.findIndex(de => de.id === se.id);
-            if (defaultIndex >= 0) eventsConfig[defaultIndex] = se; else eventsConfig.push(se);
-        });
-    }
 
-    // Force inject Pre-Order to Book Fair
-    let bookFairCheck = eventsConfig.find(e => e.id === 'ev_book_fair');
-    if (bookFairCheck && !bookFairCheck.items.some(i => i.toLowerCase().includes('pre-order'))) {
-        bookFairCheck.items.splice(3, 0, 'Pre-Order');
-        localStorage.setItem(DB_KEYS.EVENTS, JSON.stringify(eventsConfig));
+    try {
+        if (savedEvents && Array.isArray(savedEvents)) {
+            savedEvents.forEach(se => {
+                const defaultIndex = eventsConfig.findIndex(de => de.id === se.id);
+                if (defaultIndex >= 0) eventsConfig[defaultIndex] = se; else eventsConfig.push(se);
+            });
+        }
+        // Force Pre-Order into Book Fair
+        let bookFairCheck = eventsConfig.find(e => e.id === 'ev_book_fair');
+        if (bookFairCheck && Array.isArray(bookFairCheck.items)) {
+            let hasPreOrder = false;
+            bookFairCheck.items.forEach(i => { if(typeof i === 'string' && i.toLowerCase().includes('pre-order')) hasPreOrder = true; });
+            if (!hasPreOrder) bookFairCheck.items.splice(3, 0, 'Pre-Order');
+        }
+    } catch(e) {
+        console.error("Event load error, resetting defaults.", e);
+        eventsConfig = [...defaultEvents];
     }
 
     let records = JSON.parse(localStorage.getItem(DB_KEYS.RECORDS)) || [];
@@ -417,7 +429,9 @@
     window.onload = function() {
         document.getElementById('stationPrefixInput').value = stationPrefix;
         document.getElementById('todayDateDisplay').textContent = new Date().toLocaleDateString('en-US');
-        autoCheckEventDate(); renderDivisionGrid(); renderAll();
+        autoCheckEventDate(); 
+        renderDivisionGrid(); 
+        renderAll();
     };
 
     function saveData() {
@@ -431,9 +445,10 @@
     }
 
     function renderAll() {
-        renderStudents(); renderEventsAdmin(); populateItemFilter(); renderRecords(); renderItemizedReport(); updateCashierPOS(); 
+        renderStudents(); renderEventsAdmin(); populateItemFilter(); renderRecords(); renderItemizedReport(); updateCashierPOS(); updateDashboard();
     }
 
+    // --- Core Functions ---
     function autoCheckEventDate() {
         const d = new Date(), todayStr = [d.getFullYear(), (''+(d.getMonth()+1)).padStart(2,'0'), (''+d.getDate()).padStart(2,'0')].join('-');
         let matchedEventId = null;
@@ -452,13 +467,18 @@
         document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(sectionId).classList.add('active');
+        const buttons = document.querySelectorAll('.nav-btn');
+        if(sectionId === 'payment') buttons[0].classList.add('active');
+        if(sectionId === 'records') buttons[1].classList.add('active');
+        if(sectionId === 'students') buttons[2].classList.add('active');
+        if(sectionId === 'fees') buttons[3].classList.add('active');
     }
 
     function lockAdmin() { isAdminUnlocked = false; document.getElementById('lockBtn').style.display = 'none'; showSection('payment'); }
     function saveStationPrefix() { stationPrefix = document.getElementById('stationPrefixInput').value.trim().toUpperCase() || 'A'; saveData(); alert("Prefix Saved!"); }
     function generateInvoiceNo() { return `INV-${stationPrefix}-${nextInvSequence}`; }
 
-    // --- POS Logic ---
+    // --- POS Display ---
     function renderDivisionGrid() {
         const grid = document.getElementById('divisionGrid'); grid.innerHTML = '';
         for(let i = 1; i <= 30; i++) {
@@ -480,7 +500,6 @@
         document.getElementById('numpadDisplay').textContent = currentNumpadValue === "" ? "$0.00" : "$" + currentNumpadValue;
     }
 
-    // --- GIANT MODAL CONTROLS ---
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
     function triggerAdd() {
@@ -538,8 +557,10 @@
     }
 
     function finalizeCheckout(method, changeDue = 0) {
-        if (!selectedDivision) return alert('Step 1: Select a Division!');
-        if (currentCart.length === 0) return alert('Invoice is empty!');
+        if (method === 'Card') {
+            if (!selectedDivision) return alert('Step 1: Select a Division!');
+            if (currentCart.length === 0) return alert('Invoice is empty!');
+        }
 
         const fName = document.getElementById('payFirstName').value.trim(), lName = document.getElementById('payLastName').value.trim();
         const checkedName = (fName || lName) ? `${fName} ${lName}`.trim() : 'N/A';
@@ -553,7 +574,6 @@
         
         nextInvSequence++; saveData();
         
-        // Show Giant Success Modal
         document.getElementById('successModal').style.display = 'flex';
         const changeSec = document.getElementById('changeSection');
         if(method === 'Cash') { changeSec.style.display = 'block'; document.getElementById('modalChangeDue').textContent = `$${changeDue.toFixed(2)}`; }
@@ -569,7 +589,7 @@
         renderCart(); updateCashierPOS();
     }
 
-    // --- RECEIPT & LIST PRINTING ---
+    // --- PRINTING ---
     function printLastReceipt() {
         if(records.length === 0) return alert("No recent orders to print.");
         const r = records[0];
@@ -577,57 +597,61 @@
         document.getElementById('rptDate').textContent = r.date;
         document.getElementById('rptDiv').textContent = r.division;
         document.getElementById('rptName').textContent = r.studentName;
-        document.getElementById('rptItems').innerHTML = (r.rawItems||[]).map(i => `<div style="display:flex; justify-content:space-between;"><span>${i.name}</span><span>$${i.price.toFixed(2)}</span></div>`).join('');
+        
+        let itemsHtml = '';
+        if(r.rawItems && Array.isArray(r.rawItems)) {
+            itemsHtml = r.rawItems.map(i => `<div style="display:flex; justify-content:space-between;"><span>${i.name}</span><span>$${i.price.toFixed(2)}</span></div>`).join('');
+        } else {
+            itemsHtml = r.items;
+        }
+        document.getElementById('rptItems').innerHTML = itemsHtml;
         document.getElementById('rptTotal').textContent = `$${r.amount.toFixed(2)}`;
         document.getElementById('rptMethod').textContent = r.method;
         
         document.body.className = 'print-receipt';
         window.print();
-        document.body.className = '';
-    }
-
-    function printItemizedList() {
-        document.body.className = 'print-report';
-        window.print();
-        document.body.className = '';
+        setTimeout(() => { document.body.className = ''; }, 500);
     }
 
     function updateCashierPOS() {
         const eventDisplay = document.getElementById('activeEventDisplay'); document.getElementById('invoiceNoDisplay').textContent = generateInvoiceNo();
         const activeEvent = eventsConfig.find(e => e.id === activeEventId);
-        if (activeEvent) { eventDisplay.innerHTML = `🛒 ${activeEvent.name}`; document.getElementById('itemGrid').innerHTML = activeEvent.items.map(item => `<div class="item-circle" onclick="selectCategory('${item}')">${item}</div>`).join(''); } 
-        else { eventDisplay.innerHTML = `⚠️ No Event Set`; document.getElementById('itemGrid').innerHTML = ''; }
+        if (activeEvent && Array.isArray(activeEvent.items)) { 
+            eventDisplay.innerHTML = `🛒 ${activeEvent.name}`; 
+            document.getElementById('itemGrid').innerHTML = activeEvent.items.map(item => `<div class="item-circle" onclick="selectCategory('${item}')">${item}</div>`).join(''); 
+        } else { 
+            eventDisplay.innerHTML = `⚠️ No Event Set`; document.getElementById('itemGrid').innerHTML = ''; 
+        }
         document.querySelectorAll('.item-circle').forEach(el => el.classList.remove('selected'));
     }
 
-    // --- ENHANCED ITEMIZED REPORT (Grouping & Totals) ---
+    // --- REPORTS: ITEMIZED & FILTER ---
     function populateItemFilter() {
         const filter = document.getElementById('itemFilter');
+        if(!filter) return;
         const currentSelection = filter.value;
         let uniqueItems = new Set();
         
-        // Grab all unique item names ever sold
-        records.forEach(r => { if(r.rawItems) r.rawItems.forEach(i => uniqueItems.add(i.name)); });
+        records.forEach(r => { if(r.rawItems && Array.isArray(r.rawItems)) r.rawItems.forEach(i => uniqueItems.add(i.name)); });
         
-        let optionsHtml = '<option value="ALL">All Items (全部商品)</option>';
-        let preOrderHtml = '<option value="PRE-ORDER">📌 All Pre-Orders (所有預購訂單)</option>';
+        let optionsHtml = '<option value="ALL">All Items (顯示全部)</option>';
+        optionsHtml += '<option value="PRE-ORDER">📌 All Pre-Orders (僅顯示預購)</option>';
         
         let sortedItems = Array.from(uniqueItems).sort();
-        sortedItems.forEach(item => {
-            optionsHtml += `<option value="${item}">${item}</option>`;
-        });
+        sortedItems.forEach(item => { optionsHtml += `<option value="${item}">${item}</option>`; });
 
-        filter.innerHTML = optionsHtml + preOrderHtml;
+        filter.innerHTML = optionsHtml;
         if(currentSelection) filter.value = currentSelection;
     }
 
     function renderItemizedReport() {
         const tbody = document.getElementById('itemizedTableBody');
-        const filterVal = document.getElementById('itemFilter').value;
+        if(!tbody) return;
+        const filterVal = document.getElementById('itemFilter').value || 'ALL';
         let itemRows = [];
 
         records.forEach(r => {
-            if(r.rawItems) {
+            if(r.rawItems && Array.isArray(r.rawItems)) {
                 r.rawItems.forEach(i => {
                     itemRows.push({ inv: r.invoiceNo, date: r.date, name: r.studentName, div: r.division, item: i.name, price: i.price });
                 });
@@ -639,7 +663,7 @@
 
         itemRows.sort((a,b) => a.item.localeCompare(b.item));
 
-        if(itemRows.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No items found for this filter.</td></tr>'; return; }
+        if(itemRows.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No items found.</td></tr>'; return; }
 
         let totalQty = itemRows.length;
         let totalPrice = itemRows.reduce((sum, r) => sum + r.price, 0);
@@ -652,45 +676,45 @@
             </tr>
         `).join('');
 
-        // Add Summary Row
         html += `
             <tr class="summary-row">
                 <td colspan="5" style="text-align:right;">Total Quantity (總數量): ${totalQty}</td>
                 <td style="color:#e63946;">Total: $${totalPrice.toFixed(2)}</td>
             </tr>
         `;
-
         tbody.innerHTML = html;
+    }
+
+    function printItemizedList() {
+        document.body.className = 'print-report';
+        window.print();
+        setTimeout(() => { document.body.className = ''; }, 500);
     }
 
     function exportItemizedToExcel() {
         let rows = Array.from(document.getElementById('itemizedTableBody').rows);
         if (rows.length === 0 || rows[0].cells.length < 6) return alert("No data to export.");
         let csvContent = "\uFEFFItem Name,Invoice No.,Date,Division,Buyer Name,Price\n";
-        // exclude summary row
         rows.forEach(r => {
             if(r.classList.contains('summary-row')) return;
             csvContent += `"${r.cells[0].innerText}","${r.cells[1].innerText}","${r.cells[2].innerText}","${r.cells[3].innerText}","${r.cells[4].innerText}","${r.cells[5].innerText.replace('$','')}"\n`;
         });
-        downloadCSV(csvContent, `Itemized_List_${new Date().toLocaleDateString().replace(/\//g,'-')}.csv`);
+        downloadCSV(csvContent, `Anderson_Fulfillment_${new Date().toLocaleDateString().replace(/\//g,'-')}.csv`);
     }
 
-    // --- OVERVIEW INVOICE REPORTS ---
+    // --- REPORTS: OVERVIEW INVOICES ---
     function renderRecords() {
         const tbody = document.getElementById('recordsTableBody');
         const filterVal = document.getElementById('invoiceDateFilter').value;
         const todayStr = new Date().toLocaleDateString('en-US');
         
         let filteredRecords = records;
-        if (filterVal === 'TODAY') {
-            filteredRecords = records.filter(r => new Date(r.date).toLocaleDateString('en-US') === todayStr);
-        }
+        if (filterVal === 'TODAY') filteredRecords = records.filter(r => new Date(r.date).toLocaleDateString('en-US') === todayStr);
 
         if (filteredRecords.length === 0) {
             tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No transactions found.</td></tr>';
         } else {
             tbody.innerHTML = filteredRecords.map((r) => {
-                // Find actual index in main array for edit/delete
                 const realIndex = records.findIndex(orig => orig.id === r.id);
                 return `
                 <tr><td style="font-family:monospace; font-weight:bold;">${r.invoiceNo}</td><td style="font-size:0.85em;">${r.date}</td>
@@ -702,7 +726,6 @@
             }).join('');
         }
 
-        // Update the sub-dashboard for the filtered view
         let sumTotal = 0, sumCash = 0, sumCard = 0;
         filteredRecords.forEach(r => {
             sumTotal += r.amount;
