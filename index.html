@@ -202,7 +202,7 @@
             </div>
         </div>
 
-        <h2 style="margin-top: 40px; border-bottom: 2px solid #2a9d8f; color: #2a9d8f; padding-bottom: 10px;">📦 發貨與單品總表 (Itemized Sales & Pre-Orders)</h2>
+        <h2 style="margin-top: 40px; border-bottom: 2px solid #2a9d8f; color: #2a9d8f; padding-bottom: 10px;">📦 Itemized Sales & Pre-Orders</h2>
         <div class="no-print-report" style="display: flex; gap: 10px; margin-bottom: 15px; align-items: center; flex-wrap: wrap; background: #e9ecef; padding: 15px; border-radius: 8px;">
             <label style="margin: 0; font-size: 1.1em; font-weight:bold;">🔎 Filter Items By:</label>
             <select id="itemFilter" style="width: 250px; font-size: 1.1em; padding: 10px;" onchange="renderItemizedReport()">
@@ -214,13 +214,13 @@
         <div style="overflow-x:auto; margin-bottom: 40px;">
             <table>
                 <thead>
-                    <tr><th>Item Name (書名/品項)</th><th>Inv No.</th><th>Date</th><th>Div</th><th>Buyer Name</th><th>Price</th></tr>
+                    <tr><th>Item Name</th><th>Inv No.</th><th>Date</th><th>Div</th><th>Buyer Name</th><th>Price</th></tr>
                 </thead>
                 <tbody id="itemizedTableBody"></tbody>
             </table>
         </div>
 
-        <h2 class="no-print-report" style="margin-top: 40px; border-bottom: 2px solid #ccc; padding-bottom: 10px;">📊 收據總表 (Invoice Overview)</h2>
+        <h2 class="no-print-report" style="margin-top: 40px; border-bottom: 2px solid #ccc; padding-bottom: 10px;">📊 Invoice Overview</h2>
         <div class="no-print-report" style="margin-bottom: 15px; background: #fff3cd; padding: 15px; border-radius: 8px; display: inline-block;">
             <label style="font-weight: bold; margin-right: 10px;">📅 Show Invoices For:</label>
             <select id="invoiceDateFilter" style="font-size: 1.1em; padding: 8px; width: 200px;" onchange="renderRecords()">
@@ -271,7 +271,7 @@
         </div>
 
         <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
-            <button class="btn btn-warning" onclick="exportStudentsToExcel()">📥 Export Roster</button>
+            <button class="btn btn-warning" onclick="exportStudentsToExcel()">📥 Export Roster (CSV)</button>
             <input type="file" id="importCsvFile" accept=".csv" style="display: none;" onchange="importStudentsFromCSV(event)">
             <button class="btn btn-primary" style="background-color: #2a9d8f;" onclick="document.getElementById('importCsvFile').click()">📤 Import Roster</button>
             <button class="btn btn-danger" onclick="clearRoster()">⚠️ Clear Roster</button>
@@ -304,8 +304,14 @@
                 <div class="form-group"><input type="text" id="newFeeItems" placeholder="Sale Items (e.g., Book, Pre-Order, Open)"></div>
             </div>
             <div class="name-row">
-                <div class="form-group"><label style="font-size: 0.9em; color:#555;">Start Date:</label><input type="date" id="newFeeStart"></div>
-                <div class="form-group"><label style="font-size: 0.9em; color:#555;">End Date (Optional):</label><input type="date" id="newFeeEnd"></div>
+                <div class="form-group">
+                    <label style="font-size: 0.9em; color:#555;">Start Date:</label>
+                    <input type="date" id="newFeeStart">
+                </div>
+                <div class="form-group">
+                    <label style="font-size: 0.9em; color:#555;">End Date (Optional):</label>
+                    <input type="date" id="newFeeEnd">
+                </div>
             </div>
             <button class="btn btn-primary" onclick="addEvent()">➕ Create / Update Event</button>
         </div>
@@ -319,8 +325,8 @@
 
 <div id="preOrderModal" class="overlay">
     <div class="modal-box">
-        <h2 class="modal-title">📦 Pre-Order Book Name</h2>
-        <p style="font-size: 1.3em; margin-bottom: 20px; color:#555;">預購書名 / 商品名稱：</p>
+        <h2 class="modal-title">📦 Pre-Order Item</h2>
+        <p style="font-size: 1.3em; margin-bottom: 20px; color:#555;">Enter the Pre-Order book or item name:</p>
         <input type="text" id="preOrderInput" class="modal-input" placeholder="e.g. Dog Man Vol. 10">
         <div class="modal-btn-row">
             <button class="modal-btn" style="background:#e63946;" onclick="closeModal('preOrderModal')">✖ Cancel</button>
@@ -331,9 +337,9 @@
 
 <div id="cashModal" class="overlay">
     <div class="modal-box">
-        <h2 class="modal-title">💵 Cash Received (收現)</h2>
-        <p style="font-size: 1.5em; margin-bottom: 10px; color:#555;">Total Due (應收): <strong id="cashModalTotalDue" style="color:var(--primary-color); font-size:1.5em;">$0.00</strong></p>
-        <p style="font-size: 1.2em; margin-bottom: 20px; color:#666;">客 人 給 多 少 錢？</p>
+        <h2 class="modal-title">💵 Cash Received</h2>
+        <p style="font-size: 1.5em; margin-bottom: 10px; color:#555;">Total Due: <strong id="cashModalTotalDue" style="color:var(--primary-color); font-size:1.5em;">$0.00</strong></p>
+        <p style="font-size: 1.2em; margin-bottom: 20px; color:#666;">Amount handed by customer:</p>
         <input type="number" id="cashInput" class="modal-input" placeholder="e.g. 50" inputmode="decimal">
         <div class="modal-btn-row">
             <button class="modal-btn" style="background:#e63946;" onclick="closeModal('cashModal')">✖ Cancel</button>
@@ -346,12 +352,12 @@
     <div class="modal-box" style="max-width: 700px;">
         <h2 style="font-size: 3em; margin-top: 0; color: #2a9d8f;">✅ Payment Successful!</h2>
         <div id="changeSection" style="display: none; background: #fdfdfd; border: 3px dashed #ccc; padding: 20px; border-radius: 10px; margin-bottom: 25px;">
-            <p style="font-size: 1.8em; color: #666; margin: 0; font-weight:bold;">Change Due (找 零)</p>
+            <p style="font-size: 1.8em; color: #666; margin: 0; font-weight:bold;">Change Due</p>
             <div class="change-huge" id="modalChangeDue">$0.00</div>
         </div>
         <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
             <button class="modal-btn" style="background-color: #0077b6; padding: 25px;" onclick="printLastReceipt()">🖨️ Print Receipt</button>
-            <button class="modal-btn" style="background-color: #fca311; color: #333; padding: 25px;" onclick="nextCustomer()">➡️ Next (下一單)</button>
+            <button class="modal-btn" style="background-color: #fca311; color: #333; padding: 25px;" onclick="nextCustomer()">➡️ Next Customer</button>
         </div>
     </div>
 </div>
@@ -405,7 +411,6 @@
                 if (defaultIndex >= 0) eventsConfig[defaultIndex] = se; else eventsConfig.push(se);
             });
         }
-        // Force Pre-Order into Book Fair
         let bookFairCheck = eventsConfig.find(e => e.id === 'ev_book_fair');
         if (bookFairCheck && Array.isArray(bookFairCheck.items)) {
             let hasPreOrder = false;
@@ -448,7 +453,6 @@
         renderStudents(); renderEventsAdmin(); populateItemFilter(); renderRecords(); renderItemizedReport(); updateCashierPOS(); updateDashboard();
     }
 
-    // --- Core Functions ---
     function autoCheckEventDate() {
         const d = new Date(), todayStr = [d.getFullYear(), (''+(d.getMonth()+1)).padStart(2,'0'), (''+d.getDate()).padStart(2,'0')].join('-');
         let matchedEventId = null;
@@ -478,7 +482,6 @@
     function saveStationPrefix() { stationPrefix = document.getElementById('stationPrefixInput').value.trim().toUpperCase() || 'A'; saveData(); alert("Prefix Saved!"); }
     function generateInvoiceNo() { return `INV-${stationPrefix}-${nextInvSequence}`; }
 
-    // --- POS Display ---
     function renderDivisionGrid() {
         const grid = document.getElementById('divisionGrid'); grid.innerHTML = '';
         for(let i = 1; i <= 30; i++) {
@@ -538,7 +541,6 @@
         totalDisplay.textContent = "$" + total.toFixed(2);
     }
 
-    // --- CHECKOUT & SUCCESS ---
     function triggerCashModal() {
         if (!selectedDivision) return alert('Step 1: Select a Division!');
         if (currentCart.length === 0) return alert('Invoice is empty!');
@@ -551,7 +553,7 @@
 
     function confirmCash() {
         const received = parseFloat(document.getElementById('cashInput').value);
-        if (isNaN(received) || received < tempTotalDue) return alert("客人的錢不夠喔！(Amount received is less than Total Due)");
+        if (isNaN(received) || received < tempTotalDue) return alert("Error: Amount received is less than Total Due!");
         closeModal('cashModal');
         finalizeCheckout('Cash', received - tempTotalDue);
     }
@@ -589,7 +591,6 @@
         renderCart(); updateCashierPOS();
     }
 
-    // --- PRINTING ---
     function printLastReceipt() {
         if(records.length === 0) return alert("No recent orders to print.");
         const r = records[0];
@@ -625,7 +626,6 @@
         document.querySelectorAll('.item-circle').forEach(el => el.classList.remove('selected'));
     }
 
-    // --- REPORTS: ITEMIZED & FILTER ---
     function populateItemFilter() {
         const filter = document.getElementById('itemFilter');
         if(!filter) return;
@@ -634,8 +634,8 @@
         
         records.forEach(r => { if(r.rawItems && Array.isArray(r.rawItems)) r.rawItems.forEach(i => uniqueItems.add(i.name)); });
         
-        let optionsHtml = '<option value="ALL">All Items (顯示全部)</option>';
-        optionsHtml += '<option value="PRE-ORDER">📌 All Pre-Orders (僅顯示預購)</option>';
+        let optionsHtml = '<option value="ALL">All Items</option>';
+        optionsHtml += '<option value="PRE-ORDER">📌 All Pre-Orders</option>';
         
         let sortedItems = Array.from(uniqueItems).sort();
         sortedItems.forEach(item => { optionsHtml += `<option value="${item}">${item}</option>`; });
@@ -663,7 +663,7 @@
 
         itemRows.sort((a,b) => a.item.localeCompare(b.item));
 
-        if(itemRows.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No items found.</td></tr>'; return; }
+        if(itemRows.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No items found for this filter.</td></tr>'; return; }
 
         let totalQty = itemRows.length;
         let totalPrice = itemRows.reduce((sum, r) => sum + r.price, 0);
@@ -678,7 +678,7 @@
 
         html += `
             <tr class="summary-row">
-                <td colspan="5" style="text-align:right;">Total Quantity (總數量): ${totalQty}</td>
+                <td colspan="5" style="text-align:right;">Total Quantity: ${totalQty}</td>
                 <td style="color:#e63946;">Total: $${totalPrice.toFixed(2)}</td>
             </tr>
         `;
@@ -699,17 +699,18 @@
             if(r.classList.contains('summary-row')) return;
             csvContent += `"${r.cells[0].innerText}","${r.cells[1].innerText}","${r.cells[2].innerText}","${r.cells[3].innerText}","${r.cells[4].innerText}","${r.cells[5].innerText.replace('$','')}"\n`;
         });
-        downloadCSV(csvContent, `Anderson_Fulfillment_${new Date().toLocaleDateString().replace(/\//g,'-')}.csv`);
+        downloadCSV(csvContent, `Itemized_List_${new Date().toLocaleDateString().replace(/\//g,'-')}.csv`);
     }
 
-    // --- REPORTS: OVERVIEW INVOICES ---
     function renderRecords() {
         const tbody = document.getElementById('recordsTableBody');
         const filterVal = document.getElementById('invoiceDateFilter').value;
         const todayStr = new Date().toLocaleDateString('en-US');
         
         let filteredRecords = records;
-        if (filterVal === 'TODAY') filteredRecords = records.filter(r => new Date(r.date).toLocaleDateString('en-US') === todayStr);
+        if (filterVal === 'TODAY') {
+            filteredRecords = records.filter(r => new Date(r.date).toLocaleDateString('en-US') === todayStr);
+        }
 
         if (filteredRecords.length === 0) {
             tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No transactions found.</td></tr>';
@@ -768,7 +769,6 @@
         const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = filename; document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
     
-    // --- Admin & Roster ---
     function addEvent() {
         const name = document.getElementById('newFeeName').value.trim(), itemsRaw = document.getElementById('newFeeItems').value.trim(), sDate = document.getElementById('newFeeStart').value, eDate = document.getElementById('newFeeEnd').value;
         if (!name || !itemsRaw) return alert('Enter Event Name and Sale Items.');
@@ -800,18 +800,29 @@
         document.getElementById('stuFirstName').value = ''; document.getElementById('stuLastName').value = ''; document.getElementById('stuDivision').value = ''; document.getElementById('stuNumber').value = '';
         saveData();
     }
+
+    function editStudentDiv(index) {
+        const newDiv = prompt("Enter new Division for this student:", students[index].division);
+        if (newDiv !== null && newDiv.trim() !== "") { students[index].division = newDiv.trim(); saveData(); }
+    }
+
     function renderStudents() {
         document.getElementById('studentTableBody').innerHTML = students.map((s, index) => `
             <tr><td>${s.studentNum}</td><td>${s.firstName}</td><td>${s.lastName}</td><td style="font-weight:bold; color:var(--primary-color);">${s.division}</td>
-            <td><button class="btn btn-danger" style="padding:8px 12px;" onclick="if(confirm('Delete?')){students.splice(${index}, 1); saveData();}">Del</button></td></tr>
+            <td>
+                <button class="btn btn-warning" style="padding:8px 12px; margin-right:5px;" onclick="editStudentDiv(${index})">Edit Div</button>
+                <button class="btn btn-danger" style="padding:8px 12px;" onclick="if(confirm('Delete?')){students.splice(${index}, 1); saveData();}">Del</button>
+            </td></tr>
         `).join('');
     }
+    
     function exportStudentsToExcel() {
         if (students.length === 0) return alert("Roster is empty.");
         let csvContent = "\uFEFFStudent No.,First Name,Last Name,Division\n";
         students.forEach(s => { csvContent += `"${s.studentNum}","${s.firstName}","${s.lastName}","${s.division}"\n`; });
         downloadCSV(csvContent, "Anderson_Student_Roster.csv");
     }
+
     function importStudentsFromCSV(event) {
         const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
         reader.onload = function(e) {
@@ -829,6 +840,7 @@
         };
         reader.readAsText(file); event.target.value = '';
     }
+
     function clearRoster() { if(confirm('⚠️ WARNING: Delete ALL students?')) { students = []; saveData(); } }
 </script>
 
