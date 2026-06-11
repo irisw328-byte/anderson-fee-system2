@@ -120,7 +120,7 @@
         </div>
     </header>
 
-    <div id="payment" class="section active">
+    <div id="payment" class="section active no-print">
         <div style="background: #e9ecef; padding: 15px 20px; border-radius: 8px; font-weight: bold; color: var(--primary-color); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; font-size: 1.2em;">
             <span id="activeEventDisplay">Active Event: None</span>
             <span id="invoiceNoDisplay" style="color: #666; font-family: monospace;">INV-A-XXXX</span>
@@ -131,8 +131,8 @@
 
         <label>Student Details (Optional):</label>
         <div class="name-row">
-            <div class="form-group"><input type="text" id="payFirstName" placeholder="First Name"></div>
             <div class="form-group"><input type="text" id="payLastName" placeholder="Last Name"></div>
+            <div class="form-group"><input type="text" id="payFirstName" placeholder="First Name"></div>
         </div>
 
         <hr style="border: 0; border-top: 2px solid #eee; margin: 25px 0;">
@@ -185,9 +185,9 @@
         </div>
     </div>
 
-    <div id="records" class="section">
-        <h2 class="no-print-report" style="color: #e63946; border-bottom: 2px solid #e63946; padding-bottom: 10px;">📅 Today's Summary (<span id="todayDateDisplay"></span>)</h2>
-        <div class="dashboard-grid no-print-report">
+    <div id="records" class="section no-print">
+        <h2 style="color: #e63946; border-bottom: 2px solid #e63946; padding-bottom: 10px;">📅 Today's Summary (<span id="todayDateDisplay"></span>)</h2>
+        <div class="dashboard-grid">
             <div class="stat-card card-green">
                 <h3 id="todayCash">$0.00</h3>
                 <p>💵 Today's Cash</p>
@@ -206,7 +206,7 @@
         <div class="no-print-report" style="display: flex; gap: 10px; margin-bottom: 15px; align-items: center; flex-wrap: wrap; background: #e9ecef; padding: 15px; border-radius: 8px;">
             <label style="margin: 0; font-size: 1.1em; font-weight:bold;">🔎 Filter Items By:</label>
             <select id="itemFilter" style="width: 250px; font-size: 1.1em; padding: 10px;" onchange="renderItemizedReport()">
-                </select>
+            </select>
             <button class="btn btn-warning" onclick="exportItemizedToExcel()">📥 Export Excel</button>
             <button class="btn btn-primary" onclick="printItemizedList()">🖨️ Print List</button>
         </div>
@@ -262,8 +262,8 @@
         <h2>Student Roster Management</h2>
         <div style="background: #e9ecef; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
             <div class="name-row">
-                <div class="form-group"><input type="text" id="stuFirstName" placeholder="First Name"></div>
                 <div class="form-group"><input type="text" id="stuLastName" placeholder="Last Name"></div>
+                <div class="form-group"><input type="text" id="stuFirstName" placeholder="First Name"></div>
                 <div class="form-group"><input type="text" id="stuDivision" placeholder="Division (e.g. 1, 2, N/A)"></div>
                 <div class="form-group"><input type="text" id="stuNumber" placeholder="Student No. (Optional)"></div>
             </div>
@@ -271,7 +271,7 @@
         </div>
 
         <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
-            <button class="btn btn-warning" onclick="exportStudentsToExcel()">📥 Export Roster (CSV)</button>
+            <button class="btn btn-warning" onclick="exportStudentsToExcel()">📥 Export Roster</button>
             <input type="file" id="importCsvFile" accept=".csv" style="display: none;" onchange="importStudentsFromCSV(event)">
             <button class="btn btn-primary" style="background-color: #2a9d8f;" onclick="document.getElementById('importCsvFile').click()">📤 Import Roster</button>
             <button class="btn btn-danger" onclick="clearRoster()">⚠️ Clear Roster</button>
@@ -279,7 +279,7 @@
 
         <div style="overflow-x:auto;">
             <table>
-                <thead><tr><th>Student No.</th><th>First Name</th><th>Last Name</th><th>Division</th><th>Actions</th></tr></thead>
+                <thead><tr><th>Student No.</th><th>Last Name</th><th>First Name</th><th>Division</th><th>Actions</th></tr></thead>
                 <tbody id="studentTableBody"></tbody>
             </table>
         </div>
@@ -384,7 +384,15 @@
 </div>
 
 <script>
-    // --- Anti-Slip Protection ---
+    // --- Helper Function: Title Case (Auto Capitalization) ---
+    function formatName(name) {
+        if (!name) return "";
+        // Converts "wAnG" or "i-cHia" to "Wang" or "I-Chia"
+        return name.trim().toLowerCase().replace(/(?:^|[\s-])\w/g, function(match) {
+            return match.toUpperCase();
+        });
+    }
+
     window.addEventListener('beforeunload', function (e) {
         if (currentCart && currentCart.length > 0) { e.preventDefault(); e.returnValue = ''; }
     });
@@ -434,9 +442,7 @@
     window.onload = function() {
         document.getElementById('stationPrefixInput').value = stationPrefix;
         document.getElementById('todayDateDisplay').textContent = new Date().toLocaleDateString('en-US');
-        autoCheckEventDate(); 
-        renderDivisionGrid(); 
-        renderAll();
+        autoCheckEventDate(); renderDivisionGrid(); renderAll();
     };
 
     function saveData() {
@@ -471,11 +477,6 @@
         document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(sectionId).classList.add('active');
-        const buttons = document.querySelectorAll('.nav-btn');
-        if(sectionId === 'payment') buttons[0].classList.add('active');
-        if(sectionId === 'records') buttons[1].classList.add('active');
-        if(sectionId === 'students') buttons[2].classList.add('active');
-        if(sectionId === 'fees') buttons[3].classList.add('active');
     }
 
     function lockAdmin() { isAdminUnlocked = false; document.getElementById('lockBtn').style.display = 'none'; showSection('payment'); }
@@ -520,7 +521,8 @@
     }
 
     function confirmPreOrder() {
-        const name = document.getElementById('preOrderInput').value.trim();
+        const rawName = document.getElementById('preOrderInput').value;
+        const name = formatName(rawName); // Auto capitalize book name
         if(!name) return alert("Please enter the book/item name.");
         closeModal('preOrderModal');
         pushToCart(`Pre-Order: ${name}`);
@@ -564,8 +566,13 @@
             if (currentCart.length === 0) return alert('Invoice is empty!');
         }
 
-        const fName = document.getElementById('payFirstName').value.trim(), lName = document.getElementById('payLastName').value.trim();
-        const checkedName = (fName || lName) ? `${fName} ${lName}`.trim() : 'N/A';
+        // Auto Capitalize the names during checkout
+        const lName = formatName(document.getElementById('payLastName').value);
+        const fName = formatName(document.getElementById('payFirstName').value);
+        
+        // Display as Last Name First Name (e.g. Wu I-Chia)
+        const checkedName = (lName || fName) ? `${lName} ${fName}`.trim() : 'N/A';
+        
         const totalAmount = currentCart.reduce((sum, item) => sum + item.price, 0);
         const itemsString = currentCart.map(i => `${i.name}($${i.price.toFixed(2)})`).join(', ');
 
@@ -722,7 +729,10 @@
                     <td style="font-weight:bold; color:var(--primary-color);">${r.division}</td><td>${r.studentName}</td>
                     <td style="font-size:0.9em;">${r.items}</td><td><span style="background:${r.method === 'Cash' ? '#2a9d8f' : '#4361ee'}; color:white; padding:4px 8px; border-radius:4px; font-size:0.8em;">${r.method}</span></td>
                     <td style="color: #e63946; font-weight:bold; font-size:1.1em;">$${r.amount.toFixed(2)}</td>
-                    <td class="no-print-report" style="min-width: 140px;"><button class="btn btn-danger" style="padding:6px 10px; font-size:0.9em;" onclick="deleteRecord(${realIndex})">🗑️ Void</button></td></tr>
+                    <td class="no-print-report" style="min-width: 140px;">
+                        <button class="btn btn-warning" style="padding:6px 10px; margin-right:5px; margin-bottom:5px; font-size:0.9em;" onclick="editRecord(${realIndex})">✏️ Edit</button>
+                        <button class="btn btn-danger" style="padding:6px 10px; font-size:0.9em;" onclick="deleteRecord(${realIndex})">🗑️ Void</button>
+                    </td></tr>
                 `;
             }).join('');
         }
@@ -738,6 +748,22 @@
         document.getElementById('overviewTotal').textContent = `$${sumTotal.toFixed(2)}`;
         document.getElementById('overviewCash').textContent = `$${sumCash.toFixed(2)}`;
         document.getElementById('overviewCard').textContent = `$${sumCard.toFixed(2)}`;
+    }
+
+    function editRecord(index) {
+        const pwd = prompt("🔐 Manager Override. Enter Admin Password:");
+        if (pwd !== "Eagles") return alert("Incorrect Password!");
+
+        const r = records[index];
+        const newDiv = prompt("Edit Division (Current: " + r.division + "):", r.division);
+        if (newDiv === null) return; 
+        
+        const newNameRaw = prompt("Edit Student Name (Current: " + r.studentName + "):", r.studentName);
+        if (newNameRaw === null) return;
+
+        records[index].division = newDiv.trim() || r.division;
+        records[index].studentName = formatName(newNameRaw) || r.studentName;
+        saveData();
     }
 
     function deleteRecord(index) {
@@ -793,11 +819,16 @@
     }
 
     function addStudent() {
-        const fName = document.getElementById('stuFirstName').value.trim(); const lName = document.getElementById('stuLastName').value.trim();
-        const div = document.getElementById('stuDivision').value.trim(); const sNum = document.getElementById('stuNumber').value.trim() || 'N/A';
-        if (!fName || !lName || !div) return alert('Enter First Name, Last Name, and Division.');
-        students.push({ id: Date.now(), studentNum: sNum, firstName: fName, lastName: lName, division: div });
-        document.getElementById('stuFirstName').value = ''; document.getElementById('stuLastName').value = ''; document.getElementById('stuDivision').value = ''; document.getElementById('stuNumber').value = '';
+        // Auto Capitalize
+        const lName = formatName(document.getElementById('stuLastName').value);
+        const fName = formatName(document.getElementById('stuFirstName').value);
+        const div = document.getElementById('stuDivision').value.trim(); 
+        const sNum = document.getElementById('stuNumber').value.trim() || 'N/A';
+        
+        if (!fName || !lName || !div) return alert('Enter Last Name, First Name, and Division.');
+        
+        students.push({ id: Date.now(), studentNum: sNum, lastName: lName, firstName: fName, division: div });
+        document.getElementById('stuLastName').value = ''; document.getElementById('stuFirstName').value = ''; document.getElementById('stuDivision').value = ''; document.getElementById('stuNumber').value = '';
         saveData();
     }
 
@@ -808,7 +839,7 @@
 
     function renderStudents() {
         document.getElementById('studentTableBody').innerHTML = students.map((s, index) => `
-            <tr><td>${s.studentNum}</td><td>${s.firstName}</td><td>${s.lastName}</td><td style="font-weight:bold; color:var(--primary-color);">${s.division}</td>
+            <tr><td>${s.studentNum}</td><td>${s.lastName}</td><td>${s.firstName}</td><td style="font-weight:bold; color:var(--primary-color);">${s.division}</td>
             <td>
                 <button class="btn btn-warning" style="padding:8px 12px; margin-right:5px;" onclick="editStudentDiv(${index})">Edit Div</button>
                 <button class="btn btn-danger" style="padding:8px 12px;" onclick="if(confirm('Delete?')){students.splice(${index}, 1); saveData();}">Del</button>
@@ -818,8 +849,8 @@
     
     function exportStudentsToExcel() {
         if (students.length === 0) return alert("Roster is empty.");
-        let csvContent = "\uFEFFStudent No.,First Name,Last Name,Division\n";
-        students.forEach(s => { csvContent += `"${s.studentNum}","${s.firstName}","${s.lastName}","${s.division}"\n`; });
+        let csvContent = "\uFEFFStudent No.,Last Name,First Name,Division\n";
+        students.forEach(s => { csvContent += `"${s.studentNum}","${s.lastName}","${s.firstName}","${s.division}"\n`; });
         downloadCSV(csvContent, "Anderson_Student_Roster.csv");
     }
 
@@ -827,12 +858,19 @@
         const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
         reader.onload = function(e) {
             const lines = e.target.result.split('\n'); let addedCount = 0;
+            // Expected CSV Format: Student No., Last Name, First Name, Division
             for (let i = 1; i < lines.length; i++) {
                 if(lines[i].trim() === "") continue;
                 const cols = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
                 if (cols && cols.length >= 4) {
                     const cleanStr = str => str.replace(/(^"|"$)/g, '').trim();
-                    students.push({ id: Date.now() + i, studentNum: cleanStr(cols[0]), firstName: cleanStr(cols[1]), lastName: cleanStr(cols[2]), division: cleanStr(cols[3]) });
+                    students.push({ 
+                        id: Date.now() + i, 
+                        studentNum: cleanStr(cols[0]), 
+                        lastName: formatName(cleanStr(cols[1])), 
+                        firstName: formatName(cleanStr(cols[2])), 
+                        division: cleanStr(cols[3]) 
+                    });
                     addedCount++;
                 }
             }
