@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anderson POS System v14.1</title>
+    <title>Anderson POS System v14.2</title>
     <style>
         :root {
             --primary-color: #023e8a;
@@ -107,7 +107,7 @@
 
 <div class="container">
     <header class="no-print-report">
-        <h1>🦅 Anderson POS System <span style="font-size: 0.5em; color: #666;">v14.1</span></h1>
+        <h1>🦅 Anderson POS System <span style="font-size: 0.5em; color: #666;">v14.2</span></h1>
         <div class="nav-tabs">
             <button class="nav-btn active" onclick="showSection('payment')">💻 Cashier POS</button>
             <button class="nav-btn" onclick="showSection('records')">📊 Reports & Invoices</button>
@@ -278,6 +278,16 @@
 
     <div id="fees" class="section no-print-report">
         <h2>Admin Configurations</h2>
+
+        <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; border-left: 5px solid #023e8a; margin-bottom: 25px;">
+            <h3 style="margin-top: 0; color: #023e8a;">💾 System Backup & Restore (系統備份與還原)</h3>
+            <p style="color: #555; margin-bottom: 15px; font-size: 0.9em;">Use this to transfer all data (students, invoices, settings) to a new version or another iPad.</p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="btn btn-primary" onclick="exportSystemData()">📥 Export Full Backup (.json)</button>
+                <input type="file" id="importBackupFile" accept=".json" style="display: none;" onchange="importSystemData(event)">
+                <button class="btn btn-danger" onclick="document.getElementById('importBackupFile').click()">📤 Import Backup</button>
+            </div>
+        </div>
 
         <div style="background: #e9ecef; padding: 20px; border-radius: 8px; border-left: 5px solid #6c757d; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
             <div style="flex: 1; min-width: 250px;">
@@ -455,7 +465,51 @@
         renderStudents(); renderEventsAdmin(); populateItemFilter(); renderRecords(); renderItemizedReport(); updateCashierPOS(); updateDashboard();
     }
 
-    // --- Training Mode Engine (Now in Admin) ---
+    // --- System Backup & Restore Logic (v14.2) ---
+    function exportSystemData() {
+        let backup = {};
+        for (let key in DB_KEYS) {
+            let actualKey = DB_KEYS[key];
+            let data = localStorage.getItem(actualKey);
+            if(data !== null) {
+                backup[actualKey] = data;
+            }
+        }
+        let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backup));
+        let dlAnchorElem = document.createElement('a');
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", `Anderson_POS_Backup_${new Date().toISOString().slice(0,10)}.json`);
+        document.body.appendChild(dlAnchorElem);
+        dlAnchorElem.click();
+        document.body.removeChild(dlAnchorElem);
+    }
+
+    function importSystemData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                let backup = JSON.parse(e.target.result);
+                if(!confirm("⚠️ 警告：這將會覆蓋系統內現有的所有資料（包含學生名單、帳單與設定）！\n\n你確定要還原這個備份嗎？")) return;
+                
+                for (let key in DB_KEYS) {
+                    let actualKey = DB_KEYS[key];
+                    if (backup[actualKey] !== undefined) {
+                        localStorage.setItem(actualKey, backup[actualKey]);
+                    }
+                }
+                alert("✅ 系統資料還原成功！系統將自動重新載入。");
+                location.reload(); 
+            } catch(err) {
+                alert("❌ 備份檔案讀取失敗！請確認選擇的是正確的 .json 備份檔。");
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    }
+
+    // --- Training Mode Engine ---
     function toggleTrainingMode() {
         if (currentCart.length > 0) {
             if(!confirm("Warning: You have items in the cart. Switching modes will clear the current invoice. Proceed?")) return;
@@ -482,7 +536,7 @@
         }
         nextCustomer(); 
         saveData();
-        lockAdmin(); // Auto-lock and kick out of admin settings
+        lockAdmin(); 
     }
 
     function autoCheckEventDate() {
@@ -527,23 +581,17 @@
                 document.querySelectorAll('.division-circle').forEach(el => el.classList.remove('selected')); 
                 c.classList.add('selected');
                 document.getElementById('invoiceDivDisplay').textContent = `Div: ${c.textContent}`; 
-                // v14.1 Added function call to populate student search dropdown
                 updateStudentDropdown(selectedDivision);
             };
             grid.appendChild(c);
         }
     }
 
-    // --- v14.1: Student Search Restored Logic ---
     function updateStudentDropdown(div) {
         const dropdown = document.getElementById('studentDropdown');
         dropdown.innerHTML = '<option value="">🔍 Select Student from Div ' + div + '...</option>';
-        
         const divStudents = students.filter(s => s.division === div);
-        
-        // Sort students alphabetically by Last Name
         divStudents.sort((a, b) => a.lastName.localeCompare(b.lastName));
-
         divStudents.forEach(s => {
             const opt = document.createElement('option');
             opt.value = s.lastName + '|' + s.firstName;
@@ -563,7 +611,6 @@
             document.getElementById('payFirstName').value = '';
         }
     }
-    // --------------------------------------------
 
     function selectCategory(cat) {
         selectedCategory = cat;
@@ -663,7 +710,6 @@
         currentCart = []; selectedCategory = null; currentNumpadValue = ""; document.getElementById('numpadDisplay').textContent = "$0.00";
         document.getElementById('payFirstName').value = ""; document.getElementById('payLastName').value = "";
         
-        // v14.1 Reset Student Search Dropdown
         document.getElementById('studentDropdown').innerHTML = '<option value="">🔍 Select a Division first...</option>';
 
         document.querySelectorAll('.division-circle').forEach(el => el.classList.remove('selected')); selectedDivision = null;
