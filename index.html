@@ -114,11 +114,12 @@
             <button class="nav-btn" onclick="showSection('students')">👨‍🎓 Student Roster</button>
             <button class="nav-btn" onclick="showSection('fees')">⚙️ Admin Settings</button>
             <button id="lockBtn" class="nav-btn" style="display: none; background-color: #e63946; color: white;" onclick="lockAdmin()">🔒 Lock System</button>
+            <button id="trainingToggleBtn" class="nav-btn" style="background-color: #6c757d; color: white; margin-left: auto;" onclick="toggleTrainingMode()">🎓 Training Mode: OFF</button>
         </div>
     </header>
 
     <div id="payment" class="section active no-print">
-        <div style="background: #e9ecef; padding: 15px 20px; border-radius: 8px; font-weight: bold; color: var(--primary-color); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; font-size: 1.2em;">
+        <div id="activeEventBanner" style="background: #e9ecef; padding: 15px 20px; border-radius: 8px; font-weight: bold; color: var(--primary-color); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; font-size: 1.2em;">
             <span id="activeEventDisplay">Active Event: None</span>
             <span id="invoiceNoDisplay" style="color: #666; font-family: monospace;">INV-A-XXXX</span>
         </div>
@@ -178,7 +179,7 @@
         </div>
     </div>
 
-    <div id="records" class="section no-print">
+    <div id="records" class="section">
         <h2 style="color: #e63946; border-bottom: 2px solid #e63946; padding-bottom: 10px;">📅 Today's Summary (<span id="todayDateDisplay"></span>)</h2>
         <div class="dashboard-grid">
             <div class="stat-card card-green">
@@ -283,7 +284,7 @@
             </div>
         </div>
 
-        <h3>Event Setup (Auto-Date Support)</h3>
+        <h3>Event Setup</h3>
         <div style="background: #f8f9fa; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
             <div class="name-row">
                 <div class="form-group"><input type="text" id="newFeeName" placeholder="Event Name"></div>
@@ -330,7 +331,7 @@
 
 <div id="successModal" class="overlay">
     <div class="modal-box" style="max-width: 700px;">
-        <h2 style="font-size: 3em; margin-top: 0; color: #2a9d8f;">✅ Payment Successful!</h2>
+        <h2 id="successModalTitle" style="font-size: 3em; margin-top: 0; color: #2a9d8f;">✅ Payment Successful!</h2>
         <div id="changeSection" style="display: none; background: #fdfdfd; border: 3px dashed #ccc; padding: 20px; border-radius: 10px; margin-bottom: 25px;">
             <p style="font-size: 1.8em; color: #666; margin: 0; font-weight:bold;">Change Due</p>
             <div class="change-huge" id="modalChangeDue">$0.00</div>
@@ -344,8 +345,8 @@
 
 <div id="printReceiptArea">
     <div style="text-align: center; border-bottom: 2px dashed #000; padding-bottom: 10px; margin-bottom: 10px;">
-        <h2 style="margin: 0;">Anderson PAC</h2>
-        <p style="margin: 5px 0 0 0; font-size: 12px;">Thank you for your support!</p>
+        <h2 id="printReceiptHeader">Anderson PAC</h2>
+        <p id="printReceiptSub" style="margin: 5px 0 0 0; font-size: 12px;">Thank you for your support!</p>
     </div>
     <div style="margin-bottom: 10px; font-size: 14px;">
         <div><strong>Invoice:</strong> <span id="rptInv"></span></div>
@@ -358,9 +359,7 @@
     <div style="text-align: right; font-size: 16px; border-top: 2px dashed #000; padding-top: 10px;">
         <strong>Total: <span id="rptTotal"></span></strong>
     </div>
-    <div style="text-align: right; font-size: 14px; margin-top: 5px;">
-        Paid by: <span id="rptMethod"></span>
-    </div>
+    <div style="text-align: right; font-size: 14px; margin-top: 5px;">Paid by: <span id="rptMethod"></span></div>
 </div>
 
 <script>
@@ -375,7 +374,8 @@
 
     const DB_KEYS = {
         STUDENTS: 'anderson_students', EVENTS: 'anderson_events', RECORDS: 'anderson_records',
-        ACTIVE_EVENT: 'anderson_active_event', INV_SEQ: 'anderson_inv_sequence', STATION_PREFIX: 'anderson_station_prefix'
+        ACTIVE_EVENT: 'anderson_active_event', INV_SEQ: 'anderson_inv_sequence', STATION_PREFIX: 'anderson_station_prefix',
+        TRAIN_RECORDS: 'anderson_training_records', TRAIN_SEQ: 'anderson_training_inv_sequence'
     };
 
     const defaultEvents = [
@@ -403,13 +403,19 @@
         }
     } catch(e) { eventsConfig = [...defaultEvents]; }
 
+    // Real Environment Financial Data
     let records = JSON.parse(localStorage.getItem(DB_KEYS.RECORDS)) || [];
-    let activeEventId = localStorage.getItem(DB_KEYS.ACTIVE_EVENT) || 'ev_book_fair'; 
     let nextInvSequence = parseInt(localStorage.getItem(DB_KEYS.INV_SEQ)) || 1001;
+
+    // Training Sandbox Data
+    let trainingRecords = JSON.parse(localStorage.getItem(DB_KEYS.TRAIN_RECORDS)) || [];
+    let nextTrainSequence = parseInt(localStorage.getItem(DB_KEYS.TRAIN_SEQ)) || 8001; // Training logs start at 8001
+
+    let activeEventId = localStorage.getItem(DB_KEYS.ACTIVE_EVENT) || 'ev_book_fair'; 
     let stationPrefix = localStorage.getItem(DB_KEYS.STATION_PREFIX) || 'A'; 
 
     let selectedDivision = null, selectedCategory = null, currentNumpadValue = "", currentCart = []; 
-    let isAdminUnlocked = false; 
+    let isAdminUnlocked = false, isTrainingMode = false; 
     let tempPrice = 0, tempTotalDue = 0; 
 
     window.onload = function() {
@@ -418,18 +424,53 @@
         autoCheckEventDate(); renderDivisionGrid(); renderAll();
     };
 
+    function getActiveRecords() { return isTrainingMode ? trainingRecords : records; }
+    function getActiveSequence() { return isTrainingMode ? nextTrainSequence : nextInvSequence; }
+
     function saveData() {
         localStorage.setItem(DB_KEYS.STUDENTS, JSON.stringify(students));
         localStorage.setItem(DB_KEYS.EVENTS, JSON.stringify(eventsConfig));
-        localStorage.setItem(DB_KEYS.RECORDS, JSON.stringify(records));
         localStorage.setItem(DB_KEYS.ACTIVE_EVENT, activeEventId);
-        localStorage.setItem(DB_KEYS.INV_SEQ, nextInvSequence);
         localStorage.setItem(DB_KEYS.STATION_PREFIX, stationPrefix);
+        if (isTrainingMode) {
+            localStorage.setItem(DB_KEYS.TRAIN_RECORDS, JSON.stringify(trainingRecords));
+            localStorage.setItem(DB_KEYS.TRAIN_SEQ, nextTrainSequence);
+        } else {
+            localStorage.setItem(DB_KEYS.RECORDS, JSON.stringify(records));
+            localStorage.setItem(DB_KEYS.INV_SEQ, nextInvSequence);
+        }
         renderAll();
     }
 
     function renderAll() {
         renderStudents(); renderEventsAdmin(); populateItemFilter(); renderRecords(); renderItemizedReport(); updateCashierPOS(); updateDashboard();
+    }
+
+    // --- Training Mode Engine ---
+    function toggleTrainingMode() {
+        if (currentCart.length > 0) {
+            if(!confirm("Warning: You have items in the cart. Switching modes will clear the current invoice. Proceed?")) return;
+        }
+        
+        isTrainingMode = !isTrainingMode;
+        currentCart = [];
+        
+        const btn = document.getElementById('trainingToggleBtn');
+        const banner = document.getElementById('activeEventBanner');
+        
+        if (isTrainingMode) {
+            btn.textContent = "🔥 TRAINING MODE: ACTIVE";
+            btn.style.backgroundColor = "#d00000";
+            banner.style.backgroundColor = "#ffb703";
+            banner.style.color = "#000";
+        } else {
+            btn.textContent = "🎓 Training Mode: OFF";
+            btn.style.backgroundColor = "#6c757d";
+            banner.style.backgroundColor = "#e9ecef";
+            banner.style.color = "var(--primary-color)";
+        }
+        nextCustomer(); // Wipe interface fields cleanly
+        saveData();
     }
 
     function autoCheckEventDate() {
@@ -450,11 +491,19 @@
         document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(sectionId).classList.add('active');
+        const buttons = document.querySelectorAll('.nav-btn');
+        if(sectionId === 'payment') buttons[0].classList.add('active');
+        if(sectionId === 'records') buttons[1].classList.add('active');
+        if(sectionId === 'students') buttons[2].classList.add('active');
+        if(sectionId === 'fees') buttons[3].classList.add('active');
     }
 
     function lockAdmin() { isAdminUnlocked = false; document.getElementById('lockBtn').style.display = 'none'; showSection('payment'); }
     function saveStationPrefix() { stationPrefix = document.getElementById('stationPrefixInput').value.trim().toUpperCase() || 'A'; saveData(); alert("Prefix Saved!"); }
-    function generateInvoiceNo() { return `INV-${stationPrefix}-${nextInvSequence}`; }
+    
+    function generateInvoiceNo() { 
+        return isTrainingMode ? `TRAIN-${stationPrefix}-${nextTrainSequence}` : `INV-${stationPrefix}-${nextInvSequence}`; 
+    }
 
     function renderDivisionGrid() {
         const grid = document.getElementById('divisionGrid'); grid.innerHTML = '';
@@ -488,14 +537,11 @@
             document.getElementById('preOrderInput').value = '';
             document.getElementById('preOrderModal').style.display = 'flex';
             document.getElementById('preOrderInput').focus();
-        } else {
-            pushToCart(selectedCategory);
-        }
+        } else { pushToCart(selectedCategory); }
     }
 
     function confirmPreOrder() {
-        const rawName = document.getElementById('preOrderInput').value;
-        const name = formatName(rawName); 
+        const name = formatName(document.getElementById('preOrderInput').value); 
         if(!name) return alert("Please enter the book/item name.");
         closeModal('preOrderModal');
         pushToCart(`Pre-Order: ${name}`);
@@ -546,13 +592,17 @@
         const totalAmount = currentCart.reduce((sum, item) => sum + item.price, 0);
         const itemsString = currentCart.map(i => `${i.name}($${i.price.toFixed(2)})`).join(', ');
 
-        records.unshift({
+        const targetArray = isTrainingMode ? trainingRecords : records;
+        targetArray.unshift({
             id: Date.now(), invoiceNo: generateInvoiceNo(), date: new Date().toLocaleString('en-US'),
             division: selectedDivision, studentName: checkedName, items: itemsString, amount: totalAmount, method: method, rawItems: [...currentCart]
         });
         
-        nextInvSequence++; saveData();
+        if(isTrainingMode) nextTrainSequence++; else nextInvSequence++; 
+        saveData();
         
+        // Show Success View Box
+        document.getElementById('successModalTitle').textContent = isTrainingMode ? "⚠️ Training Logged Successfully!" : "✅ Payment Successful!";
         document.getElementById('successModal').style.display = 'flex';
         const changeSec = document.getElementById('changeSection');
         if(method === 'Cash') { changeSec.style.display = 'block'; document.getElementById('modalChangeDue').textContent = `$${changeDue.toFixed(2)}`; }
@@ -569,19 +619,16 @@
     }
 
     function printLastReceipt() {
-        if(records.length === 0) return alert("No recent orders to print.");
-        const r = records[0];
+        const sourceList = getActiveRecords();
+        if(sourceList.length === 0) return alert("No recent orders found.");
+        const r = sourceList[0];
+        
+        document.getElementById('printReceiptHeader').textContent = isTrainingMode ? "TRAINING REC - NOT A RECEIPT" : "Anderson PAC";
         document.getElementById('rptInv').textContent = r.invoiceNo;
         document.getElementById('rptDate').textContent = r.date;
         document.getElementById('rptDiv').textContent = r.division;
         document.getElementById('rptName').textContent = r.studentName;
-        
-        let itemsHtml = '';
-        if(r.rawItems && Array.isArray(r.rawItems)) {
-            itemsHtml = r.rawItems.map(i => `<div style="display:flex; justify-content:space-between;"><span>${i.name}</span><span>$${i.price.toFixed(2)}</span></div>`).join('');
-        } else { itemsHtml = r.items; }
-        
-        document.getElementById('rptItems').innerHTML = itemsHtml;
+        document.getElementById('rptItems').innerHTML = (r.rawItems||[]).map(i => `<div style="display:flex; justify-content:space-between;"><span>${i.name}</span><span>$${i.price.toFixed(2)}</span></div>`).join('');
         document.getElementById('rptTotal').textContent = `$${r.amount.toFixed(2)}`;
         document.getElementById('rptMethod').textContent = r.method;
         
@@ -594,7 +641,7 @@
         const eventDisplay = document.getElementById('activeEventDisplay'); document.getElementById('invoiceNoDisplay').textContent = generateInvoiceNo();
         const activeEvent = eventsConfig.find(e => e.id === activeEventId);
         if (activeEvent && Array.isArray(activeEvent.items)) { 
-            eventDisplay.innerHTML = `🛒 ${activeEvent.name}`; 
+            eventDisplay.innerHTML = isTrainingMode ? `⚠️ PRACTICE: ${activeEvent.name}` : `🛒 ${activeEvent.name}`; 
             document.getElementById('itemGrid').innerHTML = activeEvent.items.map(item => `<div class="item-circle" onclick="selectCategory('${item}')">${item}</div>`).join(''); 
         } else { 
             eventDisplay.innerHTML = `⚠️ No Event Set`; document.getElementById('itemGrid').innerHTML = ''; 
@@ -602,31 +649,27 @@
         document.querySelectorAll('.item-circle').forEach(el => el.classList.remove('selected'));
     }
 
+    // --- REPORTS ENGINE ---
     function populateItemFilter() {
-        const filter = document.getElementById('itemFilter');
-        if(!filter) return;
-        const currentSelection = filter.value;
-        let uniqueItems = new Set();
+        const filter = document.getElementById('itemFilter'); if(!filter) return;
+        const currentSelection = filter.value; let uniqueItems = new Set();
+        const currentData = getActiveRecords();
         
-        records.forEach(r => { if(r.rawItems && Array.isArray(r.rawItems)) r.rawItems.forEach(i => uniqueItems.add(i.name)); });
+        currentData.forEach(r => { if(r.rawItems && Array.isArray(r.rawItems)) r.rawItems.forEach(i => uniqueItems.add(i.name)); });
         
-        let optionsHtml = '<option value="ALL">All Items</option>';
-        optionsHtml += '<option value="PRE-ORDER">📌 All Pre-Orders</option>';
-        
-        let sortedItems = Array.from(uniqueItems).sort();
-        sortedItems.forEach(item => { optionsHtml += `<option value="${item}">${item}</option>`; });
-
+        let optionsHtml = '<option value="ALL">All Items</option><option value="PRE-ORDER">📌 All Pre-Orders</option>';
+        Array.from(uniqueItems).sort().forEach(item => { optionsHtml += `<option value="${item}">${item}</option>`; });
         filter.innerHTML = optionsHtml;
         if(currentSelection) filter.value = currentSelection;
     }
 
     function renderItemizedReport() {
-        const tbody = document.getElementById('itemizedTableBody');
-        if(!tbody) return;
+        const tbody = document.getElementById('itemizedTableBody'); if(!tbody) return;
         const filterVal = document.getElementById('itemFilter').value || 'ALL';
+        const currentData = getActiveRecords();
         let itemRows = [];
 
-        records.forEach(r => {
+        currentData.forEach(r => {
             if(r.rawItems && Array.isArray(r.rawItems)) {
                 r.rawItems.forEach(i => { itemRows.push({ inv: r.invoiceNo, date: r.date, name: r.studentName, div: r.division, item: i.name, price: i.price }); });
             }
@@ -636,33 +679,16 @@
         else if (filterVal !== 'ALL') itemRows = itemRows.filter(row => row.item === filterVal);
 
         itemRows.sort((a,b) => a.item.localeCompare(b.item));
+        if(itemRows.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No items found.</td></tr>'; return; }
 
-        if(itemRows.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No items found for this filter.</td></tr>'; return; }
-
-        let totalQty = itemRows.length;
-        let totalPrice = itemRows.reduce((sum, r) => sum + r.price, 0);
-
-        let html = itemRows.map(r => `
-            <tr>
-                <td style="font-weight:bold; color:var(--primary-color);">${r.item}</td>
-                <td style="font-family:monospace;">${r.inv}</td><td>${r.date.split(',')[0]}</td>
-                <td><b>${r.div}</b></td><td>${r.name}</td><td style="color:#e63946;">$${r.price.toFixed(2)}</td>
-            </tr>
-        `).join('');
-
-        html += `
-            <tr class="summary-row">
-                <td colspan="5" style="text-align:right;">Total Quantity: ${totalQty}</td>
-                <td style="color:#e63946;">Total: $${totalPrice.toFixed(2)}</td>
-            </tr>
-        `;
+        let totalQty = itemRows.length, totalPrice = itemRows.reduce((sum, r) => sum + r.price, 0);
+        let html = itemRows.map(r => `<tr><td><b>${r.item}</b></td><td>${r.inv}</td><td>${r.date.split(',')[0]}</td><td>${r.div}</td><td>${r.name}</td><td>$${r.price.toFixed(2)}</td></tr>`).join('');
+        html += `<tr class="summary-row"><td colspan="5" style="text-align:right;">Total Quantity: ${totalQty}</td><td>Total: $${totalPrice.toFixed(2)}</td></tr>`;
         tbody.innerHTML = html;
     }
 
-    function printItemizedList() {
-        document.body.className = 'print-report'; window.print(); setTimeout(() => { document.body.className = ''; }, 500);
-    }
-
+    function printItemizedList() { document.body.className = 'print-report'; window.print(); setTimeout(() => { document.body.className = ''; }, 500); }
+    
     function exportItemizedToExcel() {
         let rows = Array.from(document.getElementById('itemizedTableBody').rows);
         if (rows.length === 0 || rows[0].cells.length < 6) return alert("No data to export.");
@@ -671,108 +697,85 @@
             if(r.classList.contains('summary-row')) return;
             csvContent += `"${r.cells[0].innerText}","${r.cells[1].innerText}","${r.cells[2].innerText}","${r.cells[3].innerText}","${r.cells[4].innerText}","${r.cells[5].innerText.replace('$','')}"\n`;
         });
-        downloadCSV(csvContent, `Itemized_List_${new Date().toLocaleDateString().replace(/\//g,'-')}.csv`);
+        downloadCSV(csvContent, `Itemized_List_${isTrainingMode?'TRAIN':'LIVE'}.csv`);
     }
 
     function renderRecords() {
         const tbody = document.getElementById('recordsTableBody');
         const filterVal = document.getElementById('invoiceDateFilter').value;
         const todayStr = new Date().toLocaleDateString('en-US');
+        const currentSource = getActiveRecords();
         
-        let filteredRecords = filterVal === 'TODAY' ? records.filter(r => new Date(r.date).toLocaleDateString('en-US') === todayStr) : records;
+        let filteredRecords = filterVal === 'TODAY' ? currentSource.filter(r => new Date(r.date).toLocaleDateString('en-US') === todayStr) : currentSource;
 
         if (filteredRecords.length === 0) {
             tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No transactions found.</td></tr>';
         } else {
             tbody.innerHTML = filteredRecords.map((r) => {
-                const realIndex = records.findIndex(orig => orig.id === r.id);
+                const realIndex = currentSource.findIndex(orig => orig.id === r.id);
                 return `
-                <tr><td style="font-family:monospace; font-weight:bold;">${r.invoiceNo}</td><td style="font-size:0.85em;">${r.date}</td>
-                    <td style="font-weight:bold; color:var(--primary-color);">${r.division}</td><td>${r.studentName}</td>
-                    <td style="font-size:0.9em;">${r.items}</td><td><span style="background:${r.method === 'Cash' ? '#2a9d8f' : '#4361ee'}; color:white; padding:4px 8px; border-radius:4px; font-size:0.8em;">${r.method}</span></td>
-                    <td style="color: #e63946; font-weight:bold; font-size:1.1em;">$${r.amount.toFixed(2)}</td>
-                    <td class="no-print-report" style="min-width: 140px;">
-                        <button class="btn btn-warning" style="padding:6px 10px; margin-right:5px; margin-bottom:5px; font-size:0.9em;" onclick="editRecord(${realIndex})">✏️ Edit</button>
-                        <button class="btn btn-danger" style="padding:6px 10px; font-size:0.9em;" onclick="deleteRecord(${realIndex})">🗑️ Void</button>
-                    </td></tr>
+                <tr><td><b>${r.invoiceNo}</b></td><td style="font-size:0.85em;">${r.date}</td><td>${r.division}</td><td>${r.studentName}</td>
+                    <td style="font-size:0.9em;">${r.items}</td><td><span style="background:${r.method==='Cash'?'#2a9d8f':'#4361ee'}; color:white; padding:4px 8px; border-radius:4px; font-size:0.8em;">${r.method}</span></td>
+                    <td><b>$${r.amount.toFixed(2)}</b></td>
+                    <td class="no-print-report"><button class="btn btn-danger" style="padding:6px 10px; font-size:0.9em;" onclick="deleteRecord(${realIndex})">🗑️ Void</button></td></tr>
                 `;
             }).join('');
         }
 
         let sumTotal = 0, sumCash = 0, sumCard = 0;
-        filteredRecords.forEach(r => {
-            sumTotal += r.amount;
-            if(r.method === 'Cash') sumCash += r.amount;
-            if(r.method === 'Card') sumCard += r.amount;
-        });
-
+        filteredRecords.forEach(r => { sumTotal += r.amount; if(r.method === 'Cash') sumCash += r.amount; if(r.method === 'Card') sumCard += r.amount; });
         document.getElementById('overviewCount').textContent = filteredRecords.length;
         document.getElementById('overviewTotal').textContent = `$${sumTotal.toFixed(2)}`;
         document.getElementById('overviewCash').textContent = `$${sumCash.toFixed(2)}`;
         document.getElementById('overviewCard').textContent = `$${sumCard.toFixed(2)}`;
     }
 
-    function editRecord(index) {
-        const pwd = prompt("🔐 Manager Override. Enter Admin Password:");
-        if (pwd !== "Eagles") return alert("Incorrect Password!");
-
-        const r = records[index];
-        const newDiv = prompt("Edit Division (Current: " + r.division + "):", r.division);
-        if (newDiv === null) return; 
-        
-        const newNameRaw = prompt("Edit Student Name (Current: " + r.studentName + "):", r.studentName);
-        if (newNameRaw === null) return;
-
-        records[index].division = newDiv.trim() || r.division;
-        records[index].studentName = formatName(newNameRaw) || r.studentName;
-        saveData();
-    }
-
     function deleteRecord(index) {
         const pwd = prompt("🔐 Manager Override. Enter Admin Password to VOID:");
         if (pwd !== "Eagles") return alert("Incorrect Password!");
-        if(confirm(`Are you absolutely sure you want to VOID invoice ${records[index].invoiceNo}?`)) {
-            records.splice(index, 1); saveData();
-        }
+        const targetList = getActiveRecords();
+        if(confirm(`Void invoice ${targetList[index].invoiceNo}?`)) { targetList.splice(index, 1); saveData(); }
     }
 
-    // NEW: Clear ALL Invoices Function
     function clearAllRecords() {
-        const pwd = prompt("🔐 Manager Override. Enter Admin Password to CLEAR ALL INVOICES:");
+        const modeText = isTrainingMode ? "TRAINING SESSION" : "PRODUCTION FINANCIAL OVERVIEW";
+        const pwd = prompt(`🔐 Manager Override. Enter Admin Password to CLEAR ALL ${modeText}:`);
         if (pwd !== "Eagles") return alert("Incorrect Password!");
         
-        if(confirm('⚠️ WARNING: Are you sure you want to delete EVERY invoice? This is usually for resetting the system after testing.')) {
-            if(confirm('FINAL WARNING: This cannot be undone. All financial data will be lost. Continue?')) {
-                records = [];
-                // Reset invoice sequence back to 1001 for the fresh start
-                nextInvSequence = 1001; 
+        if(confirm(`⚠️ WARNING: Are you sure you want to delete EVERY invoice inside ${modeText}?`)) {
+            if(confirm('FINAL WARNING: This cannot be undone. Continue?')) {
+                if (isTrainingMode) { trainingRecords = []; nextTrainSequence = 8001; } 
+                else { records = []; nextInvSequence = 1001; }
                 saveData();
-                alert("All invoices cleared and sequence reset!");
+                alert("Data cleared successfully!");
             }
         }
     }
 
     function updateDashboard() {
         const todayStr = new Date().toLocaleDateString('en-US'); let todayCash = 0, todayCard = 0, todayCount = 0;
-        records.forEach(r => { if (new Date(r.date).toLocaleDateString('en-US') === todayStr) { todayCount++; if (r.method === 'Cash') todayCash += r.amount; if (r.method === 'Card') todayCard += r.amount; } });
+        const currentSource = getActiveRecords();
+        currentSource.forEach(r => { if (new Date(r.date).toLocaleDateString('en-US') === todayStr) { todayCount++; if (r.method === 'Cash') todayCash += r.amount; if (r.method === 'Card') todayCard += r.amount; } });
         document.getElementById('todayCash').textContent = `$${todayCash.toLocaleString('en-US', {minimumFractionDigits: 2})}`; document.getElementById('todayCard').textContent = `$${todayCard.toLocaleString('en-US', {minimumFractionDigits: 2})}`; document.getElementById('todayTotal').textContent = `$${(todayCash + todayCard).toLocaleString('en-US', {minimumFractionDigits: 2})}`; document.getElementById('todayCount').textContent = todayCount;
     }
 
     function exportSalesToExcel() {
         const filterVal = document.getElementById('invoiceDateFilter').value;
         const todayStr = new Date().toLocaleDateString('en-US');
-        let filteredRecords = filterVal === 'TODAY' ? records.filter(r => new Date(r.date).toLocaleDateString('en-US') === todayStr) : records;
+        const currentSource = getActiveRecords();
+        let filteredRecords = filterVal === 'TODAY' ? currentSource.filter(r => new Date(r.date).toLocaleDateString('en-US') === todayStr) : currentSource;
         
         if (filteredRecords.length === 0) return alert("No data to export.");
         let csvContent = "\uFEFFInvoice No.,Date & Time,Division,Student Name,Items Purchased,Payment Method,Total Amount\n";
         filteredRecords.forEach(r => { csvContent += `"${r.invoiceNo}","${r.date}","${r.division}","${r.studentName}","${r.items.replace(/"/g, '""')}","${r.method}",${r.amount}\n`; });
-        downloadCSV(csvContent, `Anderson_Invoices_${filterVal}_${new Date().toLocaleDateString().replace(/\//g,'-')}.csv`);
+        downloadCSV(csvContent, `Anderson_Invoices_${isTrainingMode?'TRAIN':'LIVE'}.csv`);
     }
 
     function downloadCSV(content, filename) {
         const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = filename; document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
     
+    // --- Admin & Roster Base Engine ---
     function addEvent() {
         const name = document.getElementById('newFeeName').value.trim(), itemsRaw = document.getElementById('newFeeItems').value.trim(), sDate = document.getElementById('newFeeStart').value, eDate = document.getElementById('newFeeEnd').value;
         if (!name || !itemsRaw) return alert('Enter Event Name and Sale Items.');
@@ -784,26 +787,19 @@
         autoCheckEventDate(); saveData(); 
     }
 
-    function setActiveEvent(id) { activeEventId = id; saveData(); }
-
     function renderEventsAdmin() {
         document.getElementById('feeTableBody').innerHTML = eventsConfig.map((e, index) => {
             const isActive = (e.id === activeEventId), dateStr = (e.startDate) ? `${e.startDate} to ${e.endDate || e.startDate}` : '<span style="color:#aaa;">No Date Set</span>', isPreset = (e.id.startsWith('ev_'));
-            return `<tr><td style="${isActive ? 'font-weight:bold; color:var(--primary-color);' : ''}">${e.name} ${isPreset ? '📌' : ''}</td>
-                <td style="font-size:0.9em; color:#444;">${dateStr}</td><td style="color:#555; font-size:0.9em;">${e.items.join(', ')}</td>
-                <td><button class="btn ${isActive ? 'btn-primary' : 'btn-warning'}" style="padding: 6px 12px; font-size: 0.9em;" onclick="setActiveEvent('${e.id}')">${isActive ? '🌟 Active' : 'Set Active'}</button></td>
+            return `<tr><td>${e.name} ${isPreset ? '📌' : ''}</td><td>${dateStr}</td><td>${e.items.join(', ')}</td>
+                <td><button class="btn ${isActive ? 'btn-primary' : 'btn-warning'}" style="padding: 6px 12px; font-size: 0.9em;" onclick="activeEventId='${e.id}'; saveData();">${isActive ? '🌟 Active' : 'Set Active'}</button></td>
                 <td>${isPreset ? '' : `<button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.9em;" onclick="if(confirm('Delete event?')){eventsConfig.splice(${index}, 1); saveData();}">Del</button>`}</td></tr>`;
         }).join('');
     }
 
     function addStudent() {
-        const lName = formatName(document.getElementById('stuLastName').value);
-        const fName = formatName(document.getElementById('stuFirstName').value);
-        const div = document.getElementById('stuDivision').value.trim(); 
-        const sNum = document.getElementById('stuNumber').value.trim() || 'N/A';
-        
+        const lName = formatName(document.getElementById('stuLastName').value); const fName = formatName(document.getElementById('stuFirstName').value);
+        const div = document.getElementById('stuDivision').value.trim(); const sNum = document.getElementById('stuNumber').value.trim() || 'N/A';
         if (!fName || !lName || !div) return alert('Enter Last Name, First Name, and Division.');
-        
         students.push({ id: Date.now(), studentNum: sNum, lastName: lName, firstName: fName, division: div });
         document.getElementById('stuLastName').value = ''; document.getElementById('stuFirstName').value = ''; document.getElementById('stuDivision').value = ''; document.getElementById('stuNumber').value = '';
         saveData();
@@ -814,12 +810,30 @@
         if (newDiv !== null && newDiv.trim() !== "") { students[index].division = newDiv.trim(); saveData(); }
     }
 
+    document.getElementById('importCsvFile').addEventListener('change', function(event) {
+        const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
+        reader.onload = function(e) {
+            const lines = e.target.result.split('\n'); let addedCount = 0;
+            for (let i = 1; i < lines.length; i++) {
+                if(lines[i].trim() === "") continue;
+                const cols = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+                if (cols && cols.length >= 4) {
+                    const cleanStr = str => str.replace(/(^"|"$)/g, '').trim();
+                    students.push({ id: Date.now() + i, studentNum: cleanStr(cols[0]), lastName: formatName(cleanStr(cols[1])), firstName: formatName(cleanStr(cols[2])), division: cleanStr(cols[3]) });
+                    addedCount++;
+                }
+            }
+            saveData(); alert(`Imported ${addedCount} students!`);
+        };
+        reader.readAsText(file); event.target.value = '';
+    });
+
     function renderStudents() {
         document.getElementById('studentTableBody').innerHTML = students.map((s, index) => `
-            <tr><td>${s.studentNum}</td><td>${s.lastName}</td><td>${s.firstName}</td><td style="font-weight:bold; color:var(--primary-color);">${s.division}</td>
+            <tr><td>${s.studentNum}</td><td>${s.lastName}</td><td>${s.firstName}</td><td><b>${s.division}</b></td>
             <td>
                 <button class="btn btn-warning" style="padding:8px 12px; margin-right:5px;" onclick="editStudentDiv(${index})">Edit Div</button>
-                <button class="btn btn-danger" style="padding:8px 12px;" onclick="if(confirm('Delete?')){students.splice(${index}, 1); saveData();}">Del</button>
+                <button class="btn btn-danger" style="padding:8px 12px;" onclick="if(confirm('Delete student?')){students.splice(${index}, 1); saveData();}">Del</button>
             </td></tr>
         `).join('');
     }
@@ -830,33 +844,7 @@
         students.forEach(s => { csvContent += `"${s.studentNum}","${s.lastName}","${s.firstName}","${s.division}"\n`; });
         downloadCSV(csvContent, "Anderson_Student_Roster.csv");
     }
-
-    function importStudentsFromCSV(event) {
-        const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
-        reader.onload = function(e) {
-            const lines = e.target.result.split('\n'); let addedCount = 0;
-            for (let i = 1; i < lines.length; i++) {
-                if(lines[i].trim() === "") continue;
-                const cols = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-                if (cols && cols.length >= 4) {
-                    const cleanStr = str => str.replace(/(^"|"$)/g, '').trim();
-                    students.push({ 
-                        id: Date.now() + i, 
-                        studentNum: cleanStr(cols[0]), 
-                        lastName: formatName(cleanStr(cols[1])), 
-                        firstName: formatName(cleanStr(cols[2])), 
-                        division: cleanStr(cols[3]) 
-                    });
-                    addedCount++;
-                }
-            }
-            saveData(); alert(`Imported ${addedCount} students!`);
-        };
-        reader.readAsText(file); event.target.value = '';
-    }
-
     function clearRoster() { if(confirm('⚠️ WARNING: Delete ALL students?')) { students = []; saveData(); } }
 </script>
-
 </body>
 </html>
