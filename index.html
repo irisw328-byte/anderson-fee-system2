@@ -111,10 +111,9 @@
         <div class="nav-tabs">
             <button class="nav-btn active" onclick="showSection('payment')">💻 Cashier POS</button>
             <button class="nav-btn" onclick="showSection('records')">📊 Reports & Invoices</button>
-            <button class="nav-btn" onclick="showSection('students')">👨‍🎓 Student Roster</button>
+            <button class="nav-btn" onclick="showSection('students')">👨‍🎓 Student List</button>
             <button class="nav-btn" onclick="showSection('fees')">⚙️ Admin Settings</button>
             <button id="lockBtn" class="nav-btn" style="display: none; background-color: #e63946; color: white;" onclick="lockAdmin()">🔒 Lock System</button>
-            <button id="trainingToggleBtn" class="nav-btn" style="background-color: #6c757d; color: white; margin-left: auto;" onclick="toggleTrainingMode()">🎓 Training Mode: OFF</button>
         </div>
     </header>
 
@@ -179,7 +178,7 @@
         </div>
     </div>
 
-    <div id="records" class="section">
+    <div id="records" class="section no-print">
         <h2 style="color: #e63946; border-bottom: 2px solid #e63946; padding-bottom: 10px;">📅 Today's Summary (<span id="todayDateDisplay"></span>)</h2>
         <div class="dashboard-grid">
             <div class="stat-card card-green">
@@ -246,7 +245,7 @@
     </div>
 
     <div id="students" class="section no-print-report">
-        <h2>Student Roster Management</h2>
+        <h2>Student List Management</h2>
         <div style="background: #e9ecef; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
             <div class="name-row">
                 <div class="form-group"><input type="text" id="stuLastName" placeholder="Last Name"></div>
@@ -258,10 +257,10 @@
         </div>
 
         <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
-            <button class="btn btn-warning" onclick="exportStudentsToExcel()">📥 Export Roster (CSV)</button>
+            <button class="btn btn-warning" onclick="exportStudentsToExcel()">📥 Export List (CSV)</button>
             <input type="file" id="importCsvFile" accept=".csv" style="display: none;" onchange="importStudentsFromCSV(event)">
-            <button class="btn btn-primary" style="background-color: #2a9d8f;" onclick="document.getElementById('importCsvFile').click()">📤 Import Roster</button>
-            <button class="btn btn-danger" onclick="clearRoster()">⚠️ Clear Roster</button>
+            <button class="btn btn-primary" style="background-color: #2a9d8f;" onclick="document.getElementById('importCsvFile').click()">📤 Import List</button>
+            <button class="btn btn-danger" onclick="clearRoster()">⚠️ Clear List</button>
         </div>
 
         <div style="overflow-x:auto;">
@@ -274,6 +273,14 @@
 
     <div id="fees" class="section no-print-report">
         <h2>Admin Configurations</h2>
+
+        <div style="background: #e9ecef; padding: 20px; border-radius: 8px; border-left: 5px solid #6c757d; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <div style="flex: 1; min-width: 250px;">
+                <h3 style="margin-top: 0; color: #333;">🎓 Training Mode (Practice Sandbox)</h3>
+                <p style="color: #555; margin-bottom: 0; font-size: 0.9em;">Turn this on to let volunteers practice. Fake transactions will not affect the real totals. <b>You will be logged out of Admin automatically after toggling.</b></p>
+            </div>
+            <button id="trainingToggleBtn" class="btn" style="background-color: #6c757d; color: white; padding: 15px 30px; font-size: 1.2em; border-radius: 8px; font-weight: bold; cursor: pointer; border:none;" onclick="toggleTrainingMode()">🎓 Turn ON Training Mode</button>
+        </div>
         
         <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 5px solid #ffc107; margin-bottom: 25px;">
             <h3 style="margin-top: 0; color: #856404;">🖥️ Multi-Station Setup</h3>
@@ -345,7 +352,7 @@
 
 <div id="printReceiptArea">
     <div style="text-align: center; border-bottom: 2px dashed #000; padding-bottom: 10px; margin-bottom: 10px;">
-        <h2 id="printReceiptHeader">Anderson PAC</h2>
+        <h2 id="printReceiptHeader" style="margin: 0;">Anderson PAC</h2>
         <p id="printReceiptSub" style="margin: 5px 0 0 0; font-size: 12px;">Thank you for your support!</p>
     </div>
     <div style="margin-bottom: 10px; font-size: 14px;">
@@ -403,13 +410,11 @@
         }
     } catch(e) { eventsConfig = [...defaultEvents]; }
 
-    // Real Environment Financial Data
     let records = JSON.parse(localStorage.getItem(DB_KEYS.RECORDS)) || [];
     let nextInvSequence = parseInt(localStorage.getItem(DB_KEYS.INV_SEQ)) || 1001;
 
-    // Training Sandbox Data
     let trainingRecords = JSON.parse(localStorage.getItem(DB_KEYS.TRAIN_RECORDS)) || [];
-    let nextTrainSequence = parseInt(localStorage.getItem(DB_KEYS.TRAIN_SEQ)) || 8001; // Training logs start at 8001
+    let nextTrainSequence = parseInt(localStorage.getItem(DB_KEYS.TRAIN_SEQ)) || 8001; 
 
     let activeEventId = localStorage.getItem(DB_KEYS.ACTIVE_EVENT) || 'ev_book_fair'; 
     let stationPrefix = localStorage.getItem(DB_KEYS.STATION_PREFIX) || 'A'; 
@@ -425,7 +430,6 @@
     };
 
     function getActiveRecords() { return isTrainingMode ? trainingRecords : records; }
-    function getActiveSequence() { return isTrainingMode ? nextTrainSequence : nextInvSequence; }
 
     function saveData() {
         localStorage.setItem(DB_KEYS.STUDENTS, JSON.stringify(students));
@@ -446,7 +450,7 @@
         renderStudents(); renderEventsAdmin(); populateItemFilter(); renderRecords(); renderItemizedReport(); updateCashierPOS(); updateDashboard();
     }
 
-    // --- Training Mode Engine ---
+    // --- Training Mode Engine (Now in Admin) ---
     function toggleTrainingMode() {
         if (currentCart.length > 0) {
             if(!confirm("Warning: You have items in the cart. Switching modes will clear the current invoice. Proceed?")) return;
@@ -459,18 +463,21 @@
         const banner = document.getElementById('activeEventBanner');
         
         if (isTrainingMode) {
-            btn.textContent = "🔥 TRAINING MODE: ACTIVE";
+            btn.textContent = "🔥 Turn OFF Training Mode";
             btn.style.backgroundColor = "#d00000";
             banner.style.backgroundColor = "#ffb703";
             banner.style.color = "#000";
+            alert("Training Mode is now ON.\nYou will be redirected to the Cashier POS.");
         } else {
-            btn.textContent = "🎓 Training Mode: OFF";
+            btn.textContent = "🎓 Turn ON Training Mode";
             btn.style.backgroundColor = "#6c757d";
             banner.style.backgroundColor = "#e9ecef";
             banner.style.color = "var(--primary-color)";
+            alert("Training Mode is OFF. Live system active.\nYou will be redirected to the Cashier POS.");
         }
-        nextCustomer(); // Wipe interface fields cleanly
+        nextCustomer(); 
         saveData();
+        lockAdmin(); // Auto-lock and kick out of admin settings
     }
 
     function autoCheckEventDate() {
@@ -601,7 +608,6 @@
         if(isTrainingMode) nextTrainSequence++; else nextInvSequence++; 
         saveData();
         
-        // Show Success View Box
         document.getElementById('successModalTitle').textContent = isTrainingMode ? "⚠️ Training Logged Successfully!" : "✅ Payment Successful!";
         document.getElementById('successModal').style.display = 'flex';
         const changeSec = document.getElementById('changeSection');
@@ -649,7 +655,6 @@
         document.querySelectorAll('.item-circle').forEach(el => el.classList.remove('selected'));
     }
 
-    // --- REPORTS ENGINE ---
     function populateItemFilter() {
         const filter = document.getElementById('itemFilter'); if(!filter) return;
         const currentSelection = filter.value; let uniqueItems = new Set();
@@ -717,7 +722,10 @@
                 <tr><td><b>${r.invoiceNo}</b></td><td style="font-size:0.85em;">${r.date}</td><td>${r.division}</td><td>${r.studentName}</td>
                     <td style="font-size:0.9em;">${r.items}</td><td><span style="background:${r.method==='Cash'?'#2a9d8f':'#4361ee'}; color:white; padding:4px 8px; border-radius:4px; font-size:0.8em;">${r.method}</span></td>
                     <td><b>$${r.amount.toFixed(2)}</b></td>
-                    <td class="no-print-report"><button class="btn btn-danger" style="padding:6px 10px; font-size:0.9em;" onclick="deleteRecord(${realIndex})">🗑️ Void</button></td></tr>
+                    <td class="no-print-report">
+                        <button class="btn btn-warning" style="padding:6px 10px; margin-right:5px; margin-bottom:5px; font-size:0.9em;" onclick="editRecord(${realIndex})">✏️ Edit</button>
+                        <button class="btn btn-danger" style="padding:6px 10px; font-size:0.9em;" onclick="deleteRecord(${realIndex})">🗑️ Void</button>
+                    </td></tr>
                 `;
             }).join('');
         }
@@ -728,6 +736,23 @@
         document.getElementById('overviewTotal').textContent = `$${sumTotal.toFixed(2)}`;
         document.getElementById('overviewCash').textContent = `$${sumCash.toFixed(2)}`;
         document.getElementById('overviewCard').textContent = `$${sumCard.toFixed(2)}`;
+    }
+
+    function editRecord(index) {
+        const pwd = prompt("🔐 Manager Override. Enter Admin Password:");
+        if (pwd !== "Eagles") return alert("Incorrect Password!");
+
+        const targetList = getActiveRecords();
+        const r = targetList[index];
+        const newDiv = prompt("Edit Division (Current: " + r.division + "):", r.division);
+        if (newDiv === null) return; 
+        
+        const newNameRaw = prompt("Edit Student Name (Current: " + r.studentName + "):", r.studentName);
+        if (newNameRaw === null) return;
+
+        targetList[index].division = newDiv.trim() || r.division;
+        targetList[index].studentName = formatName(newNameRaw) || r.studentName;
+        saveData();
     }
 
     function deleteRecord(index) {
@@ -775,7 +800,6 @@
         const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = filename; document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
     
-    // --- Admin & Roster Base Engine ---
     function addEvent() {
         const name = document.getElementById('newFeeName').value.trim(), itemsRaw = document.getElementById('newFeeItems').value.trim(), sDate = document.getElementById('newFeeStart').value, eDate = document.getElementById('newFeeEnd').value;
         if (!name || !itemsRaw) return alert('Enter Event Name and Sale Items.');
@@ -839,10 +863,10 @@
     }
     
     function exportStudentsToExcel() {
-        if (students.length === 0) return alert("Roster is empty.");
+        if (students.length === 0) return alert("List is empty.");
         let csvContent = "\uFEFFStudent No.,Last Name,First Name,Division\n";
         students.forEach(s => { csvContent += `"${s.studentNum}","${s.lastName}","${s.firstName}","${s.division}"\n`; });
-        downloadCSV(csvContent, "Anderson_Student_Roster.csv");
+        downloadCSV(csvContent, "Anderson_Student_List.csv");
     }
     function clearRoster() { if(confirm('⚠️ WARNING: Delete ALL students?')) { students = []; saveData(); } }
 </script>
