@@ -3,55 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anderson POS System</title>
+    <title>Anderson POS System v14.1</title>
     <style>
-        :root { --primary-color: #023e8a; --item-color: #2a9d8f; --highlight-color: #fca311; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; padding: 15px; }
+        :root { --primary-color: #023e8a; --item-color: #2a9d8f; --numpad-color: #2b2d42; --highlight-color: #fca311; --bg-color: #f8f9fa; --card-bg: #ffffff; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); padding: 15px; }
         .container { max-width: 1200px; margin: 0 auto; }
-        .section { display: none; background: #fff; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .section { display: none; background: var(--card-bg); padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .section.active { display: block; }
         .nav-tabs { display: flex; justify-content: center; gap: 12px; margin-bottom: 20px; }
         .nav-btn { padding: 15px 25px; border: none; background: #e0e0e0; cursor: pointer; border-radius: 10px; font-weight: bold; }
         .nav-btn.active { background: var(--primary-color); color: white; }
-        input, select { width: 100%; padding: 15px; border: 1px solid #ccc; border-radius: 8px; font-size: 1.2em; }
         .autocomplete { position: relative; }
-        .autocomplete-items { position: absolute; border: 1px solid #d4d4d4; border-top: none; z-index: 99; top: 100%; left: 0; right: 0; background: white; max-height: 200px; overflow-y: auto; }
+        .autocomplete-items { position: absolute; border: 1px solid #d4d4d4; z-index: 99; top: 100%; left: 0; right: 0; background: white; max-height: 200px; overflow-y: auto; }
         .autocomplete-items div { padding: 10px; cursor: pointer; border-bottom: 1px solid #d4d4d4; }
         .autocomplete-items div:hover { background-color: #e9e9e9; }
-        /* 其他既有樣式維持不變... */
+        input, select { width: 100%; padding: 15px; border: 1px solid #ccc; border-radius: 8px; font-size: 1.2em; }
+        .division-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(55px, 1fr)); gap: 12px; justify-content: center; }
+        .division-circle { width: 55px; height: 55px; background-color: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; }
+        .division-circle.selected { background-color: var(--highlight-color); }
+        .item-grid { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
+        .item-circle { width: 90px; height: 90px; background-color: var(--item-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: bold; cursor: pointer; padding: 5px; }
+        .item-circle.selected { background-color: var(--highlight-color); }
+        .pos-layout { display: flex; gap: 30px; flex-wrap: wrap; }
         .btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; }
+        .btn-danger { background-color: #e63946; }
         .btn-primary { background-color: var(--primary-color); }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-box { background: white; padding: 40px; border-radius: 15px; text-align: center; width: 90%; max-width: 600px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { text-align: left; padding: 15px; border-bottom: 1px solid #ddd; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🦅 Anderson POS System</h1>
-            <div class="nav-tabs">
-                <button class="nav-btn active" onclick="showSection('payment')">💻 Cashier POS</button>
-                <button class="nav-btn" onclick="showSection('records')">📊 Reports</button>
-                <button class="nav-btn" onclick="showSection('students')">👨‍🎓 Student List</button>
-                <button class="nav-btn" onclick="showSection('fees')">⚙️ Admin</button>
-            </div>
-        </header>
 
-        <div id="payment" class="section active">
-            <label>Student Details (Start typing name):</label>
-            <div class="name-row">
-                <div class="form-group autocomplete">
-                    <input type="text" id="payLastName" placeholder="Last Name" oninput="liveSearch(this.value, 'last')">
-                    <div id="lastList" class="autocomplete-items"></div>
-                </div>
-                <div class="form-group autocomplete">
-                    <input type="text" id="payFirstName" placeholder="First Name" oninput="liveSearch(this.value, 'first')">
-                    <div id="firstList" class="autocomplete-items"></div>
-                </div>
-            </div>
-            </div>
+<div class="container">
+    <header>
+        <h1>🦅 Anderson POS System</h1>
+        <div class="nav-tabs">
+            <button class="nav-btn active" onclick="showSection('payment')">💻 Cashier POS</button>
+            <button class="nav-btn" onclick="showSection('records')">📊 Reports</button>
+            <button class="nav-btn" onclick="showSection('students')">👨‍🎓 Student List</button>
+            <button class="nav-btn" onclick="showSection('fees')">⚙️ Admin</button>
+            <button id="lockBtn" class="nav-btn" style="display: none; background: #e63946;" onclick="lockAdmin()">🔒 Lock</button>
+        </div>
+    </header>
+
+    <div id="payment" class="section active">
+        <div id="activeEventBanner" style="background: #e9ecef; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; color: var(--primary-color);">
+            <span id="activeEventDisplay">Active Event: None</span>
+        </div>
+        <label>Select Division</label>
+        <div class="division-grid" id="divisionGrid"></div>
+        <label style="margin-top:20px;">Student Details:</label>
+        <div class="name-row">
+            <div class="form-group autocomplete"><input type="text" id="payLastName" placeholder="Last Name" oninput="liveSearch(this.value, 'last')"><div id="lastList" class="autocomplete-items"></div></div>
+            <div class="form-group autocomplete"><input type="text" id="payFirstName" placeholder="First Name" oninput="liveSearch(this.value, 'first')"><div id="firstList" class="autocomplete-items"></div></div>
+        </div>
+        <div id="itemGrid" class="item-grid" style="margin-top:20px;"></div>
+        <div id="numpadDisplay" style="text-align:right; font-size:2em;">$0.00</div>
+        <button class="btn btn-primary" onclick="triggerAdd()">➕ Add Item</button>
     </div>
 
+    <div id="records" class="section">
+        <button class="btn btn-danger" onclick="clearAllRecords()">⚠️ Clear All Invoices</button>
+        <table id="recordsTable"><tbody id="recordsTableBody"></tbody></table>
+    </div>
+
+    <div id="students" class="section">
+        <div class="name-row">
+            <input type="text" id="stuLastName" placeholder="Last Name">
+            <input type="text" id="stuFirstName" placeholder="First Name">
+            <input type="text" id="stuDivision" placeholder="Division">
+            <button class="btn btn-primary" onclick="addStudent()">Add Student</button>
+        </div>
+        <table id="studentTable"><thead><tr><th>Last Name</th><th>First Name</th><th>Division</th><th>Action</th></tr></thead><tbody id="studentTableBody"></tbody></table>
+    </div>
+
+    <div id="fees" class="section">
+        <div style="background: #e9ecef; padding: 20px; border-radius: 8px;">
+            <h3>Training Mode Control</h3>
+            <button id="trainingToggleBtn" class="btn" style="background: #6c757d;" onclick="toggleTrainingMode()">🎓 Turn ON Training Mode</button>
+        </div>
+    </div>
+</div>
+
 <script>
-    // 關鍵：Live Search 功能回歸
+    // --- 基礎邏輯 ---
+    let students = JSON.parse(localStorage.getItem('anderson_students')) || [];
+    let records = JSON.parse(localStorage.getItem('anderson_records')) || [];
+    let trainingRecords = JSON.parse(localStorage.getItem('anderson_training_records')) || [];
+    let isTrainingMode = false;
+    let selectedDivision = null;
+
+    function formatName(name) { return name.trim().toLowerCase().replace(/(?:^|[\s-])\w/g, m => m.toUpperCase()); }
+
+    function showSection(id) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
     function liveSearch(val, type) {
         const list = document.getElementById(type === 'last' ? 'lastList' : 'firstList');
         list.innerHTML = '';
@@ -64,17 +114,44 @@
                 document.getElementById('payLastName').value = s.lastName;
                 document.getElementById('payFirstName').value = s.firstName;
                 selectedDivision = s.division;
-                document.querySelectorAll('.division-circle').forEach(el => {
-                    el.classList.toggle('selected', el.textContent === s.division);
-                });
-                document.getElementById('invoiceDivDisplay').textContent = `Div: ${s.division}`;
                 list.innerHTML = '';
             };
             list.appendChild(div);
         });
     }
 
-    // 其餘 v14.0 功能保持完全一致...
+    function toggleTrainingMode() {
+        isTrainingMode = !isTrainingMode;
+        const btn = document.getElementById('trainingToggleBtn');
+        btn.textContent = isTrainingMode ? "🔥 Turn OFF Training Mode" : "🎓 Turn ON Training Mode";
+        btn.style.backgroundColor = isTrainingMode ? "#d00000" : "#6c757d";
+        alert(isTrainingMode ? "Training Mode ON" : "Training Mode OFF");
+        lockAdmin();
+    }
+
+    function addStudent() {
+        const lName = formatName(document.getElementById('stuLastName').value);
+        const fName = formatName(document.getElementById('stuFirstName').value);
+        const div = document.getElementById('stuDivision').value.trim();
+        students.push({ lastName: lName, firstName: fName, division: div });
+        localStorage.setItem('anderson_students', JSON.stringify(students));
+        renderStudents();
+    }
+
+    function renderStudents() {
+        document.getElementById('studentTableBody').innerHTML = students.map((s, i) => `<tr><td>${s.lastName}</td><td>${s.firstName}</td><td>${s.division}</td><td><button onclick="students.splice(${i},1); localStorage.setItem('anderson_students', JSON.stringify(students)); renderStudents()">Del</button></td></tr>`).join('');
+    }
+
+    function clearAllRecords() {
+        if(confirm('Clear all invoices?')) { 
+            if(isTrainingMode) trainingRecords = []; else records = []; 
+            localStorage.setItem('anderson_records', JSON.stringify(records));
+            alert('Cleared!'); 
+        }
+    }
+    
+    // 初始化
+    renderStudents();
 </script>
 </body>
 </html>
