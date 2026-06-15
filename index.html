@@ -8,18 +8,18 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Anderson POS System v14.4</title>
+    <title>Anderson POS System v14.5</title>
     <style>
         :root {
-            /* 莫蘭迪美學調色盤 (Morandi Latte Aesthetic) */
-            --bg-color: #E8DCC4; /* 奶茶色大底色 Milk Tea */
-            --card-bg: #FCFBF9; /* 奶油白 Creamy White */
-            --primary-color: #415D52; /* 莫蘭迪深綠色 Morandi Dark Green */
-            --secondary-color: #799488; /* 莫蘭迪淺綠 Soft Morandi Green */
-            --item-color: #A67B6B; /* 莫蘭迪豆沙褐 Rose Taupe / Bean Paste */
-            --numpad-color: #63666A; /* 莫蘭迪深灰藍 Slate Gray */
-            --highlight-color: #DDA77B; /* 焦糖琥珀亮色 Caramel Amber */
-            --text-color: #3B3530; /* 深咖啡灰 Espresso Dark */
+            /* 莫蘭迪傳承調色盤 (Morandi Heritage Palette) - 從 Logo 演變 */
+            --bg-color: #EAE0C8; /* Oat Milk Tea 淡燕麥奶茶 (與深色 Logo 關聯的中性色) Milk Tea */
+            --card-bg: #FCFBF9; /* Creamy White 奶油白 (保持收銀區乾淨) Creamy White */
+            --primary-color: #2A4D4A; /* Morandi Deep Teal 莫蘭迪深藍綠 (Logo EAGLES 藍綠色的深沉質感版) Morandi Deep Teal */
+            --secondary-color: #5C7A77; /* Soft Morandi Teal 柔和莫蘭迪藍綠 Soft Morandi Teal */
+            --item-color: #59413A; /* Morandi Dark Espresso Taupe 莫蘭迪深咖啡褐 (替代之前的Rose Taupe，更接近 Logo 深色基礎) Morandi Dark Espresso Taupe / Bean Paste */
+            --numpad-color: #4A4A4A; /* Morandi Slate Gray 莫蘭迪深灰 (保持灰暗但柔和) Morandi Slate Gray */
+            --highlight-color: #C68E17; /* Caramel Amber 焦糖琥珀 (焦糖琥珀與深Teal互補，保持質感) Caramel Amber */
+            --text-color: #2A2A2A; /* Dark Carbon Gray 深灰黑 (替代 espresso，更接近咖啡黑) Deep Carbon */
             
             --border-radius: 14px;
             --box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
@@ -28,12 +28,13 @@
         body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 15px; -webkit-font-smoothing: antialiased; }
         .container { max-width: 1200px; margin: 0 auto; }
         header { text-align: center; margin-bottom: 25px; padding-top: 10px; }
+        header img { max-width: 200px; margin-bottom: 15px; } /* 新增Logo顯示樣式 */
         h1 { color: var(--primary-color); margin-bottom: 10px; font-size: 2.4em; font-weight: 800; letter-spacing: -0.5px; }
 
         .nav-tabs { display: flex; justify-content: center; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; }
         .nav-btn { padding: 14px 28px; border: none; background-color: rgba(255,255,255,0.6); color: var(--text-color); cursor: pointer; border-radius: 30px; font-weight: 700; font-size: 1.05em; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
         .nav-btn:hover { background-color: #fff; }
-        .nav-btn.active { background-color: var(--primary-color); color: white; box-shadow: 0 4px 12px rgba(65, 93, 82, 0.4); }
+        .nav-btn.active { background-color: var(--primary-color); color: white; box-shadow: 0 4px 12px rgba(42, 77, 74, 0.4); }
 
         .section { display: none; background: var(--card-bg); padding: 30px; border-radius: var(--border-radius); box-shadow: var(--box-shadow); animation: fadeIn 0.4s ease; border: 1px solid rgba(0,0,0,0.03); }
         .section.active { display: block; }
@@ -42,7 +43,7 @@
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 1.05em; color: var(--text-color); opacity: 0.9; }
         input, select { width: 100%; padding: 14px; border: 1.5px solid #d1d5db; border-radius: 10px; box-sizing: border-box; font-size: 1.1em; transition: border-color 0.3s; background-color: #fff; color: var(--text-color); }
-        input:focus, select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(65, 93, 82, 0.15); }
+        input:focus, select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(42, 77, 74, 0.15); }
         
         .name-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
         .name-row .form-group { flex: 1; min-width: 200px; margin-bottom: 0; }
@@ -50,16 +51,16 @@
         .grid-container { display: flex; justify-content: center; margin-top: 10px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
         .division-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(55px, 1fr)); gap: 14px; justify-content: center;}
         
-        /* Step 1: 莫蘭迪深綠色, 深底白字對比 */
+        /* Step 1: 傳承莫蘭迪深藍綠色, 深底白字對比 */
         .division-circle { width: 55px; height: 55px; background-color: var(--primary-color); color: white; border: 2px solid transparent; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2em; font-weight: 700; cursor: pointer; user-select: none; transition: all 0.2s ease; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
         .division-circle:hover { filter: brightness(1.1); transform: translateY(-2px); }
-        .division-circle.selected { background-color: var(--highlight-color); color: #fff; border-color: #fff; transform: scale(1.15); box-shadow: 0 4px 12px rgba(221, 167, 123, 0.4); }
+        .division-circle.selected { background-color: var(--highlight-color); color: #fff; border-color: #fff; transform: scale(1.15); box-shadow: 0 4px 12px rgba(198, 142, 23, 0.4); }
 
-        /* Step 2: 縮小尺寸以適應橫向單行排列, 豆沙褐色深底白字 */
+        /* Step 2: 保持橫向單行排列, 傳承莫蘭迪咖啡豆沙褐色 */
         .item-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
         .item-circle { width: 75px; height: 75px; background-color: var(--item-color); color: white; border: 2px solid transparent; border-radius: 18px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 0.9em; font-weight: 700; cursor: pointer; user-select: none; padding: 6px; word-break: break-word; transition: all 0.2s ease; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
         .item-circle:hover { filter: brightness(1.1); transform: translateY(-2px); }
-        .item-circle.selected { background-color: var(--highlight-color); color: white; border-color: #fff; transform: scale(1.08); box-shadow: 0 6px 12px rgba(221, 167, 123, 0.4); }
+        .item-circle.selected { background-color: var(--highlight-color); color: white; border-color: #fff; transform: scale(1.08); box-shadow: 0 6px 12px rgba(198, 142, 23, 0.4); }
 
         .pos-layout { display: flex; gap: 30px; flex-wrap: wrap; }
         .pos-controls { flex: 1.5; min-width: 350px; }
@@ -70,7 +71,7 @@
         .num-btn { background-color: #ffffff; color: var(--numpad-color); border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 20px; font-size: 1.8em; font-weight: 700; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.03); transition: all 0.1s; }
         .num-btn:active { transform: scale(0.96); background-color: #f3f4f6; }
         .num-btn.btn-action { background-color: #f3f4f6; color: var(--numpad-color); font-size: 1.3em;}
-        .num-btn.btn-enter { background-color: var(--item-color); color: white; border-color: var(--item-color); grid-column: span 3; font-size: 1.5em; text-transform: uppercase; padding: 22px; box-shadow: 0 4px 10px rgba(166, 123, 107, 0.3); }
+        .num-btn.btn-enter { background-color: var(--item-color); color: white; border-color: var(--item-color); grid-column: span 3; font-size: 1.5em; text-transform: uppercase; padding: 22px; box-shadow: 0 4px 10px rgba(89, 65, 58, 0.3); }
 
         .invoice-header { text-align: center; border-bottom: 2px dashed #d1d5db; padding-bottom: 15px; margin-bottom: 15px; }
         .invoice-list { flex-grow: 1; overflow-y: auto; max-height: 350px; margin-bottom: 15px; padding-right: 5px; }
@@ -84,9 +85,9 @@
         .payment-methods { display: flex; gap: 15px; }
         .pay-btn { flex: 1; padding: 22px; font-size: 1.4em; font-weight: 800; border: none; border-radius: 12px; cursor: pointer; color: white; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .pay-btn:active { transform: scale(0.97); }
-        .btn-cash { background-color: #557A68; } /* Muted Emerald */
+        .btn-cash { background-color: #557A68; } /* Muted Emerald (保持，互補質感) */
         .btn-cash:hover { background-color: #436253; }
-        .btn-card { background-color: #5A7B9C; } /* Muted Blue */
+        .btn-card { background-color: #5A7B9C; } /* Muted Blue (保持，質感質感) Royal Blue */
         .btn-card:hover { background-color: #48647F; }
 
         .btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; color: white; font-size: 1.1em; transition: 0.2s; }
@@ -107,15 +108,15 @@
         .stat-card h3 { margin: 0; font-size: 2.6em; font-weight: 800; }
         .stat-card p { margin: 8px 0 0 0; opacity: 0.9; font-size: 1.1em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
         .card-blue { background: linear-gradient(135deg, #748CAB, #3E5C76); }
-        .card-green { background: linear-gradient(135deg, #819E8E, #415D52); }
-        .card-gold { background: linear-gradient(135deg, #DDA77B, #B87A4F); }
+        .card-green { background: linear-gradient(135deg, #819E8E, #2A4D4A); } /* 莫蘭迪綠色梯度, 替代 Morandi Dark Green */
+        .card-gold { background: linear-gradient(135deg, #C68E17, #966710); } /* 莫蘭迪金色梯度 Refined Caramel */
 
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(59, 53, 48, 0.8); backdrop-filter: blur(5px); z-index: 2000; justify-content: center; align-items: center; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(42, 42, 42, 0.8); backdrop-filter: blur(5px); z-index: 2000; justify-content: center; align-items: center; }
         .modal-box { background: white; padding: 45px; border-radius: 20px; text-align: center; width: 90%; max-width: 600px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4); animation: scaleIn 0.3s ease; }
         @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .modal-title { font-size: 2.2em; color: var(--primary-color); margin-top: 0; margin-bottom: 20px; font-weight: 800; }
         .modal-input { font-size: 2em; padding: 18px; width: 100%; margin-bottom: 25px; text-align: center; border: 2px solid #d1d5db; border-radius: 12px; font-weight: 700; color: var(--text-color); }
-        .modal-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(65, 93, 82, 0.15); }
+        .modal-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(42, 77, 74, 0.15); }
         .modal-btn-row { display: flex; gap: 20px; justify-content: center; }
         .modal-btn { flex: 1; padding: 20px; font-size: 1.3em; font-weight: 800; border-radius: 12px; border: none; cursor: pointer; color: white; transition: 0.2s; }
         .modal-btn:hover { opacity: 0.9; transform: translateY(-2px); }
@@ -135,7 +136,7 @@
 
 <div class="container">
     <header class="no-print-report">
-        <h1>🦅 Anderson POS <span style="font-size: 0.4em; color: var(--numpad-color); font-weight: 600; vertical-align: middle;">v14.4</span></h1>
+        <h1>🦅 Anderson POS <span style="font-size: 0.4em; color: var(--numpad-color); font-weight: 600; vertical-align: middle;">v14.5</span></h1>
         <div class="nav-tabs">
             <button class="nav-btn active" onclick="showSection('payment')">💻 Cashier POS</button>
             <button class="nav-btn" onclick="showSection('records')">📊 Reports & Invoices</button>
@@ -146,7 +147,7 @@
     </header>
 
     <div id="payment" class="section active no-print">
-        <div id="activeEventBanner" style="background: rgba(121, 148, 136, 0.15); padding: 18px 25px; border-radius: 12px; font-weight: 800; color: var(--primary-color); margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; font-size: 1.25em; border: 1px solid rgba(121, 148, 136, 0.3);">
+        <div id="activeEventBanner" style="background: rgba(92, 122, 119, 0.15); padding: 18px 25px; border-radius: 12px; font-weight: 800; color: var(--primary-color); margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; font-size: 1.25em; border: 1px solid rgba(92, 122, 119, 0.3);">
             <span id="activeEventDisplay">Active Event: None</span>
             <span id="invoiceNoDisplay" style="color: var(--numpad-color); font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.9em; background: #fff; padding: 6px 12px; border-radius: 6px; border: 1px solid #d1d5db;">INV-A-XXXX</span>
         </div>
@@ -194,7 +195,7 @@
             <div class="pos-invoice">
                 <div class="invoice-header">
                     <h3 style="margin: 0; font-size: 1.6em; color: var(--text-color); font-weight: 800;">Current Invoice</h3>
-                    <div id="invoiceDivDisplay" style="color: var(--primary-color); font-weight: 700; font-size: 1.1em; margin-top: 8px; display: inline-block; background: rgba(65, 93, 82, 0.1); padding: 4px 12px; border-radius: 20px;">Div: Not Selected</div>
+                    <div id="invoiceDivDisplay" style="color: var(--primary-color); font-weight: 700; font-size: 1.1em; margin-top: 8px; display: inline-block; background: rgba(42, 77, 74, 0.1); padding: 4px 12px; border-radius: 20px;">Div: Not Selected</div>
                 </div>
                 <div class="invoice-list" id="invoiceList"></div>
                 <div class="invoice-total-area">
@@ -243,7 +244,7 @@
         </div>
 
         <h2 class="no-print-report" style="margin-top: 45px; border-bottom: 3px solid var(--numpad-color); color: var(--numpad-color); padding-bottom: 12px;">📊 Invoice Overview</h2>
-        <div class="no-print-report" style="margin-bottom: 20px; background: rgba(221, 167, 123, 0.15); padding: 18px; border-radius: 12px; display: inline-block; border: 1px solid rgba(221, 167, 123, 0.4);">
+        <div class="no-print-report" style="margin-bottom: 20px; background: rgba(198, 142, 23, 0.15); padding: 18px; border-radius: 12px; display: inline-block; border: 1px solid rgba(198, 142, 23, 0.4);">
             <label style="font-weight: 700; margin-right: 12px; color: #9D6B53;">📅 Show Invoices For:</label>
             <select id="invoiceDateFilter" style="font-size: 1.1em; padding: 10px; width: 220px; border-color: var(--highlight-color);" onchange="renderRecords()">
                 <option value="TODAY">Today's Invoices</option>
@@ -307,7 +308,7 @@
     <div id="fees" class="section no-print-report">
         <h2 style="margin-top: 0; color: var(--primary-color);">⚙️ Admin Configurations</h2>
 
-        <div style="background: rgba(121, 148, 136, 0.1); padding: 25px; border-radius: 12px; border-left: 6px solid var(--primary-color); margin-bottom: 25px;">
+        <div style="background: rgba(92, 122, 119, 0.1); padding: 25px; border-radius: 12px; border-left: 6px solid var(--primary-color); margin-bottom: 25px;">
             <h3 style="margin-top: 0; color: var(--primary-color); font-weight: 800;">💾 System Backup & Restore (系統備份與還原)</h3>
             <p style="color: var(--numpad-color); margin-bottom: 18px; font-size: 1.05em;">Use this to transfer all data (students, invoices, settings) to a new version or another iPad.</p>
             <div style="display: flex; gap: 12px; flex-wrap: wrap;">
@@ -325,7 +326,7 @@
             <button id="trainingToggleBtn" class="btn" style="background-color: var(--numpad-color); color: white; padding: 18px 35px; font-size: 1.2em; border-radius: 12px; font-weight: 800; border:none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onclick="toggleTrainingMode()">🎓 Turn ON Training Mode</button>
         </div>
         
-        <div style="background: rgba(221, 167, 123, 0.1); padding: 25px; border-radius: 12px; border-left: 6px solid var(--highlight-color); margin-bottom: 30px;">
+        <div style="background: rgba(198, 142, 23, 0.1); padding: 25px; border-radius: 12px; border-left: 6px solid var(--highlight-color); margin-bottom: 30px;">
             <h3 style="margin-top: 0; color: #9D6B53; font-weight: 800;">🖥️ Multi-Station Setup</h3>
             <div style="display: flex; gap: 15px; align-items: center;">
                 <label style="margin: 0; min-width: 150px; color: #724C3A;">Station Prefix:</label>
@@ -382,7 +383,7 @@
 <div id="successModal" class="overlay">
     <div class="modal-box" style="max-width: 700px; padding: 50px;">
         <h2 id="successModalTitle" style="font-size: 3.2em; margin-top: 0; color: var(--primary-color); font-weight: 800;">✅ Payment Successful!</h2>
-        <div id="changeSection" style="display: none; background: rgba(121, 148, 136, 0.15); border: 2px dashed var(--primary-color); padding: 30px; border-radius: 16px; margin-bottom: 30px;">
+        <div id="changeSection" style="display: none; background: rgba(92, 122, 119, 0.15); border: 2px dashed var(--primary-color); padding: 30px; border-radius: 16px; margin-bottom: 30px;">
             <p style="font-size: 1.8em; color: var(--primary-color); margin: 0; font-weight: 800;">Change Due</p>
             <div class="change-huge" id="modalChangeDue">$0.00</div>
         </div>
@@ -540,16 +541,16 @@
         if (isTrainingMode) {
             btn.textContent = "🔥 Turn OFF Training Mode";
             btn.style.backgroundColor = "#D26C6C";
-            banner.style.backgroundColor = "rgba(221, 167, 123, 0.2)";
+            banner.style.backgroundColor = "rgba(198, 142, 23, 0.2)";
             banner.style.color = "#9D6B53";
-            banner.style.borderColor = "rgba(221, 167, 123, 0.4)";
+            banner.style.borderColor = "rgba(198, 142, 23, 0.4)";
             alert("Training Mode is now ON.\nYou will be redirected to the Cashier POS.");
         } else {
             btn.textContent = "🎓 Turn ON Training Mode";
             btn.style.backgroundColor = "var(--numpad-color)";
-            banner.style.backgroundColor = "rgba(121, 148, 136, 0.15)";
+            banner.style.backgroundColor = "rgba(92, 122, 119, 0.15)";
             banner.style.color = "var(--primary-color)";
-            banner.style.borderColor = "rgba(121, 148, 136, 0.3)";
+            banner.style.borderColor = "rgba(92, 122, 119, 0.3)";
             alert("Training Mode is OFF. Live system active.\nYou will be redirected to the Cashier POS.");
         }
         nextCustomer(); 
@@ -968,7 +969,7 @@
 
     function renderStudents() {
         document.getElementById('studentTableBody').innerHTML = students.map((s, index) => `
-            <tr><td style="color:var(--numpad-color);">${s.studentNum}</td><td><strong style="color:var(--text-color);">${s.lastName}</strong></td><td>${s.firstName}</td><td><span style="background:rgba(65, 93, 82, 0.1); padding:4px 12px; border-radius:20px; font-weight:800; color:var(--primary-color);">${s.division}</span></td>
+            <tr><td style="color:var(--numpad-color);">${s.studentNum}</td><td><strong style="color:var(--text-color);">${s.lastName}</strong></td><td>${s.firstName}</td><td><span style="background:rgba(42, 77, 74, 0.1); padding:4px 12px; border-radius:20px; font-weight:800; color:var(--primary-color);">${s.division}</span></td>
              <td>
                 <button class="btn btn-warning" style="padding:8px 14px; margin-right:8px; border-radius:6px;" onclick="editStudentDiv(${index})">Edit Div</button>
                 <button class="btn btn-danger" style="padding:8px 14px; border-radius:6px;" onclick="if(confirm('Delete student?')){students.splice(${index}, 1); saveData();}">Del</button>
