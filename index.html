@@ -3,122 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- iPad / iPhone 主畫面專屬設定 -->
     <meta name="apple-mobile-web-app-title" content="Anderson POS">
     <meta name="application-name" content="Anderson POS">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Anderson POS System v14.3</title>
+    <title>Anderson POS System v14.4</title>
     <style>
         :root {
-            /* 專業質感配色 (Modern Professional Palette) */
-            --primary-color: #1e3a8a; /* 深海藍 Deep Navy */
-            --secondary-color: #3b82f6; /* 明亮藍 Soft Blue */
-            --item-color: #0f766e; /* 莫蘭迪綠 Elegant Teal */
-            --numpad-color: #334155; /* 霧灰藍 Slate Gray */
-            --highlight-color: #f59e0b; /* 琥珀金 Refined Amber */
-            --bg-color: #f8fafc; /* 淺灰白 Light Slate */
-            --card-bg: #ffffff;
-            --text-color: #1e293b; /* 深碳灰 Deep Carbon */
-            --border-radius: 14px; /* 更柔和的圓角 */
+            /* 莫蘭迪美學調色盤 (Morandi Latte Aesthetic) */
+            --bg-color: #E8DCC4; /* 奶茶色大底色 Milk Tea */
+            --card-bg: #FCFBF9; /* 奶油白 Creamy White */
+            --primary-color: #415D52; /* 莫蘭迪深綠色 Morandi Dark Green */
+            --secondary-color: #799488; /* 莫蘭迪淺綠 Soft Morandi Green */
+            --item-color: #A67B6B; /* 莫蘭迪豆沙褐 Rose Taupe / Bean Paste */
+            --numpad-color: #63666A; /* 莫蘭迪深灰藍 Slate Gray */
+            --highlight-color: #DDA77B; /* 焦糖琥珀亮色 Caramel Amber */
+            --text-color: #3B3530; /* 深咖啡灰 Espresso Dark */
+            
+            --border-radius: 14px;
             --box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
         }
 
-        /* 採用 Apple 系統原生字體，帶來極致流暢的視覺體驗 */
         body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 15px; -webkit-font-smoothing: antialiased; }
         .container { max-width: 1200px; margin: 0 auto; }
         header { text-align: center; margin-bottom: 25px; padding-top: 10px; }
         h1 { color: var(--primary-color); margin-bottom: 10px; font-size: 2.4em; font-weight: 800; letter-spacing: -0.5px; }
 
         .nav-tabs { display: flex; justify-content: center; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; }
-        .nav-btn { padding: 14px 28px; border: none; background-color: #e2e8f0; color: #475569; cursor: pointer; border-radius: 30px; font-weight: 700; font-size: 1.05em; transition: all 0.3s ease; }
-        .nav-btn:hover { background-color: #cbd5e1; }
-        .nav-btn.active { background-color: var(--primary-color); color: white; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3); }
+        .nav-btn { padding: 14px 28px; border: none; background-color: rgba(255,255,255,0.6); color: var(--text-color); cursor: pointer; border-radius: 30px; font-weight: 700; font-size: 1.05em; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+        .nav-btn:hover { background-color: #fff; }
+        .nav-btn.active { background-color: var(--primary-color); color: white; box-shadow: 0 4px 12px rgba(65, 93, 82, 0.4); }
 
-        .section { display: none; background: var(--card-bg); padding: 30px; border-radius: var(--border-radius); box-shadow: var(--box-shadow); animation: fadeIn 0.4s ease; border: 1px solid #e2e8f0; }
+        .section { display: none; background: var(--card-bg); padding: 30px; border-radius: var(--border-radius); box-shadow: var(--box-shadow); animation: fadeIn 0.4s ease; border: 1px solid rgba(0,0,0,0.03); }
         .section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
         .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 1.05em; color: #475569; }
-        input, select { width: 100%; padding: 14px; border: 1.5px solid #cbd5e1; border-radius: 10px; box-sizing: border-box; font-size: 1.1em; transition: border-color 0.3s; background-color: #f8fafc; color: var(--text-color); }
-        input:focus, select:focus { outline: none; border-color: var(--secondary-color); background-color: #fff; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 1.05em; color: var(--text-color); opacity: 0.9; }
+        input, select { width: 100%; padding: 14px; border: 1.5px solid #d1d5db; border-radius: 10px; box-sizing: border-box; font-size: 1.1em; transition: border-color 0.3s; background-color: #fff; color: var(--text-color); }
+        input:focus, select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(65, 93, 82, 0.15); }
         
         .name-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
         .name-row .form-group { flex: 1; min-width: 200px; margin-bottom: 0; }
 
         .grid-container { display: flex; justify-content: center; margin-top: 10px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
         .division-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(55px, 1fr)); gap: 14px; justify-content: center;}
-        .division-circle { width: 55px; height: 55px; background-color: #f1f5f9; color: #475569; border: 2px solid #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2em; font-weight: 700; cursor: pointer; user-select: none; transition: all 0.2s ease; }
-        .division-circle:hover { background-color: #e2e8f0; }
-        .division-circle.selected { background-color: var(--primary-color); color: white; border-color: var(--primary-color); transform: scale(1.1); box-shadow: 0 4px 10px rgba(30, 58, 138, 0.2); }
+        
+        /* Step 1: 莫蘭迪深綠色, 深底白字對比 */
+        .division-circle { width: 55px; height: 55px; background-color: var(--primary-color); color: white; border: 2px solid transparent; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2em; font-weight: 700; cursor: pointer; user-select: none; transition: all 0.2s ease; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
+        .division-circle:hover { filter: brightness(1.1); transform: translateY(-2px); }
+        .division-circle.selected { background-color: var(--highlight-color); color: #fff; border-color: #fff; transform: scale(1.15); box-shadow: 0 4px 12px rgba(221, 167, 123, 0.4); }
 
-        .item-grid { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
-        .item-circle { width: 95px; height: 95px; background-color: #f1f5f9; color: var(--item-color); border: 2px solid #cbd5e1; border-radius: 20px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 1em; font-weight: 700; cursor: pointer; user-select: none; padding: 8px; word-break: break-word; transition: all 0.2s ease; }
-        .item-circle:hover { background-color: #e2e8f0; transform: translateY(-2px); }
-        .item-circle.selected { background-color: var(--item-color); color: white; border-color: var(--item-color); transform: scale(1.05); box-shadow: 0 6px 12px rgba(15, 118, 110, 0.25); }
+        /* Step 2: 縮小尺寸以適應橫向單行排列, 豆沙褐色深底白字 */
+        .item-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+        .item-circle { width: 75px; height: 75px; background-color: var(--item-color); color: white; border: 2px solid transparent; border-radius: 18px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 0.9em; font-weight: 700; cursor: pointer; user-select: none; padding: 6px; word-break: break-word; transition: all 0.2s ease; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
+        .item-circle:hover { filter: brightness(1.1); transform: translateY(-2px); }
+        .item-circle.selected { background-color: var(--highlight-color); color: white; border-color: #fff; transform: scale(1.08); box-shadow: 0 6px 12px rgba(221, 167, 123, 0.4); }
 
         .pos-layout { display: flex; gap: 30px; flex-wrap: wrap; }
         .pos-controls { flex: 1.5; min-width: 350px; }
-        .pos-invoice { flex: 1; min-width: 320px; background: #fafaf9; border: 1px solid #e2e8f0; border-radius: var(--border-radius); padding: 25px; display: flex; flex-direction: column; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+        .pos-invoice { flex: 1; min-width: 320px; background: #fff; border: 1px solid #e5e7eb; border-radius: var(--border-radius); padding: 25px; display: flex; flex-direction: column; box-shadow: inset 0 2px 4px rgba(0,0,0,0.01); }
 
-        .numpad-display { background: #fff; border: 2px solid #e2e8f0; border-radius: 12px; padding: 20px; text-align: right; font-size: 2.5em; font-weight: 800; margin-bottom: 20px; color: var(--primary-color); letter-spacing: 1px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
-        .numpad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-        .num-btn { background-color: #ffffff; color: var(--text-color); border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 22px; font-size: 1.8em; font-weight: 700; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.1s; }
-        .num-btn:active { transform: scale(0.96); background-color: #f1f5f9; }
-        .num-btn.btn-action { background-color: #f1f5f9; color: #64748b; font-size: 1.3em;}
-        .num-btn.btn-enter { background-color: var(--item-color); color: white; border-color: var(--item-color); grid-column: span 3; font-size: 1.5em; text-transform: uppercase; padding: 25px; box-shadow: 0 4px 10px rgba(15, 118, 110, 0.2); }
+        .numpad-display { background: #fff; border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; text-align: right; font-size: 2.5em; font-weight: 800; margin-bottom: 20px; color: var(--primary-color); letter-spacing: 1px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+        .numpad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .num-btn { background-color: #ffffff; color: var(--numpad-color); border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 20px; font-size: 1.8em; font-weight: 700; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.03); transition: all 0.1s; }
+        .num-btn:active { transform: scale(0.96); background-color: #f3f4f6; }
+        .num-btn.btn-action { background-color: #f3f4f6; color: var(--numpad-color); font-size: 1.3em;}
+        .num-btn.btn-enter { background-color: var(--item-color); color: white; border-color: var(--item-color); grid-column: span 3; font-size: 1.5em; text-transform: uppercase; padding: 22px; box-shadow: 0 4px 10px rgba(166, 123, 107, 0.3); }
 
-        .invoice-header { text-align: center; border-bottom: 2px dashed #cbd5e1; padding-bottom: 15px; margin-bottom: 15px; }
+        .invoice-header { text-align: center; border-bottom: 2px dashed #d1d5db; padding-bottom: 15px; margin-bottom: 15px; }
         .invoice-list { flex-grow: 1; overflow-y: auto; max-height: 350px; margin-bottom: 15px; padding-right: 5px; }
-        .invoice-item { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #f1f5f9; font-size: 1.15em; font-weight: 500; }
+        .invoice-item { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #f3f4f6; font-size: 1.15em; font-weight: 600; color: var(--text-color); }
         .invoice-item .del-btn { color: #ef4444; cursor: pointer; font-weight: bold; margin-left: 15px; padding: 0 10px; transition: 0.2s; }
         .invoice-item .del-btn:hover { color: #dc2626; transform: scale(1.1); }
         
-        .invoice-total-area { border-top: 3px solid var(--text-color); padding-top: 20px; text-align: right; }
+        .invoice-total-area { border-top: 3px solid var(--numpad-color); padding-top: 20px; text-align: right; }
         .total-amount { font-size: 3.2em; color: var(--primary-color); font-weight: 800; margin: 10px 0 20px 0; }
 
         .payment-methods { display: flex; gap: 15px; }
         .pay-btn { flex: 1; padding: 22px; font-size: 1.4em; font-weight: 800; border: none; border-radius: 12px; cursor: pointer; color: white; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .pay-btn:active { transform: scale(0.97); }
-        .btn-cash { background-color: #059669; } /* Emerald */
-        .btn-cash:hover { background-color: #047857; }
-        .btn-card { background-color: #2563eb; } /* Royal Blue */
-        .btn-card:hover { background-color: #1d4ed8; }
+        .btn-cash { background-color: #557A68; } /* Muted Emerald */
+        .btn-cash:hover { background-color: #436253; }
+        .btn-card { background-color: #5A7B9C; } /* Muted Blue */
+        .btn-card:hover { background-color: #48647F; }
 
         .btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; color: white; font-size: 1.1em; transition: 0.2s; }
         .btn:hover { opacity: 0.9; }
         .btn-primary { background-color: var(--primary-color); }
-        .btn-danger { background-color: #ef4444; }
+        .btn-danger { background-color: #D26C6C; }
         .btn-warning { background-color: var(--highlight-color); color: #fff; }
         
-        table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 20px; font-size: 1.05em; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; }
-        th, td { text-align: left; padding: 16px; border-bottom: 1px solid #e2e8f0; }
-        th { background-color: #f8fafc; color: #475569; font-weight: 700; text-transform: uppercase; font-size: 0.9em; letter-spacing: 0.5px; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 20px; font-size: 1.05em; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; }
+        th, td { text-align: left; padding: 16px; border-bottom: 1px solid #e5e7eb; }
+        th { background-color: #f9fafb; color: var(--numpad-color); font-weight: 700; text-transform: uppercase; font-size: 0.9em; letter-spacing: 0.5px; }
         tr:last-child td { border-bottom: none; }
-        .summary-row td { background-color: #fffbeb; font-weight: 800; font-size: 1.15em; color: #b45309; border-top: 2px solid #fcd34d; }
+        .summary-row td { background-color: #FDF6F0; font-weight: 800; font-size: 1.15em; color: #9D6B53; border-top: 2px solid #E6D0B8; }
 
         .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .stat-card { color: white; padding: 30px; border-radius: var(--border-radius); text-align: left; box-shadow: var(--box-shadow); position: relative; overflow: hidden; }
-        .stat-card::after { content: ''; position: absolute; top: -50%; right: -20%; width: 150px; height: 150px; background: rgba(255,255,255,0.1); border-radius: 50%; transform: rotate(45deg); }
+        .stat-card::after { content: ''; position: absolute; top: -50%; right: -20%; width: 150px; height: 150px; background: rgba(255,255,255,0.15); border-radius: 50%; transform: rotate(45deg); }
         .stat-card h3 { margin: 0; font-size: 2.6em; font-weight: 800; }
-        .stat-card p { margin: 8px 0 0 0; opacity: 0.9; font-size: 1.1em; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
-        .card-blue { background: linear-gradient(135deg, #2563eb, #1e3a8a); }
-        .card-green { background: linear-gradient(135deg, #059669, #0f766e); }
-        .card-gold { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .stat-card p { margin: 8px 0 0 0; opacity: 0.9; font-size: 1.1em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .card-blue { background: linear-gradient(135deg, #748CAB, #3E5C76); }
+        .card-green { background: linear-gradient(135deg, #819E8E, #415D52); }
+        .card-gold { background: linear-gradient(135deg, #DDA77B, #B87A4F); }
 
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(5px); z-index: 2000; justify-content: center; align-items: center; }
-        .modal-box { background: white; padding: 45px; border-radius: 20px; text-align: center; width: 90%; max-width: 600px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); animation: scaleIn 0.3s ease; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(59, 53, 48, 0.8); backdrop-filter: blur(5px); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-box { background: white; padding: 45px; border-radius: 20px; text-align: center; width: 90%; max-width: 600px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4); animation: scaleIn 0.3s ease; }
         @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .modal-title { font-size: 2.2em; color: var(--primary-color); margin-top: 0; margin-bottom: 20px; font-weight: 800; }
-        .modal-input { font-size: 2em; padding: 18px; width: 100%; margin-bottom: 25px; text-align: center; border: 2px solid #cbd5e1; border-radius: 12px; font-weight: 700; color: var(--text-color); }
-        .modal-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.1); }
+        .modal-input { font-size: 2em; padding: 18px; width: 100%; margin-bottom: 25px; text-align: center; border: 2px solid #d1d5db; border-radius: 12px; font-weight: 700; color: var(--text-color); }
+        .modal-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(65, 93, 82, 0.15); }
         .modal-btn-row { display: flex; gap: 20px; justify-content: center; }
         .modal-btn { flex: 1; padding: 20px; font-size: 1.3em; font-weight: 800; border-radius: 12px; border: none; cursor: pointer; color: white; transition: 0.2s; }
         .modal-btn:hover { opacity: 0.9; transform: translateY(-2px); }
         
-        .change-huge { font-size: 5em; color: #059669; font-weight: 800; margin: 10px 0; letter-spacing: -1px; }
+        .change-huge { font-size: 5em; color: var(--primary-color); font-weight: 800; margin: 10px 0; letter-spacing: -1px; }
 
         @media print {
             body.print-receipt .section, body.print-receipt header, body.print-receipt .overlay { display: none !important; }
@@ -133,20 +135,20 @@
 
 <div class="container">
     <header class="no-print-report">
-        <h1>🦅 Anderson POS <span style="font-size: 0.4em; color: #64748b; font-weight: 600; vertical-align: middle;">v14.3</span></h1>
+        <h1>🦅 Anderson POS <span style="font-size: 0.4em; color: var(--numpad-color); font-weight: 600; vertical-align: middle;">v14.4</span></h1>
         <div class="nav-tabs">
             <button class="nav-btn active" onclick="showSection('payment')">💻 Cashier POS</button>
             <button class="nav-btn" onclick="showSection('records')">📊 Reports & Invoices</button>
             <button class="nav-btn" onclick="showSection('students')">👨‍🎓 Student List</button>
             <button class="nav-btn" onclick="showSection('fees')">⚙️ Admin Settings</button>
-            <button id="lockBtn" class="nav-btn" style="display: none; background-color: #ef4444; color: white;" onclick="lockAdmin()">🔒 Lock</button>
+            <button id="lockBtn" class="nav-btn" style="display: none; background-color: #D26C6C; color: white;" onclick="lockAdmin()">🔒 Lock</button>
         </div>
     </header>
 
     <div id="payment" class="section active no-print">
-        <div id="activeEventBanner" style="background: #e0f2fe; padding: 18px 25px; border-radius: 12px; font-weight: 800; color: var(--primary-color); margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; font-size: 1.25em; border: 1px solid #bae6fd;">
+        <div id="activeEventBanner" style="background: rgba(121, 148, 136, 0.15); padding: 18px 25px; border-radius: 12px; font-weight: 800; color: var(--primary-color); margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; font-size: 1.25em; border: 1px solid rgba(121, 148, 136, 0.3);">
             <span id="activeEventDisplay">Active Event: None</span>
-            <span id="invoiceNoDisplay" style="color: #475569; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.9em; background: #fff; padding: 6px 12px; border-radius: 6px; border: 1px solid #cbd5e1;">INV-A-XXXX</span>
+            <span id="invoiceNoDisplay" style="color: var(--numpad-color); font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.9em; background: #fff; padding: 6px 12px; border-radius: 6px; border: 1px solid #d1d5db;">INV-A-XXXX</span>
         </div>
 
         <label style="text-align: center; font-size: 1.3em; color: var(--primary-color);">Step 1: Select Division</label>
@@ -155,7 +157,7 @@
         <label style="color: var(--primary-color);">Student Search / Details (Optional):</label>
         <div class="name-row">
             <div class="form-group" style="flex: 1.5; min-width: 250px;">
-                <select id="studentDropdown" onchange="autoFillStudent()" style="background-color: #fff; border: 2px solid #cbd5e1; font-weight: 600;">
+                <select id="studentDropdown" onchange="autoFillStudent()" style="border: 2px solid var(--secondary-color); font-weight: 600;">
                     <option value="">🔍 Select a Division first...</option>
                 </select>
             </div>
@@ -163,14 +165,14 @@
             <div class="form-group"><input type="text" id="payFirstName" placeholder="First Name"></div>
         </div>
 
-        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 30px 0;">
+        <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 30px 0;">
 
         <div class="pos-layout">
             <div class="pos-controls">
                 <label style="text-align: center; font-size: 1.3em; color: var(--item-color);">Step 2: Category</label>
                 <div class="item-grid" id="itemGrid" style="margin-bottom: 35px;"></div>
 
-                <label style="text-align: center; font-size: 1.3em; color: #475569;">Step 3: Price & Add</label>
+                <label style="text-align: center; font-size: 1.3em; color: var(--numpad-color);">Step 3: Price & Add</label>
                 <div class="numpad-display" id="numpadDisplay">$0.00</div>
                 <div class="numpad-grid">
                     <button class="num-btn" onclick="inputNumpad('1')">1</button>
@@ -192,19 +194,19 @@
             <div class="pos-invoice">
                 <div class="invoice-header">
                     <h3 style="margin: 0; font-size: 1.6em; color: var(--text-color); font-weight: 800;">Current Invoice</h3>
-                    <div id="invoiceDivDisplay" style="color: var(--secondary-color); font-weight: 700; font-size: 1.1em; margin-top: 8px; display: inline-block; background: #eff6ff; padding: 4px 12px; border-radius: 20px;">Div: Not Selected</div>
+                    <div id="invoiceDivDisplay" style="color: var(--primary-color); font-weight: 700; font-size: 1.1em; margin-top: 8px; display: inline-block; background: rgba(65, 93, 82, 0.1); padding: 4px 12px; border-radius: 20px;">Div: Not Selected</div>
                 </div>
                 <div class="invoice-list" id="invoiceList"></div>
                 <div class="invoice-total-area">
-                    <div style="font-size: 1.2em; color: #64748b; font-weight: 600;">Total Due</div>
+                    <div style="font-size: 1.2em; color: var(--numpad-color); font-weight: 600;">Total Due</div>
                     <div class="total-amount" id="cartTotalDisplay">$0.00</div>
-                    <label style="text-align: left; margin-bottom: 12px; color: #475569;">Step 4: Payment</label>
+                    <label style="text-align: left; margin-bottom: 12px; color: var(--numpad-color);">Step 4: Payment</label>
                     <div class="payment-methods">
                         <button class="pay-btn btn-cash" onclick="triggerCashModal()">💵 CASH</button>
                         <button class="pay-btn btn-card" onclick="finalizeCheckout('Card', 0)">💳 CARD</button>
                     </div>
                 </div>
-                <button class="btn" style="background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; margin-top: 20px; font-size: 1em; width: 100%; font-weight: 700;" onclick="printLastReceipt()">🖨️ Reprint Last Receipt</button>
+                <button class="btn" style="background-color: #f3f4f6; color: var(--numpad-color); border: 1px solid #d1d5db; margin-top: 20px; font-size: 1em; width: 100%; font-weight: 700;" onclick="printLastReceipt()">🖨️ Reprint Last Receipt</button>
             </div>
         </div>
     </div>
@@ -227,8 +229,8 @@
         </div>
 
         <h2 style="margin-top: 45px; border-bottom: 3px solid var(--item-color); color: var(--item-color); padding-bottom: 12px;">📦 Itemized Sales & Pre-Orders</h2>
-        <div class="no-print-report" style="display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; background: #f8fafc; padding: 18px; border-radius: 12px; border: 1px solid #e2e8f0;">
-            <label style="margin: 0; font-size: 1.1em; font-weight:700; color: #475569;">🔎 Filter Items By:</label>
+        <div class="no-print-report" style="display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; background: #fff; padding: 18px; border-radius: 12px; border: 1px solid #e5e7eb;">
+            <label style="margin: 0; font-size: 1.1em; font-weight:700; color: var(--numpad-color);">🔎 Filter Items By:</label>
             <select id="itemFilter" style="width: 250px; font-size: 1.1em; padding: 10px;" onchange="renderItemizedReport()"></select>
             <button class="btn btn-warning" onclick="exportItemizedToExcel()">📥 Export Excel</button>
             <button class="btn btn-primary" onclick="printItemizedList()">🖨️ Print List</button>
@@ -240,10 +242,10 @@
             </table>
         </div>
 
-        <h2 class="no-print-report" style="margin-top: 45px; border-bottom: 3px solid #cbd5e1; color: #475569; padding-bottom: 12px;">📊 Invoice Overview</h2>
-        <div class="no-print-report" style="margin-bottom: 20px; background: #fffbeb; padding: 18px; border-radius: 12px; display: inline-block; border: 1px solid #fde68a;">
-            <label style="font-weight: 700; margin-right: 12px; color: #b45309;">📅 Show Invoices For:</label>
-            <select id="invoiceDateFilter" style="font-size: 1.1em; padding: 10px; width: 220px; border-color: #fcd34d;" onchange="renderRecords()">
+        <h2 class="no-print-report" style="margin-top: 45px; border-bottom: 3px solid var(--numpad-color); color: var(--numpad-color); padding-bottom: 12px;">📊 Invoice Overview</h2>
+        <div class="no-print-report" style="margin-bottom: 20px; background: rgba(221, 167, 123, 0.15); padding: 18px; border-radius: 12px; display: inline-block; border: 1px solid rgba(221, 167, 123, 0.4);">
+            <label style="font-weight: 700; margin-right: 12px; color: #9D6B53;">📅 Show Invoices For:</label>
+            <select id="invoiceDateFilter" style="font-size: 1.1em; padding: 10px; width: 220px; border-color: var(--highlight-color);" onchange="renderRecords()">
                 <option value="TODAY">Today's Invoices</option>
                 <option value="ALL">All-Time Invoices</option>
             </select>
@@ -277,7 +279,7 @@
 
     <div id="students" class="section no-print-report">
         <h2 style="margin-top: 0; color: var(--primary-color);">👨‍🎓 Student List Management</h2>
-        <div style="background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 25px;">
+        <div style="background: #fff; padding: 25px; border-radius: 12px; border: 1px solid #e5e7eb; margin-bottom: 25px;">
             <div class="name-row">
                 <div class="form-group"><input type="text" id="stuLastName" placeholder="Last Name"></div>
                 <div class="form-group"><input type="text" id="stuFirstName" placeholder="First Name"></div>
@@ -305,10 +307,9 @@
     <div id="fees" class="section no-print-report">
         <h2 style="margin-top: 0; color: var(--primary-color);">⚙️ Admin Configurations</h2>
 
-        <!-- v14.2/14.3: Backup & Restore UI -->
-        <div style="background: #eff6ff; padding: 25px; border-radius: 12px; border-left: 6px solid var(--secondary-color); margin-bottom: 25px; border-top: 1px solid #bfdbfe; border-right: 1px solid #bfdbfe; border-bottom: 1px solid #bfdbfe;">
+        <div style="background: rgba(121, 148, 136, 0.1); padding: 25px; border-radius: 12px; border-left: 6px solid var(--primary-color); margin-bottom: 25px;">
             <h3 style="margin-top: 0; color: var(--primary-color); font-weight: 800;">💾 System Backup & Restore (系統備份與還原)</h3>
-            <p style="color: #475569; margin-bottom: 18px; font-size: 1.05em;">Use this to transfer all data (students, invoices, settings) to a new version or another iPad.</p>
+            <p style="color: var(--numpad-color); margin-bottom: 18px; font-size: 1.05em;">Use this to transfer all data (students, invoices, settings) to a new version or another iPad.</p>
             <div style="display: flex; gap: 12px; flex-wrap: wrap;">
                 <button class="btn btn-primary" onclick="exportSystemData()">📥 Export Full Backup (.json)</button>
                 <input type="file" id="importBackupFile" accept=".json" style="display: none;" onchange="importSystemData(event)">
@@ -316,32 +317,32 @@
             </div>
         </div>
 
-        <div style="background: #f8fafc; padding: 25px; border-radius: 12px; border-left: 6px solid #64748b; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; border: 1px solid #e2e8f0;">
+        <div style="background: #fff; padding: 25px; border-radius: 12px; border-left: 6px solid var(--numpad-color); margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; border: 1px solid #e5e7eb;">
             <div style="flex: 1; min-width: 250px;">
                 <h3 style="margin-top: 0; color: var(--text-color); font-weight: 800;">🎓 Training Mode (Practice Sandbox)</h3>
-                <p style="color: #64748b; margin-bottom: 0; font-size: 1.05em;">Turn this on to let volunteers practice. Fake transactions will not affect the real totals. <b>You will be logged out of Admin automatically after toggling.</b></p>
+                <p style="color: var(--numpad-color); margin-bottom: 0; font-size: 1.05em;">Turn this on to let volunteers practice. Fake transactions will not affect the real totals. <b>You will be logged out of Admin automatically after toggling.</b></p>
             </div>
-            <button id="trainingToggleBtn" class="btn" style="background-color: #64748b; color: white; padding: 18px 35px; font-size: 1.2em; border-radius: 12px; font-weight: 800; border:none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onclick="toggleTrainingMode()">🎓 Turn ON Training Mode</button>
+            <button id="trainingToggleBtn" class="btn" style="background-color: var(--numpad-color); color: white; padding: 18px 35px; font-size: 1.2em; border-radius: 12px; font-weight: 800; border:none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onclick="toggleTrainingMode()">🎓 Turn ON Training Mode</button>
         </div>
         
-        <div style="background: #fffbeb; padding: 25px; border-radius: 12px; border-left: 6px solid #f59e0b; margin-bottom: 30px; border: 1px solid #fde68a;">
-            <h3 style="margin-top: 0; color: #b45309; font-weight: 800;">🖥️ Multi-Station Setup</h3>
+        <div style="background: rgba(221, 167, 123, 0.1); padding: 25px; border-radius: 12px; border-left: 6px solid var(--highlight-color); margin-bottom: 30px;">
+            <h3 style="margin-top: 0; color: #9D6B53; font-weight: 800;">🖥️ Multi-Station Setup</h3>
             <div style="display: flex; gap: 15px; align-items: center;">
-                <label style="margin: 0; min-width: 150px; color: #92400e;">Station Prefix:</label>
-                <input type="text" id="stationPrefixInput" maxlength="3" placeholder="e.g., A, B, C" style="width: 120px; text-transform: uppercase; border-color: #fcd34d;">
+                <label style="margin: 0; min-width: 150px; color: #724C3A;">Station Prefix:</label>
+                <input type="text" id="stationPrefixInput" maxlength="3" placeholder="e.g., A, B, C" style="width: 120px; text-transform: uppercase; border-color: var(--highlight-color);">
                 <button class="btn btn-primary" onclick="saveStationPrefix()">Save Prefix</button>
             </div>
         </div>
 
-        <h3 style="color: var(--primary-color); border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Event Setup</h3>
-        <div style="background: #ffffff; border: 1px solid #e2e8f0; padding: 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+        <h3 style="color: var(--primary-color); border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">Event Setup</h3>
+        <div style="background: #ffffff; border: 1px solid #e5e7eb; padding: 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
             <div class="name-row">
                 <div class="form-group"><input type="text" id="newFeeName" placeholder="Event Name"></div>
                 <div class="form-group"><input type="text" id="newFeeItems" placeholder="Sale Items (e.g., Book, Pre-Order, Open)"></div>
             </div>
             <div class="name-row">
-                <div class="form-group"><label style="font-size: 0.95em; color:#64748b;">Start Date:</label><input type="date" id="newFeeStart"></div>
-                <div class="form-group"><label style="font-size: 0.95em; color:#64748b;">End Date (Optional):</label><input type="date" id="newFeeEnd"></div>
+                <div class="form-group"><label style="font-size: 0.95em; color:var(--numpad-color);">Start Date:</label><input type="date" id="newFeeStart"></div>
+                <div class="form-group"><label style="font-size: 0.95em; color:var(--numpad-color);">End Date (Optional):</label><input type="date" id="newFeeEnd"></div>
             </div>
             <button class="btn btn-primary" style="padding: 14px 28px;" onclick="addEvent()">➕ Create / Update Event</button>
         </div>
@@ -356,10 +357,10 @@
 <div id="preOrderModal" class="overlay">
     <div class="modal-box">
         <h2 class="modal-title">📦 Pre-Order Item</h2>
-        <p style="font-size: 1.3em; margin-bottom: 20px; color:#64748b; font-weight: 500;">Enter the Pre-Order book or item name:</p>
+        <p style="font-size: 1.3em; margin-bottom: 20px; color:var(--numpad-color); font-weight: 500;">Enter the Pre-Order book or item name:</p>
         <input type="text" id="preOrderInput" class="modal-input" placeholder="e.g. Dog Man Vol. 10">
         <div class="modal-btn-row">
-            <button class="modal-btn" style="background:#ef4444;" onclick="closeModal('preOrderModal')">✖ Cancel</button>
+            <button class="modal-btn" style="background:#D26C6C;" onclick="closeModal('preOrderModal')">✖ Cancel</button>
             <button class="modal-btn" style="background:var(--item-color);" onclick="confirmPreOrder()">✔️ Confirm</button>
         </div>
     </div>
@@ -368,11 +369,11 @@
 <div id="cashModal" class="overlay">
     <div class="modal-box">
         <h2 class="modal-title">💵 Cash Received</h2>
-        <p style="font-size: 1.6em; margin-bottom: 15px; color:#475569; font-weight: 700;">Total Due: <strong id="cashModalTotalDue" style="color:var(--primary-color); font-size:1.6em;">$0.00</strong></p>
-        <p style="font-size: 1.2em; margin-bottom: 20px; color:#64748b;">Amount handed by customer:</p>
+        <p style="font-size: 1.6em; margin-bottom: 15px; color:var(--numpad-color); font-weight: 700;">Total Due: <strong id="cashModalTotalDue" style="color:var(--primary-color); font-size:1.6em;">$0.00</strong></p>
+        <p style="font-size: 1.2em; margin-bottom: 20px; color:var(--numpad-color);">Amount handed by customer:</p>
         <input type="number" id="cashInput" class="modal-input" placeholder="e.g. 50" inputmode="decimal">
         <div class="modal-btn-row">
-            <button class="modal-btn" style="background:#ef4444;" onclick="closeModal('cashModal')">✖ Cancel</button>
+            <button class="modal-btn" style="background:#D26C6C;" onclick="closeModal('cashModal')">✖ Cancel</button>
             <button class="modal-btn" style="background:var(--item-color);" onclick="confirmCash()">✔️ Calculate</button>
         </div>
     </div>
@@ -380,9 +381,9 @@
 
 <div id="successModal" class="overlay">
     <div class="modal-box" style="max-width: 700px; padding: 50px;">
-        <h2 id="successModalTitle" style="font-size: 3.2em; margin-top: 0; color: #059669; font-weight: 800;">✅ Payment Successful!</h2>
-        <div id="changeSection" style="display: none; background: #f0fdf4; border: 2px dashed #86efac; padding: 30px; border-radius: 16px; margin-bottom: 30px;">
-            <p style="font-size: 1.8em; color: #047857; margin: 0; font-weight: 800;">Change Due</p>
+        <h2 id="successModalTitle" style="font-size: 3.2em; margin-top: 0; color: var(--primary-color); font-weight: 800;">✅ Payment Successful!</h2>
+        <div id="changeSection" style="display: none; background: rgba(121, 148, 136, 0.15); border: 2px dashed var(--primary-color); padding: 30px; border-radius: 16px; margin-bottom: 30px;">
+            <p style="font-size: 1.8em; color: var(--primary-color); margin: 0; font-weight: 800;">Change Due</p>
             <div class="change-huge" id="modalChangeDue">$0.00</div>
         </div>
         <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
@@ -538,17 +539,17 @@
         const banner = document.getElementById('activeEventBanner');
         if (isTrainingMode) {
             btn.textContent = "🔥 Turn OFF Training Mode";
-            btn.style.backgroundColor = "#ef4444";
-            banner.style.backgroundColor = "#fef3c7";
-            banner.style.color = "#b45309";
-            banner.style.borderColor = "#fde68a";
+            btn.style.backgroundColor = "#D26C6C";
+            banner.style.backgroundColor = "rgba(221, 167, 123, 0.2)";
+            banner.style.color = "#9D6B53";
+            banner.style.borderColor = "rgba(221, 167, 123, 0.4)";
             alert("Training Mode is now ON.\nYou will be redirected to the Cashier POS.");
         } else {
             btn.textContent = "🎓 Turn ON Training Mode";
-            btn.style.backgroundColor = "#64748b";
-            banner.style.backgroundColor = "#e0f2fe";
+            btn.style.backgroundColor = "var(--numpad-color)";
+            banner.style.backgroundColor = "rgba(121, 148, 136, 0.15)";
             banner.style.color = "var(--primary-color)";
-            banner.style.borderColor = "#bae6fd";
+            banner.style.borderColor = "rgba(121, 148, 136, 0.3)";
             alert("Training Mode is OFF. Live system active.\nYou will be redirected to the Cashier POS.");
         }
         nextCustomer(); 
@@ -643,7 +644,7 @@
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
     function triggerAdd() {
-        if (!selectedCategory) return alert("Select an Item Category (Green Circle)!");
+        if (!selectedCategory) return alert("Select an Item Category (Bean Paste Circle)!");
         tempPrice = parseFloat(currentNumpadValue);
         if (isNaN(tempPrice) || tempPrice <= 0) return alert("Enter a valid price greater than 0.");
         
@@ -668,7 +669,7 @@
 
     function renderCart() {
         const list = document.getElementById('invoiceList'), totalDisplay = document.getElementById('cartTotalDisplay');
-        if (currentCart.length === 0) { list.innerHTML = '<div style="text-align:center; color:#94a3b8; font-weight: 500; margin-top:30px;">Cart is empty.</div>'; totalDisplay.textContent = "$0.00"; return; }
+        if (currentCart.length === 0) { list.innerHTML = '<div style="text-align:center; color:var(--numpad-color); font-weight: 500; margin-top:30px;">Cart is empty.</div>'; totalDisplay.textContent = "$0.00"; return; }
         let total = 0;
         list.innerHTML = currentCart.map(item => {
             total += item.price; return `<div class="invoice-item"><span>✔️ ${item.name}</span><div><strong>$${item.price.toFixed(2)}</strong><span class="del-btn" onclick="currentCart=currentCart.filter(i=>i.id!==${item.id}); renderCart();">✖</span></div></div>`;
@@ -794,10 +795,10 @@
         else if (filterVal !== 'ALL') itemRows = itemRows.filter(row => row.item === filterVal);
 
         itemRows.sort((a,b) => a.item.localeCompare(b.item));
-        if(itemRows.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#64748b;">No items found.</td></tr>'; return; }
+        if(itemRows.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--numpad-color);">No items found.</td></tr>'; return; }
 
         let totalQty = itemRows.length, totalPrice = itemRows.reduce((sum, r) => sum + r.price, 0);
-        let html = itemRows.map(r => `<tr><td><b>${r.item}</b></td><td>${r.inv}</td><td>${r.date.split(',')[0]}</td><td>${r.div}</td><td>${r.name}</td><td>$${r.price.toFixed(2)}</td></tr>`).join('');
+        let html = itemRows.map(r => `<tr><td><strong style="color:var(--text-color);">${r.item}</strong></td><td style="color:var(--numpad-color);">${r.inv}</td><td style="color:var(--numpad-color);">${r.date.split(',')[0]}</td><td>${r.div}</td><td>${r.name}</td><td><strong style="color:var(--primary-color);">$${r.price.toFixed(2)}</strong></td></tr>`).join('');
         html += `<tr class="summary-row"><td colspan="5" style="text-align:right;">Total Quantity: ${totalQty}</td><td>Total: $${totalPrice.toFixed(2)}</td></tr>`;
         tbody.innerHTML = html;
     }
@@ -824,14 +825,14 @@
         let filteredRecords = filterVal === 'TODAY' ? currentSource.filter(r => new Date(r.date).toLocaleDateString('en-US') === todayStr) : currentSource;
 
         if (filteredRecords.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#64748b;">No transactions found.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--numpad-color);">No transactions found.</td></tr>';
         } else {
             tbody.innerHTML = filteredRecords.map((r) => {
                 const realIndex = currentSource.findIndex(orig => orig.id === r.id);
                 return `
-                <tr><td><b>${r.invoiceNo}</b></td><td style="font-size:0.85em; color:#64748b;">${r.date}</td><td>${r.division}</td><td>${r.studentName}</td>
-                    <td style="font-size:0.9em; color:#475569;">${r.items}</td><td><span style="background:${r.method==='Cash'?'#059669':'#2563eb'}; color:white; padding:4px 8px; border-radius:6px; font-size:0.8em; font-weight:700;">${r.method}</span></td>
-                    <td><b style="color:var(--primary-color);">$${r.amount.toFixed(2)}</b></td>
+                <tr><td><strong style="color:var(--text-color);">${r.invoiceNo}</strong></td><td style="font-size:0.85em; color:var(--numpad-color);">${r.date}</td><td>${r.division}</td><td>${r.studentName}</td>
+                    <td style="font-size:0.9em; color:var(--numpad-color);">${r.items}</td><td><span style="background:${r.method==='Cash'?'#557A68':'#5A7B9C'}; color:white; padding:4px 8px; border-radius:6px; font-size:0.8em; font-weight:700;">${r.method}</span></td>
+                    <td><strong style="color:var(--primary-color);">$${r.amount.toFixed(2)}</strong></td>
                     <td class="no-print-report">
                         <button class="btn btn-warning" style="padding:6px 12px; margin-right:5px; margin-bottom:5px; font-size:0.9em; border-radius:6px;" onclick="editRecord(${realIndex})">✏️ Edit</button>
                         <button class="btn btn-danger" style="padding:6px 12px; font-size:0.9em; border-radius:6px;" onclick="deleteRecord(${realIndex})">🗑️ Void</button>
@@ -926,8 +927,8 @@
 
     function renderEventsAdmin() {
         document.getElementById('feeTableBody').innerHTML = eventsConfig.map((e, index) => {
-            const isActive = (e.id === activeEventId), dateStr = (e.startDate) ? `${e.startDate} to ${e.endDate || e.startDate}` : '<span style="color:#94a3b8; font-weight:500;">No Date Set</span>', isPreset = (e.id.startsWith('ev_'));
-            return `<tr><td><strong style="color:var(--text-color);">${e.name}</strong> ${isPreset ? '📌' : ''}</td><td>${dateStr}</td><td style="color:#475569;">${e.items.join(', ')}</td>
+            const isActive = (e.id === activeEventId), dateStr = (e.startDate) ? `${e.startDate} to ${e.endDate || e.startDate}` : '<span style="color:var(--numpad-color); font-weight:500;">No Date Set</span>', isPreset = (e.id.startsWith('ev_'));
+            return `<tr><td><strong style="color:var(--text-color);">${e.name}</strong> ${isPreset ? '📌' : ''}</td><td>${dateStr}</td><td style="color:var(--numpad-color);">${e.items.join(', ')}</td>
                 <td><button class="btn ${isActive ? 'btn-primary' : 'btn-warning'}" style="padding: 8px 16px; font-size: 0.9em; border-radius: 8px;" onclick="activeEventId='${e.id}'; saveData();">${isActive ? '🌟 Active' : 'Set Active'}</button></td>
                 <td>${isPreset ? '' : `<button class="btn btn-danger" style="padding: 8px 16px; font-size: 0.9em; border-radius: 8px;" onclick="if(confirm('Delete event?')){eventsConfig.splice(${index}, 1); saveData();}">Del</button>`}</td></tr>`;
         }).join('');
@@ -967,7 +968,7 @@
 
     function renderStudents() {
         document.getElementById('studentTableBody').innerHTML = students.map((s, index) => `
-            <tr><td style="color:#64748b;">${s.studentNum}</td><td><strong style="color:var(--text-color);">${s.lastName}</strong></td><td>${s.firstName}</td><td><span style="background:#f1f5f9; padding:4px 12px; border-radius:20px; font-weight:800; color:var(--primary-color);">${s.division}</span></td>
+            <tr><td style="color:var(--numpad-color);">${s.studentNum}</td><td><strong style="color:var(--text-color);">${s.lastName}</strong></td><td>${s.firstName}</td><td><span style="background:rgba(65, 93, 82, 0.1); padding:4px 12px; border-radius:20px; font-weight:800; color:var(--primary-color);">${s.division}</span></td>
              <td>
                 <button class="btn btn-warning" style="padding:8px 14px; margin-right:8px; border-radius:6px;" onclick="editStudentDiv(${index})">Edit Div</button>
                 <button class="btn btn-danger" style="padding:8px 14px; border-radius:6px;" onclick="if(confirm('Delete student?')){students.splice(${index}, 1); saveData();}">Del</button>
