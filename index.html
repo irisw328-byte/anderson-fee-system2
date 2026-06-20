@@ -3,50 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anderson POS System v14.6</title>
+    <title>Anderson POS System v14.7</title>
     <style>
         :root {
-            --primary-color: #023e8a;
-            --secondary-color: #0077b6;
+            /* Anderson Eagles Colors restored and enhanced! */
+            --primary-color: #0033a0; /* Eagle Blue */
+            --secondary-color: #0055d4;
             --item-color: #2a9d8f;
             --numpad-color: #2b2d42;
-            --highlight-color: #fca311;
-            --bg-color: #f8f9fa;
+            --highlight-color: #ffc72c; /* Eagle Gold */
+            --bg-color: #f4f7f6;
             --card-bg: #ffffff;
             --text-color: #333;
-            --border-radius: 10px;
+            --border-radius: 12px;
         }
 
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 15px; }
         .container { max-width: 1200px; margin: 0 auto; }
-        header { text-align: center; margin-bottom: 20px; }
-        h1 { color: var(--primary-color); margin-bottom: 10px; font-size: 2.2em;}
-
-        .nav-tabs { display: flex; justify-content: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-        .nav-btn { padding: 15px 25px; border: none; background-color: #e0e0e0; cursor: pointer; border-radius: var(--border-radius); font-weight: bold; font-size: 1.1em; transition: 0.3s; }
-        .nav-btn.active { background-color: var(--primary-color); color: white; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        
+        /* Enhanced Header */
+        header { background: var(--primary-color); color: white; padding: 20px; border-radius: var(--border-radius); margin-bottom: 25px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); text-align: center; }
+        header h1 { color: white; margin: 0 0 15px 0; font-size: 2.5em; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); }
+        
+        .nav-tabs { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+        .nav-btn { padding: 15px 25px; border: none; background-color: rgba(255,255,255,0.2); color: white; cursor: pointer; border-radius: var(--border-radius); font-weight: bold; font-size: 1.1em; transition: 0.3s; }
+        .nav-btn:hover { background-color: rgba(255,255,255,0.3); }
+        .nav-btn.active { background-color: var(--highlight-color); color: #333; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
 
         .section { display: none; background: var(--card-bg); padding: 25px; border-radius: var(--border-radius); box-shadow: 0 4px 10px rgba(0,0,0,0.1); animation: fadeIn 0.3s; }
         .section.active { display: block; }
 
         .form-group { margin-bottom: 15px; width: 100%; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 1.1em;}
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 1.1em; color: var(--primary-color);}
         input, select { width: 100%; padding: 15px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 1.2em; }
         .name-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; position: relative; }
         .name-row .form-group { flex: 1; min-width: 200px; margin-bottom: 0; }
 
-        /* Incremental Search Styles */
-        .autocomplete-items { position: absolute; border: 1px solid #d4d4d4; z-index: 99; top: 100%; left: 0; right: 0; background: white; max-height: 250px; overflow-y: auto; border-radius: 0 0 8px 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .autocomplete-items div { padding: 15px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 1.1em; }
-        .autocomplete-items div:hover { background-color: #e9e9e9; }
+        /* Unified AutoComplete Styles */
+        .autocomplete-items { position: absolute; border: 2px solid var(--primary-color); z-index: 99; top: 100%; left: 0; right: 0; background: white; max-height: 250px; overflow-y: auto; border-radius: 0 0 8px 8px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); display: none; }
+        .autocomplete-items div { padding: 15px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 1.1em; color: #333; }
+        .autocomplete-items div:hover { background-color: #e9f2ff; color: var(--primary-color); font-weight: bold; }
 
-        .grid-container { display: flex; justify-content: center; margin-top: 10px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
-        .division-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(55px, 1fr)); gap: 12px; justify-content: center;}
-        .division-circle { width: 55px; height: 55px; background-color: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2em; font-weight: bold; cursor: pointer; user-select: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        .division-circle.selected { background-color: var(--highlight-color); color: #333; transform: scale(1.15); border: 3px solid #fff; }
+        .division-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(55px, 1fr)); gap: 12px; justify-content: center; margin-bottom: 20px;}
+        .division-circle { width: 55px; height: 55px; background-color: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2em; font-weight: bold; cursor: pointer; user-select: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border: 2px solid transparent; transition: 0.2s;}
+        .division-circle.selected { background-color: var(--highlight-color); color: #333; transform: scale(1.15); border: 2px solid #fff; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
 
-        .item-grid { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
-        .item-circle { width: 90px; height: 90px; background-color: var(--item-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 1em; font-weight: bold; cursor: pointer; user-select: none; box-shadow: 0 4px 6px rgba(0,0,0,0.2); padding: 5px; word-break: break-word;}
+        .item-grid { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-bottom: 30px;}
+        .item-circle { width: 90px; height: 90px; background-color: var(--item-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 1em; font-weight: bold; cursor: pointer; user-select: none; box-shadow: 0 4px 6px rgba(0,0,0,0.2); padding: 5px; word-break: break-word; border: 3px solid transparent;}
         .item-circle.selected { background-color: var(--highlight-color); color: #333; transform: scale(1.1); border: 3px solid #fff; }
 
         .pos-layout { display: flex; gap: 30px; flex-wrap: wrap; }
@@ -127,13 +130,13 @@
             <span id="invoiceNoDisplay" style="color: #666; font-family: monospace;">INV-A-XXXX</span>
         </div>
 
-        <label style="text-align: center; font-size: 1.2em; color: var(--primary-color);">Step 1: Select Division</label>
-        <div class="division-grid" id="divisionGrid" style="margin-bottom: 20px;"></div>
+        <label>Step 1: Select Division (Optional, filters student list)</label>
+        <div class="division-grid" id="divisionGrid"></div>
 
-        <label>Student Details (Type to search globally):</label>
+        <label>Step 2: Student Details (Type to search or pick from Division):</label>
         <div class="name-row">
-            <div class="form-group"><input type="text" id="payLastName" placeholder="Last Name" oninput="advancedFilter(this.value)"></div>
-            <div class="form-group"><input type="text" id="payFirstName" placeholder="First Name" oninput="advancedFilter(this.value)"></div>
+            <div class="form-group"><input type="text" id="payLastName" placeholder="Last Name" oninput="updateStudentDropdown(this.value)"></div>
+            <div class="form-group"><input type="text" id="payFirstName" placeholder="First Name" oninput="updateStudentDropdown(this.value)"></div>
             <div id="searchList" class="autocomplete-items"></div>
         </div>
 
@@ -141,10 +144,10 @@
 
         <div class="pos-layout">
             <div class="pos-controls">
-                <label style="text-align: center; font-size: 1.2em; color: var(--item-color);">Step 2: Category</label>
-                <div class="item-grid" id="itemGrid" style="margin-bottom: 30px;"></div>
+                <label>Step 3: Category</label>
+                <div class="item-grid" id="itemGrid"></div>
 
-                <label style="text-align: center; font-size: 1.2em; color: var(--numpad-color);">Step 3: Price & Add</label>
+                <label>Step 4: Price & Add</label>
                 <div class="numpad-display" id="numpadDisplay">$0.00</div>
                 <div class="numpad-grid">
                     <button class="num-btn" onclick="inputNumpad('1')">1</button>
@@ -172,7 +175,7 @@
                 <div class="invoice-total-area">
                     <div style="font-size: 1.3em; color: #666;">Total Due</div>
                     <div class="total-amount" id="cartTotalDisplay">$0.00</div>
-                    <label style="text-align: left; margin-bottom: 10px;">Step 4: Payment</label>
+                    <label style="text-align: left; margin-bottom: 10px;">Step 5: Payment</label>
                     <div class="payment-methods">
                         <button class="pay-btn btn-cash" onclick="triggerCashModal()">💵 CASH</button>
                         <button class="pay-btn btn-card" onclick="finalizeCheckout('Card', 0)">💳 CARD</button>
@@ -202,7 +205,7 @@
 
         <h2 style="margin-top: 40px; border-bottom: 2px solid #2a9d8f; color: #2a9d8f; padding-bottom: 10px;">📦 Itemized Sales & Pre-Orders</h2>
         <div class="no-print-report" style="display: flex; gap: 10px; margin-bottom: 15px; align-items: center; flex-wrap: wrap; background: #e9ecef; padding: 15px; border-radius: 8px;">
-            <label style="margin: 0; font-size: 1.1em; font-weight:bold;">🔎 Filter Items By:</label>
+            <label style="margin: 0; font-size: 1.1em; font-weight:bold; color: var(--primary-color);">🔎 Filter Items By:</label>
             <select id="itemFilter" style="width: 250px; font-size: 1.1em; padding: 10px;" onchange="renderItemizedReport()"></select>
             <button class="btn btn-warning" onclick="exportItemizedToExcel()">📥 Export Excel</button>
             <button class="btn btn-primary" onclick="printItemizedList()">🖨️ Print List</button>
@@ -264,7 +267,7 @@
         <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
             <button class="btn btn-warning" onclick="exportStudentsToExcel()">📥 Export List (CSV)</button>
             <input type="file" id="importCsvFile" accept=".csv" style="display: none;" onchange="importStudentsFromCSV(event)">
-            <button class="btn btn-primary" style="background-color: #2a9d8f;" onclick="document.getElementById('importCsvFile').click()">📤 Import List</button>
+            <button class="btn btn-primary" style="background-color: var(--item-color);" onclick="document.getElementById('importCsvFile').click()">📤 Import List</button>
             <button class="btn btn-danger" onclick="clearRoster()">⚠️ Clear List</button>
         </div>
 
@@ -287,10 +290,10 @@
             <button id="trainingToggleBtn" class="btn" style="background-color: #6c757d; color: white; padding: 15px 30px; font-size: 1.2em; border-radius: 8px; font-weight: bold; cursor: pointer; border:none;" onclick="toggleTrainingMode()">🎓 Turn ON Training Mode</button>
         </div>
         
-        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 5px solid #ffc107; margin-bottom: 25px;">
+        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 5px solid var(--highlight-color); margin-bottom: 25px;">
             <h3 style="margin-top: 0; color: #856404;">🖥️ Multi-Station Setup</h3>
             <div style="display: flex; gap: 10px; align-items: center;">
-                <label style="margin: 0; min-width: 150px;">Station Prefix:</label>
+                <label style="margin: 0; min-width: 150px; color:#333;">Station Prefix:</label>
                 <input type="text" id="stationPrefixInput" maxlength="3" placeholder="e.g., A, B, C" style="width: 100px; text-transform: uppercase;">
                 <button class="btn btn-primary" onclick="saveStationPrefix()">Save Prefix</button>
             </div>
@@ -323,7 +326,7 @@
         <input type="text" id="preOrderInput" class="modal-input" placeholder="e.g. Dog Man Vol. 10">
         <div class="modal-btn-row">
             <button class="modal-btn" style="background:#e63946;" onclick="closeModal('preOrderModal')">✖ Cancel</button>
-            <button class="modal-btn" style="background:#2a9d8f;" onclick="confirmPreOrder()">✔️ Confirm</button>
+            <button class="modal-btn" style="background:var(--item-color);" onclick="confirmPreOrder()">✔️ Confirm</button>
         </div>
     </div>
 </div>
@@ -336,21 +339,21 @@
         <input type="number" id="cashInput" class="modal-input" placeholder="e.g. 50" inputmode="decimal">
         <div class="modal-btn-row">
             <button class="modal-btn" style="background:#e63946;" onclick="closeModal('cashModal')">✖ Cancel</button>
-            <button class="modal-btn" style="background:#2a9d8f;" onclick="confirmCash()">✔️ Calculate</button>
+            <button class="modal-btn" style="background:var(--item-color);" onclick="confirmCash()">✔️ Calculate</button>
         </div>
     </div>
 </div>
 
 <div id="successModal" class="overlay">
     <div class="modal-box" style="max-width: 700px;">
-        <h2 id="successModalTitle" style="font-size: 3em; margin-top: 0; color: #2a9d8f;">✅ Payment Successful!</h2>
+        <h2 id="successModalTitle" style="font-size: 3em; margin-top: 0; color: var(--item-color);">✅ Payment Successful!</h2>
         <div id="changeSection" style="display: none; background: #fdfdfd; border: 3px dashed #ccc; padding: 20px; border-radius: 10px; margin-bottom: 25px;">
             <p style="font-size: 1.8em; color: #666; margin: 0; font-weight:bold;">Change Due</p>
             <div class="change-huge" id="modalChangeDue">$0.00</div>
         </div>
         <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
-            <button class="modal-btn" style="background-color: #0077b6; padding: 25px;" onclick="printLastReceipt()">🖨️ Print Receipt</button>
-            <button class="modal-btn" style="background-color: #fca311; color: #333; padding: 25px;" onclick="nextCustomer()">➡️ Next Customer</button>
+            <button class="modal-btn" style="background-color: var(--secondary-color); padding: 25px;" onclick="printLastReceipt()">🖨️ Print Receipt</button>
+            <button class="modal-btn" style="background-color: var(--highlight-color); color: #333; padding: 25px;" onclick="nextCustomer()">➡️ Next Customer</button>
         </div>
     </div>
 </div>
@@ -432,6 +435,9 @@
         document.getElementById('stationPrefixInput').value = stationPrefix;
         document.getElementById('todayDateDisplay').textContent = new Date().toLocaleDateString('en-US');
         autoCheckEventDate(); renderDivisionGrid(); renderAll();
+        
+        // Ensure dropdown is hidden initially
+        document.getElementById('searchList').style.display = 'none';
     };
 
     function getActiveRecords() { return isTrainingMode ? trainingRecords : records; }
@@ -455,15 +461,39 @@
         renderStudents(); renderEventsAdmin(); populateItemFilter(); renderRecords(); renderItemizedReport(); updateCashierPOS(); updateDashboard();
     }
 
-    function advancedFilter(val) {
+    // --- INTEGRATED DIVISION & INCREMENTAL SEARCH ---
+    function updateStudentDropdown(val = '') {
         const list = document.getElementById('searchList');
         list.innerHTML = '';
-        if (val.length < 1) return;
-        
-        const matches = students.filter(s => 
-            s.lastName.toLowerCase().includes(val.toLowerCase()) || 
-            s.firstName.toLowerCase().includes(val.toLowerCase())
-        );
+        val = val.trim().toLowerCase();
+
+        // If no division selected and no text typed, hide the list
+        if (!selectedDivision && val.length === 0) {
+            list.style.display = 'none';
+            return;
+        }
+
+        let matches = students;
+
+        // 1. Filter by Division first (if selected)
+        if (selectedDivision) {
+            matches = matches.filter(s => s.division === selectedDivision);
+        }
+
+        // 2. Filter by typed name (if any)
+        if (val.length > 0) {
+            matches = matches.filter(s => 
+                s.lastName.toLowerCase().includes(val) || 
+                s.firstName.toLowerCase().includes(val)
+            );
+        }
+
+        if (matches.length === 0) {
+            list.style.display = 'none';
+            return;
+        }
+
+        list.style.display = 'block';
 
         matches.forEach(s => {
             let div = document.createElement('div');
@@ -480,10 +510,37 @@
                 document.getElementById('invoiceDivDisplay').textContent = `Div: ${s.division}`;
                 
                 list.innerHTML = '';
+                list.style.display = 'none';
             };
             list.appendChild(div);
         });
     }
+
+    function renderDivisionGrid() {
+        const grid = document.getElementById('divisionGrid'); grid.innerHTML = '';
+        for(let i = 1; i <= 30; i++) {
+            let c = document.createElement('div'); c.className = 'division-circle';
+            c.textContent = i === 30 ? 'N/A' : i;
+            c.onclick = () => { 
+                if (selectedDivision === c.textContent) {
+                    // Unselect if already selected
+                    selectedDivision = null;
+                    c.classList.remove('selected');
+                    document.getElementById('invoiceDivDisplay').textContent = `Div: Not Selected`;
+                } else {
+                    // Select new division
+                    selectedDivision = c.textContent; 
+                    document.querySelectorAll('.division-circle').forEach(el => el.classList.remove('selected')); 
+                    c.classList.add('selected'); 
+                    document.getElementById('invoiceDivDisplay').textContent = `Div: ${c.textContent}`; 
+                }
+                // Trigger dropdown update based on division click
+                updateStudentDropdown(document.getElementById('payLastName').value || document.getElementById('payFirstName').value);
+            };
+            grid.appendChild(c);
+        }
+    }
+    // -------------------------------------------------
 
     function toggleTrainingMode() {
         if (currentCart.length > 0) {
@@ -544,16 +601,6 @@
     
     function generateInvoiceNo() { 
         return isTrainingMode ? `TRAIN-${stationPrefix}-${nextTrainSequence}` : `INV-${stationPrefix}-${nextInvSequence}`; 
-    }
-
-    function renderDivisionGrid() {
-        const grid = document.getElementById('divisionGrid'); grid.innerHTML = '';
-        for(let i = 1; i <= 30; i++) {
-            let c = document.createElement('div'); c.className = 'division-circle';
-            c.textContent = i === 30 ? 'N/A' : i;
-            c.onclick = () => { selectedDivision = c.textContent; document.querySelectorAll('.division-circle').forEach(el => el.classList.remove('selected')); c.classList.add('selected'); document.getElementById('invoiceDivDisplay').textContent = `Div: ${c.textContent}`; };
-            grid.appendChild(c);
-        }
     }
 
     function selectCategory(cat) {
@@ -653,7 +700,8 @@
         closeModal('successModal');
         currentCart = []; selectedCategory = null; currentNumpadValue = ""; document.getElementById('numpadDisplay').textContent = "$0.00";
         document.getElementById('payFirstName').value = ""; document.getElementById('payLastName').value = "";
-        document.getElementById('nameSearch').value = ""; // Clear unified search input
+        document.getElementById('searchList').innerHTML = ""; 
+        document.getElementById('searchList').style.display = "none";
         document.querySelectorAll('.division-circle').forEach(el => el.classList.remove('selected')); selectedDivision = null;
         document.getElementById('invoiceDivDisplay').textContent = "Div: Not Selected";
         renderCart(); updateCashierPOS();
