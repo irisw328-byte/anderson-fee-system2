@@ -6,100 +6,100 @@
     <title>Anderson POS System v14.7</title>
     <style>
         :root {
-            /* Anderson Eagles Colors restored and enhanced! */
-            --primary-color: #0033a0; /* Eagle Blue */
-            --secondary-color: #0055d4;
-            --item-color: #2a9d8f;
-            --numpad-color: #2b2d42;
-            --highlight-color: #ffc72c; /* Eagle Gold */
-            --bg-color: #f4f7f6;
-            --card-bg: #ffffff;
-            --text-color: #333;
+            /* 🎨 Morandi Palette (墨蘭迪高級配色) */
+            --primary-color: #64828F;     /* 墨蘭迪藍 */
+            --secondary-color: #5C7A87;   /* 深墨蘭迪藍 */
+            --item-color: #8BA896;        /* 墨蘭迪灰綠 */
+            --numpad-color: #7D8489;      /* 柔和深灰 */
+            --highlight-color: #D4C4B7;   /* 質感奶茶色 */
+            --bg-color: #F7F5F0;          /* 暖白燕麥底色 */
+            --card-bg: #FFFFFF;
+            --text-color: #4A4A4A;        /* 柔和黑 */
             --border-radius: 12px;
         }
 
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 15px; }
         .container { max-width: 1200px; margin: 0 auto; }
         
-        /* Enhanced Header */
-        header { background: var(--primary-color); color: white; padding: 20px; border-radius: var(--border-radius); margin-bottom: 25px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); text-align: center; }
-        header h1 { color: white; margin: 0 0 15px 0; font-size: 2.5em; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); }
+        header { background: var(--primary-color); color: white; padding: 20px; border-radius: var(--border-radius); margin-bottom: 25px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); text-align: center; }
+        header h1 { color: white; margin: 0 0 15px 0; font-size: 2.5em; letter-spacing: 1px; }
         
         .nav-tabs { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
-        .nav-btn { padding: 15px 25px; border: none; background-color: rgba(255,255,255,0.2); color: white; cursor: pointer; border-radius: var(--border-radius); font-weight: bold; font-size: 1.1em; transition: 0.3s; }
-        .nav-btn:hover { background-color: rgba(255,255,255,0.3); }
-        .nav-btn.active { background-color: var(--highlight-color); color: #333; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .nav-btn { padding: 15px 25px; border: none; background-color: rgba(255,255,255,0.25); color: white; cursor: pointer; border-radius: var(--border-radius); font-weight: bold; font-size: 1.1em; transition: 0.3s; }
+        .nav-btn:hover { background-color: rgba(255,255,255,0.4); }
+        .nav-btn.active { background-color: var(--highlight-color); color: #333; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
 
-        .section { display: none; background: var(--card-bg); padding: 25px; border-radius: var(--border-radius); box-shadow: 0 4px 10px rgba(0,0,0,0.1); animation: fadeIn 0.3s; }
+        .section { display: none; background: var(--card-bg); padding: 25px; border-radius: var(--border-radius); box-shadow: 0 4px 15px rgba(0,0,0,0.05); animation: fadeIn 0.3s; }
         .section.active { display: block; }
 
         .form-group { margin-bottom: 15px; width: 100%; }
         label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 1.1em; color: var(--primary-color);}
-        input, select { width: 100%; padding: 15px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 1.2em; }
+        input, select { width: 100%; padding: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1.2em; background-color: #fafafa; color: var(--text-color); transition: 0.3s;}
+        input:focus { border-color: var(--primary-color); outline: none; background-color: #fff;}
         .name-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; position: relative; }
         .name-row .form-group { flex: 1; min-width: 200px; margin-bottom: 0; }
 
         /* Unified AutoComplete Styles */
-        .autocomplete-items { position: absolute; border: 2px solid var(--primary-color); z-index: 99; top: 100%; left: 0; right: 0; background: white; max-height: 250px; overflow-y: auto; border-radius: 0 0 8px 8px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); display: none; }
-        .autocomplete-items div { padding: 15px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 1.1em; color: #333; }
-        .autocomplete-items div:hover { background-color: #e9f2ff; color: var(--primary-color); font-weight: bold; }
+        .autocomplete-items { position: absolute; border: 2px solid var(--primary-color); z-index: 99; top: 100%; left: 0; right: 0; background: white; max-height: 250px; overflow-y: auto; border-radius: 0 0 8px 8px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); display: none; }
+        .autocomplete-items div { padding: 15px; cursor: pointer; border-bottom: 1px solid #f0f0f0; font-size: 1.1em; color: var(--text-color); }
+        .autocomplete-items div:hover { background-color: var(--highlight-color); color: #333; font-weight: bold; }
 
         .division-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(55px, 1fr)); gap: 12px; justify-content: center; margin-bottom: 20px;}
-        .division-circle { width: 55px; height: 55px; background-color: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2em; font-weight: bold; cursor: pointer; user-select: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border: 2px solid transparent; transition: 0.2s;}
-        .division-circle.selected { background-color: var(--highlight-color); color: #333; transform: scale(1.15); border: 2px solid #fff; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+        .division-circle { width: 55px; height: 55px; background-color: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2em; font-weight: bold; cursor: pointer; user-select: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 2px solid transparent; transition: 0.2s;}
+        .division-circle.selected { background-color: var(--highlight-color); color: #333; transform: scale(1.15); border: 2px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
 
         .item-grid { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-bottom: 30px;}
-        .item-circle { width: 90px; height: 90px; background-color: var(--item-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 1em; font-weight: bold; cursor: pointer; user-select: none; box-shadow: 0 4px 6px rgba(0,0,0,0.2); padding: 5px; word-break: break-word; border: 3px solid transparent;}
-        .item-circle.selected { background-color: var(--highlight-color); color: #333; transform: scale(1.1); border: 3px solid #fff; }
+        .item-circle { width: 90px; height: 90px; background-color: var(--item-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 1em; font-weight: bold; cursor: pointer; user-select: none; box-shadow: 0 3px 6px rgba(0,0,0,0.1); padding: 5px; word-break: break-word; border: 3px solid transparent; transition: 0.2s;}
+        .item-circle.selected { background-color: var(--highlight-color); color: #333; transform: scale(1.1); border: 3px solid #fff; box-shadow: 0 5px 12px rgba(0,0,0,0.2);}
 
         .pos-layout { display: flex; gap: 30px; flex-wrap: wrap; }
         .pos-controls { flex: 1.5; min-width: 350px; }
-        .pos-invoice { flex: 1; min-width: 320px; background: #fdfdfd; border: 2px solid #eee; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; }
+        .pos-invoice { flex: 1; min-width: 320px; background: #fcfcfc; border: 2px solid #eee; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; }
 
-        .numpad-display { background: #fff; border: 2px solid #ccc; border-radius: 8px; padding: 20px; text-align: right; font-size: 2.2em; font-weight: bold; margin-bottom: 15px; color: #333; letter-spacing: 2px; }
+        .numpad-display { background: #fff; border: 2px solid #ddd; border-radius: 8px; padding: 20px; text-align: right; font-size: 2.2em; font-weight: bold; margin-bottom: 15px; color: var(--text-color); letter-spacing: 2px; }
         .numpad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-        .num-btn { background-color: var(--numpad-color); color: white; border: none; border-radius: 10px; padding: 20px; font-size: 1.8em; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        .num-btn { background-color: var(--numpad-color); color: white; border: none; border-radius: 10px; padding: 20px; font-size: 1.8em; font-weight: bold; cursor: pointer; box-shadow: 0 3px 5px rgba(0,0,0,0.1); transition: 0.1s;}
         .num-btn:active { transform: scale(0.95); }
-        .num-btn.btn-action { background-color: #6c757d; font-size: 1.3em;}
+        .num-btn.btn-action { background-color: #A3A8AB; font-size: 1.3em;}
         .num-btn.btn-enter { background-color: var(--item-color); grid-column: span 3; font-size: 1.5em; text-transform: uppercase; padding: 25px;}
 
-        .invoice-header { text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 10px; margin-bottom: 15px; }
+        .invoice-header { text-align: center; border-bottom: 2px dashed #ddd; padding-bottom: 10px; margin-bottom: 15px; }
         .invoice-list { flex-grow: 1; overflow-y: auto; max-height: 350px; margin-bottom: 15px; }
-        .invoice-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; font-size: 1.2em;}
-        .invoice-item .del-btn { color: #e63946; cursor: pointer; font-weight: bold; margin-left: 15px; padding: 0 10px;}
-        .invoice-total-area { border-top: 3px solid #333; padding-top: 15px; text-align: right; }
-        .total-amount { font-size: 3em; color: #e63946; font-weight: bold; margin: 10px 0; }
+        .invoice-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f0f0f0; font-size: 1.2em;}
+        .invoice-item .del-btn { color: #D96C6C; cursor: pointer; font-weight: bold; margin-left: 15px; padding: 0 10px;}
+        .invoice-total-area { border-top: 3px solid #ccc; padding-top: 15px; text-align: right; }
+        .total-amount { font-size: 3em; color: #D96C6C; font-weight: bold; margin: 10px 0; }
 
         .payment-methods { display: flex; gap: 15px; }
-        .pay-btn { flex: 1; padding: 20px; font-size: 1.5em; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; color: white; transition: 0.2s;}
-        .btn-cash { background-color: #2a9d8f; }
-        .btn-card { background-color: #4361ee; }
+        .pay-btn { flex: 1; padding: 20px; font-size: 1.5em; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; color: white; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);}
+        .btn-cash { background-color: var(--item-color); }
+        .btn-card { background-color: var(--primary-color); }
 
         .btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; font-size: 1.1em;}
         .btn-primary { background-color: var(--primary-color); }
-        .btn-danger { background-color: #e63946; }
+        .btn-danger { background-color: #D96C6C; }
         .btn-warning { background-color: var(--highlight-color); color: #333; }
         
         table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 1.1em;}
-        th, td { text-align: left; padding: 15px; border-bottom: 1px solid #ddd; }
-        th { background-color: #e9ecef; }
-        .summary-row td { background-color: #ffe8cc; font-weight: bold; font-size: 1.2em; color: #856404; border-top: 3px solid #ffc107;}
+        th, td { text-align: left; padding: 15px; border-bottom: 1px solid #eee; }
+        th { background-color: var(--highlight-color); color: #333; }
+        .summary-row td { background-color: #f7ede2; font-weight: bold; font-size: 1.2em; color: #856404; border-top: 3px solid #D4C4B7;}
 
         .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .stat-card { color: white; padding: 25px; border-radius: var(--border-radius); text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);}
         .stat-card h3 { margin: 0; font-size: 2.2em; }
         .stat-card p { margin: 5px 0 0 0; opacity: 0.9; font-size: 1.1em;}
         .card-blue { background: var(--primary-color); }
-        .card-green { background: #2a9d8f; }
+        .card-green { background: var(--item-color); }
         .card-gold { background: var(--highlight-color); color: #333; }
 
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; }
-        .modal-box { background: white; padding: 40px; border-radius: 15px; text-align: center; width: 90%; max-width: 600px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);}
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-box { background: white; padding: 40px; border-radius: 15px; text-align: center; width: 90%; max-width: 600px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
         .modal-title { font-size: 2.2em; color: var(--primary-color); margin-top: 0; margin-bottom: 20px; }
         .modal-input { font-size: 2em; padding: 15px; width: 100%; margin-bottom: 20px; text-align: center; border: 3px solid #ccc; border-radius: 10px; }
         .modal-btn-row { display: flex; gap: 20px; justify-content: center; }
         .modal-btn { flex: 1; padding: 20px; font-size: 1.5em; font-weight: bold; border-radius: 10px; border: none; cursor: pointer; color: white; }
-        .change-huge { font-size: 4.5em; color: #e63946; font-weight: bold; margin: 10px 0; }
+        .change-huge { font-size: 4.5em; color: #D96C6C; font-weight: bold; margin: 10px 0; }
 
         @media print {
             body.print-receipt .section, body.print-receipt header, body.print-receipt .overlay { display: none !important; }
@@ -120,23 +120,23 @@
             <button class="nav-btn" onclick="showSection('records')">📊 Reports & Invoices</button>
             <button class="nav-btn" onclick="showSection('students')">👨‍🎓 Student List</button>
             <button class="nav-btn" onclick="showSection('fees')">⚙️ Admin Settings</button>
-            <button id="lockBtn" class="nav-btn" style="display: none; background-color: #e63946; color: white;" onclick="lockAdmin()">🔒 Lock System</button>
+            <button id="lockBtn" class="nav-btn" style="display: none; background-color: #D96C6C; color: white;" onclick="lockAdmin()">🔒 Lock System</button>
         </div>
     </header>
 
     <div id="payment" class="section active no-print">
-        <div id="activeEventBanner" style="background: #e9ecef; padding: 15px 20px; border-radius: 8px; font-weight: bold; color: var(--primary-color); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; font-size: 1.2em;">
+        <div id="activeEventBanner" style="background: rgba(212, 196, 183, 0.3); padding: 15px 20px; border-radius: 8px; font-weight: bold; color: var(--primary-color); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; font-size: 1.2em; border-left: 5px solid var(--highlight-color);">
             <span id="activeEventDisplay">Active Event: None</span>
             <span id="invoiceNoDisplay" style="color: #666; font-family: monospace;">INV-A-XXXX</span>
         </div>
 
-        <label>Step 1: Select Division (Optional, filters student list)</label>
-        <div class="division-grid" id="divisionGrid"></div>
+        <label style="text-align: center; font-size: 1.2em;">Step 1: Select Division (Optional, filters student list)</label>
+        <div class="division-grid" id="divisionGrid" style="margin-bottom: 20px;"></div>
 
-        <label>Step 2: Student Details (Type to search or pick from Division):</label>
+        <label>Step 2: Student Details (Type First Letter to search):</label>
         <div class="name-row">
-            <div class="form-group"><input type="text" id="payLastName" placeholder="Last Name" oninput="updateStudentDropdown(this.value)"></div>
-            <div class="form-group"><input type="text" id="payFirstName" placeholder="First Name" oninput="updateStudentDropdown(this.value)"></div>
+            <div class="form-group"><input type="text" id="payLastName" placeholder="Last Name" oninput="advancedFilter(this.value, 'last')"></div>
+            <div class="form-group"><input type="text" id="payFirstName" placeholder="First Name" oninput="advancedFilter(this.value, 'first')"></div>
             <div id="searchList" class="autocomplete-items"></div>
         </div>
 
@@ -144,10 +144,10 @@
 
         <div class="pos-layout">
             <div class="pos-controls">
-                <label>Step 3: Category</label>
-                <div class="item-grid" id="itemGrid"></div>
+                <label style="text-align: center; font-size: 1.2em;">Step 3: Category</label>
+                <div class="item-grid" id="itemGrid" style="margin-bottom: 30px;"></div>
 
-                <label>Step 4: Price & Add</label>
+                <label style="text-align: center; font-size: 1.2em;">Step 4: Price & Add</label>
                 <div class="numpad-display" id="numpadDisplay">$0.00</div>
                 <div class="numpad-grid">
                     <button class="num-btn" onclick="inputNumpad('1')">1</button>
@@ -181,13 +181,13 @@
                         <button class="pay-btn btn-card" onclick="finalizeCheckout('Card', 0)">💳 CARD</button>
                     </div>
                 </div>
-                <button class="btn" style="background-color: #6c757d; margin-top: 15px; font-size: 1em;" onclick="printLastReceipt()">🖨️ Reprint Last Receipt</button>
+                <button class="btn" style="background-color: #A3A8AB; margin-top: 15px; font-size: 1em;" onclick="printLastReceipt()">🖨️ Reprint Last Receipt</button>
             </div>
         </div>
     </div>
 
     <div id="records" class="section no-print">
-        <h2 style="color: #e63946; border-bottom: 2px solid #e63946; padding-bottom: 10px;">📅 Today's Summary (<span id="todayDateDisplay"></span>)</h2>
+        <h2 style="color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 10px;">📅 Today's Summary (<span id="todayDateDisplay"></span>)</h2>
         <div class="dashboard-grid">
             <div class="stat-card card-green">
                 <h3 id="todayCash">$0.00</h3>
@@ -203,8 +203,8 @@
             </div>
         </div>
 
-        <h2 style="margin-top: 40px; border-bottom: 2px solid #2a9d8f; color: #2a9d8f; padding-bottom: 10px;">📦 Itemized Sales & Pre-Orders</h2>
-        <div class="no-print-report" style="display: flex; gap: 10px; margin-bottom: 15px; align-items: center; flex-wrap: wrap; background: #e9ecef; padding: 15px; border-radius: 8px;">
+        <h2 style="margin-top: 40px; border-bottom: 2px solid var(--item-color); color: var(--item-color); padding-bottom: 10px;">📦 Itemized Sales & Pre-Orders</h2>
+        <div class="no-print-report" style="display: flex; gap: 10px; margin-bottom: 15px; align-items: center; flex-wrap: wrap; background: #f0f0f0; padding: 15px; border-radius: 8px;">
             <label style="margin: 0; font-size: 1.1em; font-weight:bold; color: var(--primary-color);">🔎 Filter Items By:</label>
             <select id="itemFilter" style="width: 250px; font-size: 1.1em; padding: 10px;" onchange="renderItemizedReport()"></select>
             <button class="btn btn-warning" onclick="exportItemizedToExcel()">📥 Export Excel</button>
@@ -218,7 +218,7 @@
         </div>
 
         <h2 class="no-print-report" style="margin-top: 40px; border-bottom: 2px solid #ccc; padding-bottom: 10px;">📊 Invoice Overview</h2>
-        <div class="no-print-report" style="margin-bottom: 15px; background: #fff3cd; padding: 15px; border-radius: 8px; display: inline-block;">
+        <div class="no-print-report" style="margin-bottom: 15px; background: rgba(212, 196, 183, 0.4); padding: 15px; border-radius: 8px; display: inline-block;">
             <label style="font-weight: bold; margin-right: 10px;">📅 Show Invoices For:</label>
             <select id="invoiceDateFilter" style="font-size: 1.1em; padding: 8px; width: 200px;" onchange="renderRecords()">
                 <option value="TODAY">Today's Invoices</option>
@@ -254,7 +254,7 @@
 
     <div id="students" class="section no-print-report">
         <h2>Student List Management</h2>
-        <div style="background: #e9ecef; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+        <div style="background: #f0f0f0; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
             <div class="name-row">
                 <div class="form-group"><input type="text" id="stuLastName" placeholder="Last Name"></div>
                 <div class="form-group"><input type="text" id="stuFirstName" placeholder="First Name"></div>
@@ -282,15 +282,15 @@
     <div id="fees" class="section no-print-report">
         <h2>Admin Configurations</h2>
 
-        <div style="background: #e9ecef; padding: 20px; border-radius: 8px; border-left: 5px solid #6c757d; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+        <div style="background: rgba(212, 196, 183, 0.2); padding: 20px; border-radius: 8px; border-left: 5px solid #A3A8AB; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
             <div style="flex: 1; min-width: 250px;">
                 <h3 style="margin-top: 0; color: #333;">🎓 Training Mode (Practice Sandbox)</h3>
                 <p style="color: #555; margin-bottom: 0; font-size: 0.9em;">Turn this on to let volunteers practice. Fake transactions will not affect the real totals. <b>You will be logged out of Admin automatically after toggling.</b></p>
             </div>
-            <button id="trainingToggleBtn" class="btn" style="background-color: #6c757d; color: white; padding: 15px 30px; font-size: 1.2em; border-radius: 8px; font-weight: bold; cursor: pointer; border:none;" onclick="toggleTrainingMode()">🎓 Turn ON Training Mode</button>
+            <button id="trainingToggleBtn" class="btn" style="background-color: #A3A8AB; color: white; padding: 15px 30px; font-size: 1.2em; border-radius: 8px; font-weight: bold; cursor: pointer; border:none;" onclick="toggleTrainingMode()">🎓 Turn ON Training Mode</button>
         </div>
         
-        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 5px solid var(--highlight-color); margin-bottom: 25px;">
+        <div style="background: rgba(252, 163, 17, 0.1); padding: 15px; border-radius: 8px; border-left: 5px solid var(--highlight-color); margin-bottom: 25px;">
             <h3 style="margin-top: 0; color: #856404;">🖥️ Multi-Station Setup</h3>
             <div style="display: flex; gap: 10px; align-items: center;">
                 <label style="margin: 0; min-width: 150px; color:#333;">Station Prefix:</label>
@@ -300,7 +300,7 @@
         </div>
 
         <h3>Event Setup</h3>
-        <div style="background: #f8f9fa; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+        <div style="background: #fff; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
             <div class="name-row">
                 <div class="form-group"><input type="text" id="newFeeName" placeholder="Event Name"></div>
                 <div class="form-group"><input type="text" id="newFeeItems" placeholder="Sale Items (e.g., Book, Pre-Order, Open)"></div>
@@ -325,7 +325,7 @@
         <p style="font-size: 1.3em; margin-bottom: 20px; color:#555;">Enter the Pre-Order book or item name:</p>
         <input type="text" id="preOrderInput" class="modal-input" placeholder="e.g. Dog Man Vol. 10">
         <div class="modal-btn-row">
-            <button class="modal-btn" style="background:#e63946;" onclick="closeModal('preOrderModal')">✖ Cancel</button>
+            <button class="modal-btn" style="background:#D96C6C;" onclick="closeModal('preOrderModal')">✖ Cancel</button>
             <button class="modal-btn" style="background:var(--item-color);" onclick="confirmPreOrder()">✔️ Confirm</button>
         </div>
     </div>
@@ -338,7 +338,7 @@
         <p style="font-size: 1.2em; margin-bottom: 20px; color:#666;">Amount handed by customer:</p>
         <input type="number" id="cashInput" class="modal-input" placeholder="e.g. 50" inputmode="decimal">
         <div class="modal-btn-row">
-            <button class="modal-btn" style="background:#e63946;" onclick="closeModal('cashModal')">✖ Cancel</button>
+            <button class="modal-btn" style="background:#D96C6C;" onclick="closeModal('cashModal')">✖ Cancel</button>
             <button class="modal-btn" style="background:var(--item-color);" onclick="confirmCash()">✔️ Calculate</button>
         </div>
     </div>
@@ -435,8 +435,6 @@
         document.getElementById('stationPrefixInput').value = stationPrefix;
         document.getElementById('todayDateDisplay').textContent = new Date().toLocaleDateString('en-US');
         autoCheckEventDate(); renderDivisionGrid(); renderAll();
-        
-        // Ensure dropdown is hidden initially
         document.getElementById('searchList').style.display = 'none';
     };
 
@@ -461,13 +459,13 @@
         renderStudents(); renderEventsAdmin(); populateItemFilter(); renderRecords(); renderItemizedReport(); updateCashierPOS(); updateDashboard();
     }
 
-    // --- INTEGRATED DIVISION & INCREMENTAL SEARCH ---
-    function updateStudentDropdown(val = '') {
+    // --- INTEGRATED DIVISION & INCREMENTAL (STARTSWITH) SEARCH ---
+    function advancedFilter(val = '', type = 'last') {
         const list = document.getElementById('searchList');
         list.innerHTML = '';
         val = val.trim().toLowerCase();
 
-        // If no division selected and no text typed, hide the list
+        // Hide list if no division is selected and no text is typed
         if (!selectedDivision && val.length === 0) {
             list.style.display = 'none';
             return;
@@ -480,13 +478,21 @@
             matches = matches.filter(s => s.division === selectedDivision);
         }
 
-        // 2. Filter by typed name (if any)
+        // 2. Filter strictly by STARTING letter/string
         if (val.length > 0) {
-            matches = matches.filter(s => 
-                s.lastName.toLowerCase().includes(val) || 
-                s.firstName.toLowerCase().includes(val)
-            );
+            if (type === 'last') {
+                matches = matches.filter(s => s.lastName.toLowerCase().startsWith(val));
+            } else if (type === 'first') {
+                matches = matches.filter(s => s.firstName.toLowerCase().startsWith(val));
+            }
         }
+
+        // 3. Alphabetical Sorting (A-Z by Last Name, then First Name)
+        matches.sort((a, b) => {
+            let cmp = a.lastName.localeCompare(b.lastName);
+            if (cmp === 0) return a.firstName.localeCompare(b.firstName);
+            return cmp;
+        });
 
         if (matches.length === 0) {
             list.style.display = 'none';
@@ -535,7 +541,11 @@
                     document.getElementById('invoiceDivDisplay').textContent = `Div: ${c.textContent}`; 
                 }
                 // Trigger dropdown update based on division click
-                updateStudentDropdown(document.getElementById('payLastName').value || document.getElementById('payFirstName').value);
+                const lastVal = document.getElementById('payLastName').value;
+                const firstVal = document.getElementById('payFirstName').value;
+                if(lastVal) advancedFilter(lastVal, 'last');
+                else if(firstVal) advancedFilter(firstVal, 'first');
+                else advancedFilter('', 'last'); 
             };
             grid.appendChild(c);
         }
@@ -555,14 +565,14 @@
         
         if (isTrainingMode) {
             btn.textContent = "🔥 Turn OFF Training Mode";
-            btn.style.backgroundColor = "#d00000";
-            banner.style.backgroundColor = "#ffb703";
-            banner.style.color = "#000";
+            btn.style.backgroundColor = "#D96C6C";
+            banner.style.backgroundColor = "rgba(217, 108, 108, 0.2)";
+            banner.style.color = "#D96C6C";
             alert("Training Mode is now ON.\nYou will be redirected to the Cashier POS.");
         } else {
             btn.textContent = "🎓 Turn ON Training Mode";
-            btn.style.backgroundColor = "#6c757d";
-            banner.style.backgroundColor = "#e9ecef";
+            btn.style.backgroundColor = "#A3A8AB";
+            banner.style.backgroundColor = "rgba(212, 196, 183, 0.3)";
             banner.style.color = "var(--primary-color)";
             alert("Training Mode is OFF. Live system active.\nYou will be redirected to the Cashier POS.");
         }
@@ -803,7 +813,7 @@
                 const realIndex = currentSource.findIndex(orig => orig.id === r.id);
                 return `
                 <tr><td><b>${r.invoiceNo}</b></td><td style="font-size:0.85em;">${r.date}</td><td>${r.division}</td><td>${r.studentName}</td>
-                    <td style="font-size:0.9em;">${r.items}</td><td><span style="background:${r.method==='Cash'?'#2a9d8f':'#4361ee'}; color:white; padding:4px 8px; border-radius:4px; font-size:0.8em;">${r.method}</span></td>
+                    <td style="font-size:0.9em;">${r.items}</td><td><span style="background:${r.method==='Cash'?'var(--item-color)':'var(--primary-color)'}; color:white; padding:4px 8px; border-radius:4px; font-size:0.8em;">${r.method}</span></td>
                     <td><b>$${r.amount.toFixed(2)}</b></td>
                     <td class="no-print-report">
                         <button class="btn btn-warning" style="padding:6px 10px; margin-right:5px; margin-bottom:5px; font-size:0.9em;" onclick="editRecord(${realIndex})">✏️ Edit</button>
