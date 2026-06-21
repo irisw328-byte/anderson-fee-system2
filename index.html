@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anderson POS System v14.12</title>
+<title>Anderson POS System v14.13</title>
 <style>
     :root {
         --bg-color: #EAE0C8; --card-bg: #FCFBF9; --primary-color: #2A4D4A; 
@@ -92,7 +92,7 @@
 
 <div class="container">
     <header class="no-print-report">
-        <h1>🦅 Anderson POS System <span style="font-size: 0.4em; color: var(--numpad-color); font-weight: 600; vertical-align: middle;">v14.12</span></h1>
+        <h1>🦅 Anderson POS System <span style="font-size: 0.4em; color: var(--numpad-color); font-weight: 600; vertical-align: middle;">v14.13</span></h1>
         <div class="nav-tabs">
             <button class="nav-btn active" onclick="showSection('payment')">💻 Cashier POS</button>
             <button class="nav-btn" onclick="showSection('records')">📊 Reports</button>
@@ -102,6 +102,7 @@
         </div>
     </header>
 
+    <!-- Cashier POS -->
     <div id="payment" class="section active no-print">
         <div id="activeEventBanner" style="background: rgba(198, 142, 23, 0.2); padding: 15px; border-radius: 8px; font-weight: bold; color: var(--primary-color); margin-bottom: 20px; display: flex; justify-content: space-between; border-left: 5px solid var(--highlight-color);">
             <span id="activeEventDisplay">Active Event: None</span>
@@ -111,11 +112,10 @@
         <label>Step 1: Select Division</label>
         <div class="division-grid" id="divisionGrid"></div>
 
-        <label>Step 2: Student Details (Type First Letter to search):</label>
+        <label>Step 2: Student Details (Type Name or Student No.):</label>
         <div class="autocomplete">
-            <div class="name-row" style="margin-bottom:0;">
-                <div class="form-group"><input type="text" id="payLastName" placeholder="Last Name" autocomplete="off" oninput="advancedFilter(this.value, 'last')"></div>
-                <div class="form-group"><input type="text" id="payFirstName" placeholder="First Name" autocomplete="off" oninput="advancedFilter(this.value, 'first')"></div>
+            <div class="form-group" style="margin-bottom:0;">
+                <input type="text" id="payStudentName" placeholder="🔍 e.g., 'Chan Jayden' or 'C' or '1234'" autocomplete="off" oninput="posAdvancedFilter(this.value)">
             </div>
             <div id="searchList" class="autocomplete-items"></div>
         </div>
@@ -156,6 +156,7 @@
         </div>
     </div>
 
+    <!-- Reports -->
     <div id="records" class="section no-print">
         <h2 style="color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 10px;">📅 Today's Summary (<span id="todayDateDisplay"></span>)</h2>
         <div class="dashboard-grid">
@@ -194,14 +195,13 @@
         </div>
     </div>
 
+    <!-- Student List Backend -->
     <div id="students" class="section no-print-report">
         <h2>Student List Management</h2>
-        
         <div style="background: rgba(42, 77, 74, 0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--primary-color);">
             <label style="color: var(--primary-color); margin-bottom: 5px;">🔍 Find Student:</label>
             <input type="text" id="rosterSearch" placeholder="Type name, student number, or division (e.g., 'Chan Jayden' or 'Chan 2')" oninput="renderStudents()">
         </div>
-
         <div style="background: #fafafa; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee;">
             <label style="color: var(--primary-color);">➕ Add New Student:</label>
             <div class="name-row">
@@ -223,6 +223,7 @@
         </div>
     </div>
 
+    <!-- Admin -->
     <div id="fees" class="section no-print-report">
         <h2>Admin Configurations</h2>
         <div style="background: #fdfdfd; padding: 20px; border-radius: 8px; border-left: 5px solid var(--numpad-color); margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee;">
@@ -256,6 +257,7 @@
     </div>
 </div>
 
+<!-- Modals -->
 <div id="preOrderModal" class="overlay">
     <div class="modal-box">
         <h2 class="modal-title">📦 Pre-Order Item</h2>
@@ -359,9 +361,10 @@
         renderAll();
     }
 
-    function renderAll() { renderStudents(); renderEventsAdmin(); populateItemFilter(); renderRecords(); renderItemizedReport(); updateCashierPOS(); updateDashboard(); }
+    function renderAll() { renderStudents(document.getElementById('rosterSearch') ? document.getElementById('rosterSearch').value : ''); renderEventsAdmin(); populateItemFilter(); renderRecords(); renderItemizedReport(); updateCashierPOS(); updateDashboard(); }
 
-    function advancedFilter(val = '', type = 'last') {
+    // --- POS Front-end: Multi-Keyword + StartsWith Search (v14.13) ---
+    function posAdvancedFilter(val = '') {
         const list = document.getElementById('searchList');
         list.innerHTML = '';
         val = val.trim().toLowerCase();
@@ -370,9 +373,22 @@
 
         let matches = students;
         if (selectedDivision) matches = matches.filter(s => s.division === selectedDivision);
+        
         if (val.length > 0) {
-            if (type === 'last') matches = matches.filter(s => s.lastName.toLowerCase().startsWith(val));
-            else if (type === 'first') matches = matches.filter(s => s.firstName.toLowerCase().startsWith(val));
+            const terms = val.split(/[\s,]+/).filter(t => t);
+            matches = matches.filter(s => {
+                // Multi-keyword check for ALL terms
+                const matchesAll = terms.every(ft => 
+                    s.lastName.toLowerCase().includes(ft) || 
+                    s.firstName.toLowerCase().includes(ft) || 
+                    (s.studentNum && s.studentNum.toLowerCase().includes(ft))
+                );
+                if (!matchesAll) return false;
+                
+                // First term must match the START of either first name or last name
+                const firstTerm = terms[0];
+                return s.lastName.toLowerCase().startsWith(firstTerm) || s.firstName.toLowerCase().startsWith(firstTerm);
+            });
         }
 
         matches.sort((a, b) => {
@@ -387,7 +403,7 @@
             let div = document.createElement('div');
             div.innerHTML = `<strong>${s.lastName}, ${s.firstName}</strong> <span style="font-size:0.9em; color:#888;">(Div: ${s.division || 'N/A'})</span>`;
             div.onclick = () => {
-                document.getElementById('payLastName').value = s.lastName; document.getElementById('payFirstName').value = s.firstName;
+                document.getElementById('payStudentName').value = `${s.lastName}, ${s.firstName}`;
                 selectedDivision = s.division;
                 document.querySelectorAll('.division-circle').forEach(el => { el.classList.remove('selected'); if (el.textContent === s.division) el.classList.add('selected'); });
                 document.getElementById('invoiceDivDisplay').textContent = `Div: ${s.division}`;
@@ -404,8 +420,7 @@
             c.onclick = () => { 
                 if (selectedDivision === c.textContent) { selectedDivision = null; c.classList.remove('selected'); document.getElementById('invoiceDivDisplay').textContent = `Div: Not Selected`; } 
                 else { selectedDivision = c.textContent; document.querySelectorAll('.division-circle').forEach(el => el.classList.remove('selected')); c.classList.add('selected'); document.getElementById('invoiceDivDisplay').textContent = `Div: ${c.textContent}`; }
-                const lastVal = document.getElementById('payLastName').value; const firstVal = document.getElementById('payFirstName').value;
-                if(lastVal) advancedFilter(lastVal, 'last'); else if(firstVal) advancedFilter(firstVal, 'first'); else advancedFilter('', 'last'); 
+                posAdvancedFilter(document.getElementById('payStudentName').value); 
             };
             grid.appendChild(c);
         }
@@ -449,8 +464,24 @@
     function renderCart() { const list = document.getElementById('invoiceList'), totalDisplay = document.getElementById('cartTotalDisplay'); if (currentCart.length === 0) { list.innerHTML = ''; totalDisplay.textContent = "$0.00"; return; } let total = 0; list.innerHTML = currentCart.map(item => { total += item.price; return `<div class="invoice-item"><span>✔️ ${item.name}</span><div><strong>$${item.price.toFixed(2)}</strong><span class="del-btn" onclick="currentCart=currentCart.filter(i=>i.id!==${item.id}); renderCart();">✖</span></div></div>`; }).join(''); totalDisplay.textContent = "$" + total.toFixed(2); }
     function triggerCashModal() { if (!selectedDivision) return alert('Step 1: Select Division!'); if (currentCart.length === 0) return alert('Invoice empty!'); tempTotalDue = currentCart.reduce((sum, item) => sum + item.price, 0); document.getElementById('cashModalTotalDue').textContent = `$${tempTotalDue.toFixed(2)}`; document.getElementById('cashInput').value = ''; document.getElementById('cashModal').style.display = 'flex'; document.getElementById('cashInput').focus(); }
     function confirmCash() { const received = parseFloat(document.getElementById('cashInput').value); if (isNaN(received) || received < tempTotalDue) return alert("Amount too low!"); closeModal('cashModal'); finalizeCheckout('Cash', received - tempTotalDue); }
-    function finalizeCheckout(method, changeDue = 0) { if (method === 'Card') { if (!selectedDivision) return alert('Select Division!'); if (currentCart.length === 0) return alert('Invoice empty!'); } const lName = formatName(document.getElementById('payLastName').value); const fName = formatName(document.getElementById('payFirstName').value); const checkedName = (lName || fName) ? `${lName} ${fName}`.trim() : 'N/A'; const totalAmount = currentCart.reduce((sum, item) => sum + item.price, 0); const itemsString = currentCart.map(i => `${i.name}($${i.price.toFixed(2)})`).join(', '); const targetArray = isTrainingMode ? trainingRecords : records; targetArray.unshift({ id: Date.now(), invoiceNo: generateInvoiceNo(), date: new Date().toLocaleString('en-US'), division: selectedDivision, studentName: checkedName, items: itemsString, amount: totalAmount, method: method, rawItems: [...currentCart] }); if(isTrainingMode) nextTrainSequence++; else nextInvSequence++; saveData(); document.getElementById('successModalTitle').textContent = isTrainingMode ? "⚠️ Training Logged!" : "✅ Payment Successful!"; document.getElementById('successModal').style.display = 'flex'; const changeSec = document.getElementById('changeSection'); if(method === 'Cash') { changeSec.style.display = 'block'; document.getElementById('modalChangeDue').textContent = `$${changeDue.toFixed(2)}`; } else { changeSec.style.display = 'none'; } }
-    function nextCustomer() { closeModal('successModal'); currentCart = []; selectedCategory = null; currentNumpadValue = ""; document.getElementById('numpadDisplay').textContent = "$0.00"; document.getElementById('payFirstName').value = ""; document.getElementById('payLastName').value = ""; document.getElementById('searchList').style.display = "none"; document.querySelectorAll('.division-circle').forEach(el => el.classList.remove('selected')); selectedDivision = null; document.getElementById('invoiceDivDisplay').textContent = "Div: Not Selected"; renderCart(); updateCashierPOS(); }
+    
+    function finalizeCheckout(method, changeDue = 0) { 
+        if (method === 'Card') { if (!selectedDivision) return alert('Select Division!'); if (currentCart.length === 0) return alert('Invoice empty!'); } 
+        const rawName = document.getElementById('payStudentName').value;
+        const checkedName = rawName.trim() ? formatName(rawName) : 'N/A'; 
+        const totalAmount = currentCart.reduce((sum, item) => sum + item.price, 0); 
+        const itemsString = currentCart.map(i => `${i.name}($${i.price.toFixed(2)})`).join(', '); 
+        const targetArray = isTrainingMode ? trainingRecords : records; 
+        targetArray.unshift({ id: Date.now(), invoiceNo: generateInvoiceNo(), date: new Date().toLocaleString('en-US'), division: selectedDivision, studentName: checkedName, items: itemsString, amount: totalAmount, method: method, rawItems: [...currentCart] }); 
+        if(isTrainingMode) nextTrainSequence++; else nextInvSequence++; 
+        saveData(); 
+        document.getElementById('successModalTitle').textContent = isTrainingMode ? "⚠️ Training Logged!" : "✅ Payment Successful!"; 
+        document.getElementById('successModal').style.display = 'flex'; 
+        const changeSec = document.getElementById('changeSection'); 
+        if(method === 'Cash') { changeSec.style.display = 'block'; document.getElementById('modalChangeDue').textContent = `$${changeDue.toFixed(2)}`; } else { changeSec.style.display = 'none'; } 
+    }
+    
+    function nextCustomer() { closeModal('successModal'); currentCart = []; selectedCategory = null; currentNumpadValue = ""; document.getElementById('numpadDisplay').textContent = "$0.00"; document.getElementById('payStudentName').value = ""; document.getElementById('searchList').style.display = "none"; document.querySelectorAll('.division-circle').forEach(el => el.classList.remove('selected')); selectedDivision = null; document.getElementById('invoiceDivDisplay').textContent = "Div: Not Selected"; renderCart(); updateCashierPOS(); }
     function printLastReceipt() { const sourceList = getActiveRecords(); if(sourceList.length === 0) return alert("No recent orders."); const r = sourceList[0]; document.getElementById('printReceiptHeader').textContent = isTrainingMode ? "TRAINING REC" : "Anderson PAC"; document.getElementById('rptInv').textContent = r.invoiceNo; document.getElementById('rptDate').textContent = r.date; document.getElementById('rptDiv').textContent = r.division; document.getElementById('rptName').textContent = r.studentName; document.getElementById('rptItems').innerHTML = (r.rawItems||[]).map(i => `<div style="display:flex; justify-content:space-between;"><span>${i.name}</span><span>$${i.price.toFixed(2)}</span></div>`).join(''); document.getElementById('rptTotal').textContent = `$${r.amount.toFixed(2)}`; document.getElementById('rptMethod').textContent = r.method; document.body.className = 'print-receipt'; window.print(); setTimeout(() => { document.body.className = ''; }, 500); }
     function updateCashierPOS() { const eventDisplay = document.getElementById('activeEventDisplay'); document.getElementById('invoiceNoDisplay').textContent = generateInvoiceNo(); const activeEvent = eventsConfig.find(e => e.id === activeEventId); if (activeEvent && Array.isArray(activeEvent.items)) { eventDisplay.innerHTML = isTrainingMode ? `⚠️ PRACTICE: ${activeEvent.name}` : `🛒 ${activeEvent.name}`; document.getElementById('itemGrid').innerHTML = activeEvent.items.map(item => `<div class="item-circle" onclick="selectCategory('${item}')">${item}</div>`).join(''); } else { eventDisplay.innerHTML = `⚠️ No Event Set`; document.getElementById('itemGrid').innerHTML = ''; } document.querySelectorAll('.item-circle').forEach(el => el.classList.remove('selected')); }
     function populateItemFilter() { const filter = document.getElementById('itemFilter'); if(!filter) return; const currentSelection = filter.value; let uniqueItems = new Set(); getActiveRecords().forEach(r => { if(r.rawItems) r.rawItems.forEach(i => uniqueItems.add(i.name)); }); let optionsHtml = '<option value="ALL">All Items</option><option value="PRE-ORDER">📌 All Pre-Orders</option>'; Array.from(uniqueItems).sort().forEach(item => { optionsHtml += `<option value="${item}">${item}</option>`; }); filter.innerHTML = optionsHtml; if(currentSelection) filter.value = currentSelection; }
@@ -467,9 +498,8 @@
     function addEvent() { const name = document.getElementById('newFeeName').value.trim(), itemsRaw = document.getElementById('newFeeItems').value.trim(), sDate = document.getElementById('newFeeStart').value, eDate = document.getElementById('newFeeEnd').value; if (!name || !itemsRaw) return alert('Enter Event Name and Items.'); const itemsArray = itemsRaw.split(',').map(s => s.trim()).filter(s => s !== ""); const existingIndex = eventsConfig.findIndex(ev => ev.name.toLowerCase() === name.toLowerCase()); if (existingIndex >= 0) { eventsConfig[existingIndex].items = itemsArray; eventsConfig[existingIndex].startDate = sDate; eventsConfig[existingIndex].endDate = eDate; } else { eventsConfig.push({ id: 'ev' + Date.now(), name: name, items: itemsArray, startDate: sDate, endDate: eDate }); } document.getElementById('newFeeName').value = ''; document.getElementById('newFeeItems').value = ''; document.getElementById('newFeeStart').value = ''; document.getElementById('newFeeEnd').value = ''; autoCheckEventDate(); saveData(); }
     function renderEventsAdmin() { document.getElementById('feeTableBody').innerHTML = eventsConfig.map((e, index) => { const isActive = (e.id === activeEventId), dateStr = (e.startDate) ? `${e.startDate} to ${e.endDate || e.startDate}` : '<span style="color:#aaa;">No Date Set</span>', isPreset = (e.id.startsWith('ev_')); return `<tr><td>${e.name} ${isPreset ? '📌' : ''}</td><td>${dateStr}</td><td>${e.items.join(', ')}</td><td><button class="btn ${isActive ? 'btn-primary' : 'btn-warning'}" onclick="activeEventId='${e.id}'; saveData();">${isActive ? '🌟 Active' : 'Set Active'}</button></td><td>${isPreset ? '' : `<button class="btn btn-danger" onclick="if(confirm('Delete event?')){eventsConfig.splice(${index}, 1); saveData();}">Del</button>`}</td></tr>`; }).join(''); }
     
-    // --- 萬能後台名單搜尋 (v14.12: 多重關鍵字) ---
-    function renderStudents() { 
-        let filterText = document.getElementById('rosterSearch') ? document.getElementById('rosterSearch').value : '';
+    // --- 後台名單搜尋 (v14.13) ---
+    function renderStudents(filterText = '') { 
         let displayList = students;
         if (filterText) {
             const terms = filterText.toLowerCase().split(/[\s,]+/).filter(t => t);
