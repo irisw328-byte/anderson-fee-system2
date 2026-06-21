@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anderson POS System v14.10</title>
+<title>Anderson POS System v14.11</title>
 <style>
     :root {
         --bg-color: #EAE0C8; --card-bg: #FCFBF9; --primary-color: #2A4D4A; 
@@ -92,7 +92,7 @@
 
 <div class="container">
     <header class="no-print-report">
-        <h1>🦅 Anderson POS System <span style="font-size: 0.4em; color: var(--numpad-color); font-weight: 600; vertical-align: middle;">v14.10</span></h1>
+        <h1>🦅 Anderson POS System <span style="font-size: 0.4em; color: var(--numpad-color); font-weight: 600; vertical-align: middle;">v14.11</span></h1>
         <div class="nav-tabs">
             <button class="nav-btn active" onclick="showSection('payment')">💻 Cashier POS</button>
             <button class="nav-btn" onclick="showSection('records')">📊 Reports</button>
@@ -196,7 +196,14 @@
 
     <div id="students" class="section no-print-report">
         <h2>Student List Management</h2>
-        <div style="background: #fafafa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+        
+        <div style="background: rgba(42, 77, 74, 0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--primary-color);">
+            <label style="color: var(--primary-color); margin-bottom: 5px;">🔍 Quick Find Student:</label>
+            <input type="text" id="rosterSearch" placeholder="Type name, student number, or division to filter the table below..." oninput="renderStudents(this.value)">
+        </div>
+
+        <div style="background: #fafafa; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee;">
+            <label style="color: var(--primary-color);">➕ Add New Student:</label>
             <div class="name-row">
                 <div class="form-group"><input type="text" id="stuLastName" placeholder="Last Name"></div>
                 <div class="form-group"><input type="text" id="stuFirstName" placeholder="First Name"></div>
@@ -352,7 +359,7 @@
         renderAll();
     }
 
-    function renderAll() { renderStudents(); renderEventsAdmin(); populateItemFilter(); renderRecords(); renderItemizedReport(); updateCashierPOS(); updateDashboard(); }
+    function renderAll() { renderStudents(document.getElementById('rosterSearch') ? document.getElementById('rosterSearch').value : ''); renderEventsAdmin(); populateItemFilter(); renderRecords(); renderItemizedReport(); updateCashierPOS(); updateDashboard(); }
 
     function advancedFilter(val = '', type = 'last') {
         const list = document.getElementById('searchList');
@@ -459,10 +466,23 @@
     function downloadCSV(content, filename) { const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = filename; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
     function addEvent() { const name = document.getElementById('newFeeName').value.trim(), itemsRaw = document.getElementById('newFeeItems').value.trim(), sDate = document.getElementById('newFeeStart').value, eDate = document.getElementById('newFeeEnd').value; if (!name || !itemsRaw) return alert('Enter Event Name and Items.'); const itemsArray = itemsRaw.split(',').map(s => s.trim()).filter(s => s !== ""); const existingIndex = eventsConfig.findIndex(ev => ev.name.toLowerCase() === name.toLowerCase()); if (existingIndex >= 0) { eventsConfig[existingIndex].items = itemsArray; eventsConfig[existingIndex].startDate = sDate; eventsConfig[existingIndex].endDate = eDate; } else { eventsConfig.push({ id: 'ev' + Date.now(), name: name, items: itemsArray, startDate: sDate, endDate: eDate }); } document.getElementById('newFeeName').value = ''; document.getElementById('newFeeItems').value = ''; document.getElementById('newFeeStart').value = ''; document.getElementById('newFeeEnd').value = ''; autoCheckEventDate(); saveData(); }
     function renderEventsAdmin() { document.getElementById('feeTableBody').innerHTML = eventsConfig.map((e, index) => { const isActive = (e.id === activeEventId), dateStr = (e.startDate) ? `${e.startDate} to ${e.endDate || e.startDate}` : '<span style="color:#aaa;">No Date Set</span>', isPreset = (e.id.startsWith('ev_')); return `<tr><td>${e.name} ${isPreset ? '📌' : ''}</td><td>${dateStr}</td><td>${e.items.join(', ')}</td><td><button class="btn ${isActive ? 'btn-primary' : 'btn-warning'}" onclick="activeEventId='${e.id}'; saveData();">${isActive ? '🌟 Active' : 'Set Active'}</button></td><td>${isPreset ? '' : `<button class="btn btn-danger" onclick="if(confirm('Delete event?')){eventsConfig.splice(${index}, 1); saveData();}">Del</button>`}</td></tr>`; }).join(''); }
+    
+    // --- 萬能後台名單搜尋 (v14.11) ---
+    function renderStudents(filterText = '') { 
+        let displayList = students;
+        if (filterText) {
+            const ft = filterText.toLowerCase();
+            displayList = students.filter(s => s.lastName.toLowerCase().includes(ft) || s.firstName.toLowerCase().includes(ft) || (s.division && s.division.toLowerCase().includes(ft)) || (s.studentNum && s.studentNum.toLowerCase().includes(ft)));
+        }
+        document.getElementById('studentTableBody').innerHTML = displayList.map(s => { 
+            const idx = students.findIndex(orig => orig === s);
+            return `<tr><td>${s.studentNum}</td><td>${s.lastName}</td><td>${s.firstName}</td><td><b>${s.division}</b></td><td><button class="btn btn-warning" onclick="editStudentDiv(${idx})" style="padding:8px 12px; margin-right:5px;">Edit Div</button> <button class="btn btn-danger" onclick="if(confirm('Delete student?')){students.splice(${idx}, 1); saveData();}" style="padding:8px 12px;">Del</button></td></tr>`; 
+        }).join(''); 
+    }
+    
     function addStudent() { const lName = formatName(document.getElementById('stuLastName').value); const fName = formatName(document.getElementById('stuFirstName').value); const div = document.getElementById('stuDivision').value.trim(); const sNum = document.getElementById('stuNumber').value.trim() || 'N/A'; if (!fName || !lName || !div) return alert('Enter Name and Division.'); students.push({ id: Date.now(), studentNum: sNum, lastName: lName, firstName: fName, division: div }); document.getElementById('stuLastName').value = ''; document.getElementById('stuFirstName').value = ''; document.getElementById('stuDivision').value = ''; document.getElementById('stuNumber').value = ''; saveData(); }
     function editStudentDiv(index) { const newDiv = prompt("Enter new Division:", students[index].division); if (newDiv !== null && newDiv.trim() !== "") { students[index].division = newDiv.trim(); saveData(); } }
     document.getElementById('importCsvFile').addEventListener('change', function(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { const lines = e.target.result.split('\n'); let addedCount = 0; for (let i = 1; i < lines.length; i++) { if(lines[i].trim() === "") continue; const cols = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g); if (cols && cols.length >= 4) { const cleanStr = str => str.replace(/(^"|"$)/g, '').trim(); students.push({ id: Date.now() + i, studentNum: cleanStr(cols[0]), lastName: formatName(cleanStr(cols[1])), firstName: formatName(cleanStr(cols[2])), division: cleanStr(cols[3]) }); addedCount++; } } saveData(); alert(`Imported ${addedCount} students!`); }; reader.readAsText(file); event.target.value = ''; });
-    function renderStudents() { document.getElementById('studentTableBody').innerHTML = students.map((s, index) => `<tr><td>${s.studentNum}</td><td>${s.lastName}</td><td>${s.firstName}</td><td><b>${s.division}</b></td><td><button class="btn btn-warning" onclick="editStudentDiv(${index})">Edit Div</button> <button class="btn btn-danger" onclick="if(confirm('Delete student?')){students.splice(${index}, 1); saveData();}">Del</button></td></tr>`).join(''); }
     function exportStudentsToExcel() { if (students.length === 0) return alert("List is empty."); let csvContent = "\uFEFFStudent No.,Last Name,First Name,Division\n"; students.forEach(s => { csvContent += `"${s.studentNum}","${s.lastName}","${s.firstName}","${s.division}"\n`; }); downloadCSV(csvContent, "Anderson_Student_List.csv"); }
     function clearRoster() { if(confirm('⚠️ Delete ALL students?')) { students = []; saveData(); } }
 </script>
