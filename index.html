@@ -1,158 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anderson POS System v14.8</title>
-    <style>
-        :root {
-            /* 莫蘭迪傳承調色盤 (Morandi Heritage Palette) */
-            --bg-color: #EAE0C8; 
-            --card-bg: #FCFBF9; 
-            --primary-color: #2A4D4A; 
-            --secondary-color: #5C7A77; 
-            --item-color: #59413A; 
-            --numpad-color: #4A4A4A; 
-            --highlight-color: #C68E17; 
-            --text-color: #2A2A2A; 
-            --border-radius: 14px;
-            --box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
-        }
-
-        body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 15px; -webkit-font-smoothing: antialiased; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        header { text-align: center; margin-bottom: 25px; padding-top: 10px; }
-        h1 { color: var(--primary-color); margin-bottom: 10px; font-size: 2.4em; font-weight: 800; letter-spacing: -0.5px; }
-
-        .nav-tabs { display: flex; justify-content: center; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; }
-        .nav-btn { padding: 14px 28px; border: none; background-color: rgba(255,255,255,0.6); color: var(--text-color); cursor: pointer; border-radius: 30px; font-weight: 700; font-size: 1.05em; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
-        .nav-btn:hover { background-color: #fff; }
-        .nav-btn.active { background-color: var(--primary-color); color: white; box-shadow: 0 4px 12px rgba(42, 77, 74, 0.4); }
-
-        .section { display: none; background: var(--card-bg); padding: 30px; border-radius: var(--border-radius); box-shadow: var(--box-shadow); animation: fadeIn 0.4s ease; border: 1px solid rgba(0,0,0,0.03); }
-        .section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-        .form-group { margin-bottom: 15px; width: 100%; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 1.05em; color: var(--text-color); opacity: 0.9; }
-        input, select { width: 100%; padding: 14px; border: 1.5px solid #d1d5db; border-radius: 10px; box-sizing: border-box; font-size: 1.1em; transition: border-color 0.3s; background-color: #fff; color: var(--text-color); }
-        input:focus, select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(42, 77, 74, 0.15); }
-        
-        .name-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; position: relative; }
-        .name-row .form-group { flex: 1; min-width: 200px; margin-bottom: 0; }
-
-        /* AutoComplete (A-Z 排序下拉選單) */
-        .autocomplete-items { position: absolute; border: 2px solid var(--primary-color); z-index: 99; top: 100%; left: 0; right: 0; background: white; max-height: 250px; overflow-y: auto; border-radius: 0 0 10px 10px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); display: none; }
-        .autocomplete-items div { padding: 15px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 1.1em; color: var(--text-color); font-weight: 500;}
-        .autocomplete-items div:hover { background-color: rgba(42, 77, 74, 0.1); color: var(--primary-color); font-weight: 700; }
-
-        .grid-container { display: flex; justify-content: center; margin-top: 10px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
-        .division-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(55px, 1fr)); gap: 14px; justify-content: center; margin-bottom: 25px;}
-        
-        .division-circle { width: 55px; height: 55px; background-color: var(--primary-color); color: white; border: 2px solid transparent; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2em; font-weight: 700; cursor: pointer; user-select: none; transition: all 0.2s ease; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
-        .division-circle:hover { filter: brightness(1.1); transform: translateY(-2px); }
-        .division-circle.selected { background-color: var(--highlight-color); color: #fff; border-color: #fff; transform: scale(1.15); box-shadow: 0 4px 12px rgba(198, 142, 23, 0.4); }
-
-        .item-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 30px;}
-        .item-circle { width: 75px; height: 75px; background-color: var(--item-color); color: white; border: 2px solid transparent; border-radius: 18px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 0.9em; font-weight: 700; cursor: pointer; user-select: none; padding: 6px; word-break: break-word; transition: all 0.2s ease; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
-        .item-circle:hover { filter: brightness(1.1); transform: translateY(-2px); }
-        .item-circle.selected { background-color: var(--highlight-color); color: white; border-color: #fff; transform: scale(1.08); box-shadow: 0 6px 12px rgba(198, 142, 23, 0.4); }
-
-        .pos-layout { display: flex; gap: 30px; flex-wrap: wrap; }
-        .pos-controls { flex: 1.5; min-width: 350px; }
-        .pos-invoice { flex: 1; min-width: 320px; background: #fff; border: 1px solid #e5e7eb; border-radius: var(--border-radius); padding: 25px; display: flex; flex-direction: column; box-shadow: inset 0 2px 4px rgba(0,0,0,0.01); }
-
-        .numpad-display { background: #fff; border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; text-align: right; font-size: 2.5em; font-weight: 800; margin-bottom: 20px; color: var(--primary-color); letter-spacing: 1px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
-        .numpad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-        .num-btn { background-color: #ffffff; color: var(--numpad-color); border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 20px; font-size: 1.8em; font-weight: 700; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.03); transition: all 0.1s; }
-        .num-btn:active { transform: scale(0.96); background-color: #f3f4f6; }
-        .num-btn.btn-action { background-color: #f3f4f6; color: var(--numpad-color); font-size: 1.3em;}
-        .num-btn.btn-enter { background-color: var(--item-color); color: white; border-color: var(--item-color); grid-column: span 3; font-size: 1.5em; text-transform: uppercase; padding: 22px; box-shadow: 0 4px 10px rgba(89, 65, 58, 0.3); }
-
-        .invoice-header { text-align: center; border-bottom: 2px dashed #d1d5db; padding-bottom: 15px; margin-bottom: 15px; }
-        .invoice-list { flex-grow: 1; overflow-y: auto; max-height: 350px; margin-bottom: 15px; padding-right: 5px; }
-        .invoice-item { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #f3f4f6; font-size: 1.15em; font-weight: 600; color: var(--text-color); }
-        .invoice-item .del-btn { color: #ef4444; cursor: pointer; font-weight: bold; margin-left: 15px; padding: 0 10px; transition: 0.2s; }
-        .invoice-item .del-btn:hover { color: #dc2626; transform: scale(1.1); }
-        .invoice-total-area { border-top: 3px solid var(--numpad-color); padding-top: 20px; text-align: right; }
-        .total-amount { font-size: 3.2em; color: var(--primary-color); font-weight: 800; margin: 10px 0 20px 0; }
-
-        .payment-methods { display: flex; gap: 15px; }
-        .pay-btn { flex: 1; padding: 22px; font-size: 1.4em; font-weight: 800; border: none; border-radius: 12px; cursor: pointer; color: white; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .pay-btn:active { transform: scale(0.97); }
-        .btn-cash { background-color: #557A68; }
-        .btn-cash:hover { background-color: #436253; }
-        .btn-card { background-color: #5A7B9C; }
-        .btn-card:hover { background-color: #48647F; }
-
-        .btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; color: white; font-size: 1.1em; transition: 0.2s; }
-        .btn:hover { opacity: 0.9; }
-        .btn-primary { background-color: var(--primary-color); }
-        .btn-danger { background-color: #D26C6C; }
-        .btn-warning { background-color: var(--highlight-color); color: #fff; }
-        
-        table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 20px; font-size: 1.05em; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; }
-        th, td { text-align: left; padding: 16px; border-bottom: 1px solid #e5e7eb; }
-        th { background-color: #f9fafb; color: var(--numpad-color); font-weight: 700; text-transform: uppercase; font-size: 0.9em; letter-spacing: 0.5px; }
-        tr:last-child td { border-bottom: none; }
-        .summary-row td { background-color: #FDF6F0; font-weight: 800; font-size: 1.15em; color: #9D6B53; border-top: 2px solid #E6D0B8; }
-
-        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .stat-card { color: white; padding: 30px; border-radius: var(--border-radius); text-align: left; box-shadow: var(--box-shadow); position: relative; overflow: hidden; }
-        .stat-card::after { content: ''; position: absolute; top: -50%; right: -20%; width: 150px; height: 150px; background: rgba(255,255,255,0.15); border-radius: 50%; transform: rotate(45deg); }
-        .stat-card h3 { margin: 0; font-size: 2.6em; font-weight: 800; }
-        .stat-card p { margin: 8px 0 0 0; opacity: 0.9; font-size: 1.1em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-        .card-blue { background: linear-gradient(135deg, #748CAB, #3E5C76); }
-        .card-green { background: linear-gradient(135deg, #819E8E, #2A4D4A); }
-        .card-gold { background: linear-gradient(135deg, #C68E17, #966710); }
-
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(42, 42, 42, 0.8); backdrop-filter: blur(5px); z-index: 2000; justify-content: center; align-items: center; }
-        .modal-box { background: white; padding: 45px; border-radius: 20px; text-align: center; width: 90%; max-width: 600px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4); animation: scaleIn 0.3s ease; }
-        @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .modal-title { font-size: 2.2em; color: var(--primary-color); margin-top: 0; margin-bottom: 20px; font-weight: 800; }
-        .modal-input { font-size: 2em; padding: 18px; width: 100%; margin-bottom: 25px; text-align: center; border: 2px solid #d1d5db; border-radius: 12px; font-weight: 700; color: var(--text-color); }
-        .modal-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(42, 77, 74, 0.15); }
-        .modal-btn-row { display: flex; gap: 20px; justify-content: center; }
-        .modal-btn { flex: 1; padding: 20px; font-size: 1.3em; font-weight: 800; border-radius: 12px; border: none; cursor: pointer; color: white; transition: 0.2s; }
-        .modal-btn:hover { opacity: 0.9; transform: translateY(-2px); }
-        .change-huge { font-size: 5em; color: var(--primary-color); font-weight: 800; margin: 10px 0; letter-spacing: -1px; }
-
-        @media print {
-            body.print-receipt .section, body.print-receipt header, body.print-receipt .overlay { display: none !important; }
-            body.print-receipt #printReceiptArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; font-family: monospace; font-size: 14px;}
-            body.print-report #payment, body.print-report #students, body.print-report #fees, body.print-report header { display: none !important; }
-            body.print-report .no-print-report { display: none !important; }
-        }
-        #printReceiptArea { display: none; padding: 20px; max-width: 300px; border: 1px solid #ccc; margin: 0 auto; background: #fff;}
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anderson POS System v14.9</title>
+<style>
+    :root {
+        --bg-color: #EAE0C8; --card-bg: #FCFBF9; --primary-color: #2A4D4A; 
+        --secondary-color: #5C7A77; --item-color: #59413A; --numpad-color: #4A4A4A; 
+        --highlight-color: #C68E17; --text-color: #2A2A2A; 
+        --reprint-color: #B87333; --training-on-color: #7B8C5C;
+        --border-radius: 14px;
+        --box-shadow: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04);
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 15px; -webkit-font-smoothing: antialiased; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 25px; padding-top: 10px; }
+    h1 { color: var(--primary-color); margin-bottom: 10px; font-size: 2.4em; font-weight: 800; letter-spacing: -0.5px; }
+    .nav-tabs { display: flex; justify-content: center; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; }
+    .nav-btn { padding: 14px 28px; border: none; background-color: rgba(255,255,255,0.6); color: var(--text-color); cursor: pointer; border-radius: 30px; font-weight: 700; font-size: 1.05em; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+    .nav-btn:hover { background-color: #fff; }
+    .nav-btn.active { background-color: var(--primary-color); color: white; box-shadow: 0 4px 12px rgba(42, 77, 74, 0.4); }
+    .section { display: none; background: var(--card-bg); padding: 30px; border-radius: var(--border-radius); box-shadow: var(--box-shadow); border: 1px solid rgba(0,0,0,0.03); }
+    .section.active { display: block; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    .form-group { margin-bottom: 15px; width: 100%; }
+    label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 1.05em; color: var(--text-color); opacity: 0.9; }
+    input, select { width: 100%; padding: 14px; border: 1.5px solid #d1d5db; border-radius: 10px; box-sizing: border-box; font-size: 1.1em; background-color: #fff; color: var(--text-color); }
+    input:focus, select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(42, 77, 74, 0.15); }
+    .name-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; position: relative; }
+    .name-row .form-group { flex: 1; min-width: 200px; margin-bottom: 0; }
+    .autocomplete { position: relative; width: 100%; margin-bottom: 15px; }
+    .autocomplete-items { position: absolute; border: 2px solid var(--primary-color); z-index: 99; top: 100%; left: 0; right: 0; background: white; max-height: 250px; overflow-y: auto; border-radius: 0 0 10px 10px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); display: none; }
+    .autocomplete-items div { padding: 15px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 1.1em; color: var(--text-color); }
+    .autocomplete-items div:hover { background-color: var(--highlight-color); color: #fff; font-weight: bold; }
+    .division-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(55px, 1fr)); gap: 14px; justify-content: center; margin-bottom: 25px;}
+    .division-circle { width: 55px; height: 55px; background-color: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; cursor: pointer; transition: 0.2s; box-shadow: 0 3px 6px rgba(0,0,0,0.1); border: 2px solid transparent;}
+    .division-circle.selected { background-color: var(--highlight-color); color: #fff; transform: scale(1.15); border-color: #fff; }
+    .item-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 30px;}
+    .item-circle { width: 75px; height: 75px; background-color: var(--item-color); color: white; border-radius: 18px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 0.9em; font-weight: 700; cursor: pointer; padding: 6px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); border: 2px solid transparent; transition: 0.2s;}
+    .item-circle.selected { background-color: var(--highlight-color); color: white; transform: scale(1.08); border-color: #fff;}
+    .pos-layout { display: flex; gap: 30px; flex-wrap: wrap; }
+    .pos-controls { flex: 1.5; min-width: 350px; }
+    .pos-invoice { flex: 1; min-width: 320px; background: #fff; border: 1px solid #e5e7eb; border-radius: var(--border-radius); padding: 25px; display: flex; flex-direction: column; }
+    .numpad-display { background: #fff; border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; text-align: right; font-size: 2.5em; font-weight: 800; margin-bottom: 20px; color: var(--primary-color); }
+    .numpad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .num-btn { background-color: #ffffff; color: var(--numpad-color); border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 20px; font-size: 1.8em; font-weight: 700; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.03); transition: 0.1s; }
+    .num-btn:active { transform: scale(0.96); background-color: #f3f4f6; }
+    .num-btn.btn-action { background-color: #f3f4f6; font-size: 1.3em;}
+    .num-btn.btn-enter { background-color: var(--item-color); color: white; grid-column: span 3; font-size: 1.5em; text-transform: uppercase; padding: 22px; }
+    .invoice-header { text-align: center; border-bottom: 2px dashed #d1d5db; padding-bottom: 15px; margin-bottom: 15px; }
+    .invoice-list { flex-grow: 1; overflow-y: auto; max-height: 350px; margin-bottom: 15px; }
+    .invoice-item { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #f3f4f6; font-size: 1.15em; font-weight: 600; }
+    .invoice-item .del-btn { color: #ef4444; cursor: pointer; font-weight: bold; margin-left: 15px; }
+    .invoice-total-area { border-top: 3px solid var(--numpad-color); padding-top: 20px; text-align: right; }
+    .total-amount { font-size: 3.2em; color: var(--primary-color); font-weight: 800; margin: 10px 0 20px 0; }
+    .payment-methods { display: flex; gap: 15px; }
+    .pay-btn { flex: 1; padding: 22px; font-size: 1.4em; font-weight: 800; border: none; border-radius: 12px; cursor: pointer; color: white; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .pay-btn:active { transform: scale(0.97); }
+    .btn-cash { background-color: #557A68; }
+    .btn-card { background-color: #5A7B9C; }
+    .btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; color: white; font-size: 1.1em; transition: 0.2s; }
+    .btn-primary { background-color: var(--primary-color); }
+    .btn-reprint { background-color: var(--reprint-color); }
+    .btn-training { background-color: var(--training-on-color); }
+    .btn-danger { background-color: #D26C6C; }
+    .btn-warning { background-color: var(--highlight-color); color: #fff; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 1.05em; border-radius: 10px; overflow: hidden; border: 1px solid #e5e7eb;}
+    th, td { text-align: left; padding: 16px; border-bottom: 1px solid #e5e7eb; }
+    th { background-color: #f9fafb; color: var(--numpad-color); font-weight: 700; text-transform: uppercase; font-size: 0.9em; }
+    .summary-row td { background-color: #FDF6F0; font-weight: 800; font-size: 1.15em; color: #9D6B53; border-top: 2px solid #E6D0B8; }
+    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    .stat-card { color: white; padding: 30px; border-radius: var(--border-radius); text-align: left; box-shadow: var(--box-shadow); overflow: hidden; position: relative;}
+    .stat-card h3 { margin: 0; font-size: 2.6em; font-weight: 800; }
+    .stat-card p { margin: 8px 0 0 0; opacity: 0.9; font-size: 1.1em; font-weight: 600; text-transform: uppercase;}
+    .card-blue { background: linear-gradient(135deg, #748CAB, #3E5C76); }
+    .card-green { background: linear-gradient(135deg, #819E8E, #2A4D4A); }
+    .card-gold { background: linear-gradient(135deg, #C68E17, #966710); }
+    .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(42,42,42,0.8); backdrop-filter: blur(5px); z-index: 2000; justify-content: center; align-items: center; }
+    .modal-box { background: white; padding: 45px; border-radius: 20px; text-align: center; width: 90%; max-width: 600px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4); }
+    .modal-title { font-size: 2.2em; color: var(--primary-color); margin-top: 0; margin-bottom: 20px; font-weight: 800; }
+    .modal-input { font-size: 2em; padding: 18px; width: 100%; margin-bottom: 25px; text-align: center; border: 2px solid #d1d5db; border-radius: 12px; font-weight: 700; color: var(--text-color); }
+    .modal-btn-row { display: flex; gap: 20px; justify-content: center; }
+    .modal-btn { flex: 1; padding: 20px; font-size: 1.3em; font-weight: 800; border-radius: 12px; border: none; cursor: pointer; color: white; }
+    .change-huge { font-size: 5em; color: var(--primary-color); font-weight: 800; margin: 10px 0; }
+    @media print { body.print-receipt .section, body.print-receipt header, body.print-receipt .overlay { display: none !important; } body.print-receipt #printReceiptArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; font-family: monospace; font-size: 14px;} body.print-report #payment, body.print-report #students, body.print-report #fees, body.print-report header { display: none !important; } body.print-report .no-print-report { display: none !important; } }
+    #printReceiptArea { display: none; padding: 20px; max-width: 300px; border: 1px solid #ccc; margin: 0 auto; background: #fff;}
+</style>
 </head>
 <body>
 
 <div class="container">
     <header class="no-print-report">
-        <h1>🦅 Anderson POS System <span style="font-size: 0.4em; color: var(--highlight-color); vertical-align: middle;">v14.8</span></h1>
+        <h1>🦅 Anderson POS System</h1>
         <div class="nav-tabs">
             <button class="nav-btn active" onclick="showSection('payment')">💻 Cashier POS</button>
-            <button class="nav-btn" onclick="showSection('records')">📊 Reports & Invoices</button>
+            <button class="nav-btn" onclick="showSection('records')">📊 Reports</button>
             <button class="nav-btn" onclick="showSection('students')">👨‍🎓 Student List</button>
-            <button class="nav-btn" onclick="showSection('fees')">⚙️ Admin Settings</button>
-            <button id="lockBtn" class="nav-btn" style="display: none; background-color: #D26C6C; color: white;" onclick="lockAdmin()">🔒 Lock</button>
+            <button class="nav-btn" onclick="showSection('fees')">⚙️ Admin</button>
+            <button id="lockBtn" class="nav-btn" style="display: none; background-color: #D26C6C;" onclick="lockAdmin()">🔒 Lock</button>
         </div>
     </header>
 
     <div id="payment" class="section active no-print">
-        <div id="activeEventBanner" style="background: #f7ede2; padding: 15px 20px; border-radius: 8px; font-weight: bold; color: var(--primary-color); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; font-size: 1.2em; border-left: 5px solid var(--highlight-color);">
+        <div id="activeEventBanner" style="background: rgba(198, 142, 23, 0.2); padding: 15px; border-radius: 8px; font-weight: bold; color: var(--primary-color); margin-bottom: 20px; display: flex; justify-content: space-between; border-left: 5px solid var(--highlight-color);">
             <span id="activeEventDisplay">Active Event: None</span>
             <span id="invoiceNoDisplay" style="color: #666; font-family: monospace;">INV-A-XXXX</span>
         </div>
 
-        <label style="text-align: center; font-size: 1.2em;">Step 1: Select Division (Optional, filters student list)</label>
+        <label>Step 1: Select Division</label>
         <div class="division-grid" id="divisionGrid"></div>
 
         <label>Step 2: Student Details (Type First Letter to search):</label>
-        <div class="name-row">
-            <div class="form-group"><input type="text" id="payLastName" placeholder="Last Name" oninput="advancedFilter(this.value, 'last')"></div>
-            <div class="form-group"><input type="text" id="payFirstName" placeholder="First Name" oninput="advancedFilter(this.value, 'first')"></div>
+        <div class="autocomplete">
+            <div class="name-row" style="margin-bottom:0;">
+                <div class="form-group"><input type="text" id="payLastName" placeholder="Last Name" oninput="advancedFilter(this.value, 'last')"></div>
+                <div class="form-group"><input type="text" id="payFirstName" placeholder="First Name" oninput="advancedFilter(this.value, 'first')"></div>
+            </div>
             <div id="searchList" class="autocomplete-items"></div>
         </div>
 
@@ -160,10 +124,9 @@
 
         <div class="pos-layout">
             <div class="pos-controls">
-                <label style="text-align: center; font-size: 1.2em;">Step 3: Category</label>
+                <label>Step 3: Category</label>
                 <div class="item-grid" id="itemGrid"></div>
-
-                <label style="text-align: center; font-size: 1.2em;">Step 4: Price & Add</label>
+                <label>Step 4: Price & Add</label>
                 <div class="numpad-display" id="numpadDisplay">$0.00</div>
                 <div class="numpad-grid">
                     <button class="num-btn" onclick="inputNumpad('1')">1</button><button class="num-btn" onclick="inputNumpad('2')">2</button><button class="num-btn" onclick="inputNumpad('3')">3</button>
@@ -173,23 +136,22 @@
                     <button class="num-btn btn-enter" onclick="triggerAdd()">➕ Add to Invoice</button>
                 </div>
             </div>
-
             <div class="pos-invoice">
                 <div class="invoice-header">
-                    <h3 style="margin: 0; font-size: 1.5em; color: var(--text-color);">Current Invoice</h3>
+                    <h3 style="margin: 0; font-size: 1.5em;">Current Invoice</h3>
                     <div id="invoiceDivDisplay" style="color: var(--primary-color); font-weight: bold; font-size: 1.2em; margin-top: 5px;">Div: Not Selected</div>
                 </div>
                 <div class="invoice-list" id="invoiceList"></div>
                 <div class="invoice-total-area">
                     <div style="font-size: 1.3em; color: var(--numpad-color);">Total Due</div>
                     <div class="total-amount" id="cartTotalDisplay">$0.00</div>
-                    <label style="text-align: left; margin-bottom: 10px;">Step 5: Payment</label>
+                    <label style="margin-bottom: 10px;">Step 5: Payment</label>
                     <div class="payment-methods">
                         <button class="pay-btn btn-cash" onclick="triggerCashModal()">💵 CASH</button>
                         <button class="pay-btn btn-card" onclick="finalizeCheckout('Card', 0)">💳 CARD</button>
                     </div>
                 </div>
-                <button class="btn" style="background-color: #e5e7eb; color: var(--text-color); margin-top: 15px; font-size: 1em; width: 100%; box-shadow: none;" onclick="printLastReceipt()">🖨️ Reprint Last Receipt</button>
+                <button class="btn btn-reprint" style="width:100%; margin-top:15px; padding:15px;" onclick="printLastReceipt()">🖨️ Reprint Last Receipt</button>
             </div>
         </div>
     </div>
@@ -199,46 +161,36 @@
         <div class="dashboard-grid">
             <div class="stat-card card-green"><h3 id="todayCash">$0.00</h3><p>💵 Today's Cash</p></div>
             <div class="stat-card card-blue"><h3 id="todayCard">$0.00</h3><p>💳 Today's Card</p></div>
-            <div class="stat-card card-gold"><h3 id="todayTotal">$0.00</h3><p>Total Today (<span id="todayCount">0</span> txns)</p></div>
+            <div class="stat-card card-gold"><h3 id="todayTotal">$0.00</h3><p>Total Today (<span id="todayCount">0</span>)</p></div>
         </div>
-
         <h2 style="margin-top: 40px; border-bottom: 2px solid var(--item-color); color: var(--item-color); padding-bottom: 10px;">📦 Itemized Sales & Pre-Orders</h2>
-        <div class="no-print-report" style="display: flex; gap: 10px; margin-bottom: 15px; align-items: center; flex-wrap: wrap; background: #fafafa; padding: 15px; border-radius: 8px;">
-            <label style="margin: 0; font-size: 1.1em; font-weight:bold; color: var(--primary-color);">🔎 Filter Items By:</label>
-            <select id="itemFilter" style="width: 250px; font-size: 1.1em; padding: 10px;" onchange="renderItemizedReport()"></select>
+        <div class="no-print-report" style="display: flex; gap: 10px; margin-bottom: 15px; align-items: center; background: #fafafa; padding: 15px; border-radius: 8px;">
+            <label style="margin: 0; color: var(--primary-color);">🔎 Filter Items By:</label>
+            <select id="itemFilter" style="width: 250px; padding: 10px;" onchange="renderItemizedReport()"></select>
             <button class="btn btn-warning" onclick="exportItemizedToExcel()">📥 Export Excel</button>
             <button class="btn btn-primary" onclick="printItemizedList()">🖨️ Print List</button>
         </div>
         <div style="overflow-x:auto; margin-bottom: 40px;">
-            <table>
-                <thead><tr><th>Item Name</th><th>Inv No.</th><th>Date</th><th>Div</th><th>Buyer Name</th><th>Price</th></tr></thead>
-                <tbody id="itemizedTableBody"></tbody>
-            </table>
+            <table><thead><tr><th>Item Name</th><th>Inv No.</th><th>Date</th><th>Div</th><th>Buyer Name</th><th>Price</th></tr></thead><tbody id="itemizedTableBody"></tbody></table>
         </div>
-
         <h2 class="no-print-report" style="margin-top: 40px; border-bottom: 2px solid #ccc; padding-bottom: 10px;">📊 Invoice Overview</h2>
         <div class="no-print-report" style="margin-bottom: 15px; background: #f7ede2; padding: 15px; border-radius: 8px; display: inline-block;">
             <label style="font-weight: bold; margin-right: 10px; color: var(--item-color);">📅 Show Invoices For:</label>
-            <select id="invoiceDateFilter" style="font-size: 1.1em; padding: 8px; width: 200px;" onchange="renderRecords()">
-                <option value="TODAY">Today's Invoices</option>
-                <option value="ALL">All-Time Invoices</option>
+            <select id="invoiceDateFilter" style="width: 200px;" onchange="renderRecords()">
+                <option value="TODAY">Today's Invoices</option><option value="ALL">All-Time Invoices</option>
             </select>
         </div>
         <div class="dashboard-grid no-print-report">
-            <div class="stat-card card-gold"><h3 id="overviewTotal">$0.00</h3><p>Total Revenue (<span id="overviewCount">0</span> txns)</p></div>
+            <div class="stat-card card-gold"><h3 id="overviewTotal">$0.00</h3><p>Total Revenue (<span id="overviewCount">0</span>)</p></div>
             <div class="stat-card card-green"><h3 id="overviewCash">$0.00</h3><p>💵 Total Cash</p></div>
             <div class="stat-card card-blue"><h3 id="overviewCard">$0.00</h3><p>💳 Total Card</p></div>
         </div>
-        
         <div class="no-print-report" style="display: flex; gap: 10px; margin-bottom: 15px;">
-            <button class="btn btn-warning" onclick="exportSalesToExcel()">📥 Export Invoices (CSV)</button>
+            <button class="btn btn-warning" onclick="exportSalesToExcel()">📥 Export CSV</button>
             <button class="btn btn-danger" style="margin-left: auto;" onclick="clearAllRecords()">⚠️ Clear All Invoices</button>
         </div>
         <div class="no-print-report" style="overflow-x:auto;">
-            <table>
-                <thead><tr><th>Inv No.</th><th>Date/Time</th><th>Div</th><th>Name</th><th>Items</th><th>Method</th><th>Total</th><th>Action</th></tr></thead>
-                <tbody id="recordsTableBody"></tbody>
-            </table>
+            <table><thead><tr><th>Inv No.</th><th>Date/Time</th><th>Div</th><th>Name</th><th>Items</th><th>Method</th><th>Total</th><th>Action</th></tr></thead><tbody id="recordsTableBody"></tbody></table>
         </div>
     </div>
 
@@ -249,46 +201,38 @@
                 <div class="form-group"><input type="text" id="stuLastName" placeholder="Last Name"></div>
                 <div class="form-group"><input type="text" id="stuFirstName" placeholder="First Name"></div>
                 <div class="form-group"><input type="text" id="stuDivision" placeholder="Division (e.g. 1, 2, N/A)"></div>
-                <div class="form-group"><input type="text" id="stuNumber" placeholder="Student No. (Optional)"></div>
+                <div class="form-group"><input type="text" id="stuNumber" placeholder="Student No."></div>
             </div>
             <button class="btn btn-primary" onclick="addStudent()">➕ Add Student</button>
         </div>
-
-        <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
-            <button class="btn btn-warning" onclick="exportStudentsToExcel()">📥 Export List (CSV)</button>
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <button class="btn btn-warning" onclick="exportStudentsToExcel()">📥 Export CSV</button>
             <input type="file" id="importCsvFile" accept=".csv" style="display: none;" onchange="importStudentsFromCSV(event)">
             <button class="btn btn-primary" style="background-color: var(--item-color);" onclick="document.getElementById('importCsvFile').click()">📤 Import List</button>
             <button class="btn btn-danger" onclick="clearRoster()">⚠️ Clear List</button>
         </div>
-
         <div style="overflow-x:auto;">
-            <table>
-                <thead><tr><th>Student No.</th><th>Last Name</th><th>First Name</th><th>Division</th><th>Actions</th></tr></thead>
-                <tbody id="studentTableBody"></tbody>
-            </table>
+            <table><thead><tr><th>Student No.</th><th>Last Name</th><th>First Name</th><th>Division</th><th>Actions</th></tr></thead><tbody id="studentTableBody"></tbody></table>
         </div>
     </div>
 
     <div id="fees" class="section no-print-report">
         <h2>Admin Configurations</h2>
-
-        <div style="background: #fdfdfd; padding: 20px; border-radius: 8px; border-left: 5px solid var(--numpad-color); margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; border: 1px solid #eee;">
+        <div style="background: #fdfdfd; padding: 20px; border-radius: 8px; border-left: 5px solid var(--numpad-color); margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee;">
             <div style="flex: 1; min-width: 250px;">
-                <h3 style="margin-top: 0; color: var(--primary-color);">🎓 Training Mode (Practice Sandbox)</h3>
-                <p style="color: var(--text-color); margin-bottom: 0; font-size: 0.9em;">Turn this on to let volunteers practice. Fake transactions will not affect the real totals. <b>You will be logged out of Admin automatically after toggling.</b></p>
+                <h3 style="margin-top: 0; color: var(--primary-color);">🎓 Training Mode</h3>
+                <p style="color: var(--text-color); margin-bottom: 0;">Practice safely. <b>You will be logged out of Admin automatically after toggling.</b></p>
             </div>
-            <button id="trainingToggleBtn" class="btn" style="background-color: var(--numpad-color); color: white; padding: 15px 30px; font-size: 1.2em; border-radius: 8px; font-weight: bold; cursor: pointer; border:none;" onclick="toggleTrainingMode()">🎓 Turn ON Training Mode</button>
+            <button id="trainingToggleBtn" class="btn btn-training" style="padding: 15px 30px; font-size: 1.2em;" onclick="toggleTrainingMode()">🎓 Turn ON Training Mode</button>
         </div>
-        
         <div style="background: #f7ede2; padding: 15px; border-radius: 8px; border-left: 5px solid var(--highlight-color); margin-bottom: 25px;">
             <h3 style="margin-top: 0; color: #856404;">🖥️ Multi-Station Setup</h3>
             <div style="display: flex; gap: 10px; align-items: center;">
-                <label style="margin: 0; min-width: 150px; color:#333;">Station Prefix:</label>
-                <input type="text" id="stationPrefixInput" maxlength="3" placeholder="e.g., A, B, C" style="width: 100px; text-transform: uppercase;">
+                <label style="margin: 0; min-width: 150px;">Station Prefix:</label>
+                <input type="text" id="stationPrefixInput" maxlength="3" placeholder="e.g., A, B" style="width: 100px; text-transform: uppercase;">
                 <button class="btn btn-primary" onclick="saveStationPrefix()">Save Prefix</button>
             </div>
         </div>
-
         <h3>Event Setup</h3>
         <div style="background: #fff; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
             <div class="name-row">
@@ -296,23 +240,19 @@
                 <div class="form-group"><input type="text" id="newFeeItems" placeholder="Sale Items (e.g., Book, Pre-Order, Open)"></div>
             </div>
             <div class="name-row">
-                <div class="form-group"><label style="font-size: 0.9em; color:#555;">Start Date:</label><input type="date" id="newFeeStart"></div>
-                <div class="form-group"><label style="font-size: 0.9em; color:#555;">End Date (Optional):</label><input type="date" id="newFeeEnd"></div>
+                <div class="form-group"><label>Start Date:</label><input type="date" id="newFeeStart"></div>
+                <div class="form-group"><label>End Date:</label><input type="date" id="newFeeEnd"></div>
             </div>
             <button class="btn btn-primary" onclick="addEvent()">➕ Create / Update Event</button>
         </div>
-        
-        <table>
-            <thead><tr><th>Event Name</th><th>Dates</th><th>Sale Items</th><th>Status</th><th>Action</th></tr></thead>
-            <tbody id="feeTableBody"></tbody>
-        </table>
+        <table><thead><tr><th>Event Name</th><th>Dates</th><th>Sale Items</th><th>Status</th><th>Action</th></tr></thead><tbody id="feeTableBody"></tbody></table>
     </div>
 </div>
 
 <div id="preOrderModal" class="overlay">
     <div class="modal-box">
         <h2 class="modal-title">📦 Pre-Order Item</h2>
-        <p style="font-size: 1.3em; margin-bottom: 20px; color:var(--text-color);">Enter the Pre-Order book or item name:</p>
+        <p style="font-size: 1.3em; margin-bottom: 20px;">Enter the Pre-Order book or item name:</p>
         <input type="text" id="preOrderInput" class="modal-input" placeholder="e.g. Dog Man Vol. 10">
         <div class="modal-btn-row">
             <button class="modal-btn" style="background:#D26C6C;" onclick="closeModal('preOrderModal')">✖ Cancel</button>
@@ -324,8 +264,8 @@
 <div id="cashModal" class="overlay">
     <div class="modal-box">
         <h2 class="modal-title">💵 Cash Received</h2>
-        <p style="font-size: 1.5em; margin-bottom: 10px; color:var(--text-color);">Total Due: <strong id="cashModalTotalDue" style="color:var(--primary-color); font-size:1.5em;">$0.00</strong></p>
-        <p style="font-size: 1.2em; margin-bottom: 20px; color:var(--numpad-color);">Amount handed by customer:</p>
+        <p style="font-size: 1.5em; margin-bottom: 10px;">Total Due: <strong id="cashModalTotalDue" style="color:var(--primary-color); font-size:1.5em;">$0.00</strong></p>
+        <p style="font-size: 1.2em; margin-bottom: 20px;">Amount handed by customer:</p>
         <input type="number" id="cashInput" class="modal-input" placeholder="e.g. 50" inputmode="decimal">
         <div class="modal-btn-row">
             <button class="modal-btn" style="background:#D26C6C;" onclick="closeModal('cashModal')">✖ Cancel</button>
@@ -338,7 +278,7 @@
     <div class="modal-box" style="max-width: 700px;">
         <h2 id="successModalTitle" style="font-size: 3em; margin-top: 0; color: var(--item-color);">✅ Payment Successful!</h2>
         <div id="changeSection" style="display: none; background: #fdfdfd; border: 3px dashed #ccc; padding: 20px; border-radius: 10px; margin-bottom: 25px;">
-            <p style="font-size: 1.8em; color: var(--text-color); margin: 0; font-weight:bold;">Change Due</p>
+            <p style="font-size: 1.8em; margin: 0; font-weight:bold;">Change Due</p>
             <div class="change-huge" id="modalChangeDue">$0.00</div>
         </div>
         <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
@@ -368,55 +308,28 @@
 </div>
 
 <script>
-    function formatName(name) {
-        if (!name) return "";
-        return name.trim().toLowerCase().replace(/(?:^|[\s-])\w/g, function(match) { return match.toUpperCase(); });
-    }
+    function formatName(name) { return name.trim().toLowerCase().replace(/(?:^|[\s-])\w/g, function(m) { return m.toUpperCase(); }); }
+    window.addEventListener('beforeunload', function (e) { if (currentCart && currentCart.length > 0) { e.preventDefault(); e.returnValue = ''; } });
 
-    window.addEventListener('beforeunload', function (e) {
-        if (currentCart && currentCart.length > 0) { e.preventDefault(); e.returnValue = ''; }
-    });
-
-    const DB_KEYS = {
-        STUDENTS: 'anderson_students', EVENTS: 'anderson_events', RECORDS: 'anderson_records',
-        ACTIVE_EVENT: 'anderson_active_event', INV_SEQ: 'anderson_inv_sequence', STATION_PREFIX: 'anderson_station_prefix',
-        TRAIN_RECORDS: 'anderson_training_records', TRAIN_SEQ: 'anderson_training_inv_sequence'
-    };
-
-    const defaultEvents = [
-        { id: 'ev_book_fair', name: 'Book Fair', items: ['Book', 'Stationary', 'Poster', 'Pre-Order', 'Open'], startDate: '', endDate: '' },
-        { id: 'ev_craft_fair', name: 'Craft Fair', items: ['Spirit wear', 'Lucky Bag', 'Hat', 'Socks', 'Food', 'Open'], startDate: '', endDate: '' },
-        { id: 'ev_school_fund', name: 'School Fundraising', items: ['Spirit wear', 'Open'], startDate: '', endDate: '' }
-    ];
+    const DB_KEYS = { STUDENTS: 'anderson_students', EVENTS: 'anderson_events', RECORDS: 'anderson_records', ACTIVE_EVENT: 'anderson_active_event', INV_SEQ: 'anderson_inv_sequence', STATION_PREFIX: 'anderson_station_prefix', TRAIN_RECORDS: 'anderson_training_records', TRAIN_SEQ: 'anderson_training_inv_sequence' };
+    const defaultEvents = [ { id: 'ev_book_fair', name: 'Book Fair', items: ['Book', 'Stationary', 'Poster', 'Pre-Order', 'Open'], startDate: '', endDate: '' } ];
 
     let students = JSON.parse(localStorage.getItem(DB_KEYS.STUDENTS)) || [];
     let savedEvents = JSON.parse(localStorage.getItem(DB_KEYS.EVENTS));
     let eventsConfig = [...defaultEvents];
 
     try {
-        if (savedEvents && Array.isArray(savedEvents)) {
-            savedEvents.forEach(se => {
-                const defaultIndex = eventsConfig.findIndex(de => de.id === se.id);
-                if (defaultIndex >= 0) eventsConfig[defaultIndex] = se; else eventsConfig.push(se);
-            });
-        }
-        let bookFairCheck = eventsConfig.find(e => e.id === 'ev_book_fair');
-        if (bookFairCheck && Array.isArray(bookFairCheck.items)) {
-            let hasPreOrder = false;
-            bookFairCheck.items.forEach(i => { if(typeof i === 'string' && i.toLowerCase().includes('pre-order')) hasPreOrder = true; });
-            if (!hasPreOrder) bookFairCheck.items.splice(3, 0, 'Pre-Order');
-        }
+        if (savedEvents && Array.isArray(savedEvents)) { savedEvents.forEach(se => { const idx = eventsConfig.findIndex(de => de.id === se.id); if (idx >= 0) eventsConfig[idx] = se; else eventsConfig.push(se); }); }
+        let bf = eventsConfig.find(e => e.id === 'ev_book_fair');
+        if (bf && Array.isArray(bf.items)) { let hasPO = false; bf.items.forEach(i => { if(typeof i==='string'&&i.toLowerCase().includes('pre-order')) hasPO = true; }); if(!hasPO) bf.items.splice(3,0,'Pre-Order'); }
     } catch(e) { eventsConfig = [...defaultEvents]; }
 
     let records = JSON.parse(localStorage.getItem(DB_KEYS.RECORDS)) || [];
     let nextInvSequence = parseInt(localStorage.getItem(DB_KEYS.INV_SEQ)) || 1001;
-
     let trainingRecords = JSON.parse(localStorage.getItem(DB_KEYS.TRAIN_RECORDS)) || [];
     let nextTrainSequence = parseInt(localStorage.getItem(DB_KEYS.TRAIN_SEQ)) || 8001; 
-
     let activeEventId = localStorage.getItem(DB_KEYS.ACTIVE_EVENT) || 'ev_book_fair'; 
     let stationPrefix = localStorage.getItem(DB_KEYS.STATION_PREFIX) || 'A'; 
-
     let selectedDivision = null, selectedCategory = null, currentNumpadValue = "", currentCart = []; 
     let isAdminUnlocked = false, isTrainingMode = false; 
     let tempPrice = 0, tempTotalDue = 0; 
@@ -425,7 +338,6 @@
         document.getElementById('stationPrefixInput').value = stationPrefix;
         document.getElementById('todayDateDisplay').textContent = new Date().toLocaleDateString('en-US');
         autoCheckEventDate(); renderDivisionGrid(); renderAll();
-        document.getElementById('searchList').style.display = 'none';
     };
 
     function getActiveRecords() { return isTrainingMode ? trainingRecords : records; }
@@ -435,76 +347,43 @@
         localStorage.setItem(DB_KEYS.EVENTS, JSON.stringify(eventsConfig));
         localStorage.setItem(DB_KEYS.ACTIVE_EVENT, activeEventId);
         localStorage.setItem(DB_KEYS.STATION_PREFIX, stationPrefix);
-        if (isTrainingMode) {
-            localStorage.setItem(DB_KEYS.TRAIN_RECORDS, JSON.stringify(trainingRecords));
-            localStorage.setItem(DB_KEYS.TRAIN_SEQ, nextTrainSequence);
-        } else {
-            localStorage.setItem(DB_KEYS.RECORDS, JSON.stringify(records));
-            localStorage.setItem(DB_KEYS.INV_SEQ, nextInvSequence);
-        }
+        if (isTrainingMode) { localStorage.setItem(DB_KEYS.TRAIN_RECORDS, JSON.stringify(trainingRecords)); localStorage.setItem(DB_KEYS.TRAIN_SEQ, nextTrainSequence); } 
+        else { localStorage.setItem(DB_KEYS.RECORDS, JSON.stringify(records)); localStorage.setItem(DB_KEYS.INV_SEQ, nextInvSequence); }
         renderAll();
     }
 
-    function renderAll() {
-        renderStudents(); renderEventsAdmin(); populateItemFilter(); renderRecords(); renderItemizedReport(); updateCashierPOS(); updateDashboard();
-    }
+    function renderAll() { renderStudents(); renderEventsAdmin(); populateItemFilter(); renderRecords(); renderItemizedReport(); updateCashierPOS(); updateDashboard(); }
 
-    // --- INTEGRATED DIVISION & STRICT STARTSWITH SEARCH (ALPHABETICAL) ---
     function advancedFilter(val = '', type = 'last') {
         const list = document.getElementById('searchList');
         list.innerHTML = '';
         val = val.trim().toLowerCase();
 
-        if (!selectedDivision && val.length === 0) {
-            list.style.display = 'none';
-            return;
-        }
+        if (!selectedDivision && val.length === 0) { list.style.display = 'none'; return; }
 
         let matches = students;
-
-        // 1. Filter by Division first (if selected)
-        if (selectedDivision) {
-            matches = matches.filter(s => s.division === selectedDivision);
-        }
-
-        // 2. Strict Filter by STARTING letter (startsWith)
+        if (selectedDivision) matches = matches.filter(s => s.division === selectedDivision);
         if (val.length > 0) {
-            if (type === 'last') {
-                matches = matches.filter(s => s.lastName.toLowerCase().startsWith(val));
-            } else if (type === 'first') {
-                matches = matches.filter(s => s.firstName.toLowerCase().startsWith(val));
-            }
+            if (type === 'last') matches = matches.filter(s => s.lastName.toLowerCase().startsWith(val));
+            else if (type === 'first') matches = matches.filter(s => s.firstName.toLowerCase().startsWith(val));
         }
 
-        // 3. Alphabetical Sorting (A-Z by Last Name, then First Name)
         matches.sort((a, b) => {
             let cmp = a.lastName.localeCompare(b.lastName);
             if (cmp === 0) return a.firstName.localeCompare(b.firstName);
             return cmp;
         });
 
-        if (matches.length === 0) {
-            list.style.display = 'none';
-            return;
-        }
-
+        if (matches.length === 0) { list.style.display = 'none'; return; }
         list.style.display = 'block';
-
         matches.forEach(s => {
             let div = document.createElement('div');
             div.innerHTML = `<strong>${s.lastName}, ${s.firstName}</strong> <span style="font-size:0.9em; color:#888;">(Div: ${s.division || 'N/A'})</span>`;
             div.onclick = () => {
-                document.getElementById('payLastName').value = s.lastName;
-                document.getElementById('payFirstName').value = s.firstName;
-                
+                document.getElementById('payLastName').value = s.lastName; document.getElementById('payFirstName').value = s.firstName;
                 selectedDivision = s.division;
-                document.querySelectorAll('.division-circle').forEach(el => {
-                    el.classList.remove('selected');
-                    if (el.textContent === s.division) el.classList.add('selected');
-                });
+                document.querySelectorAll('.division-circle').forEach(el => { el.classList.remove('selected'); if (el.textContent === s.division) el.classList.add('selected'); });
                 document.getElementById('invoiceDivDisplay').textContent = `Div: ${s.division}`;
-                
-                list.innerHTML = '';
                 list.style.display = 'none';
             };
             list.appendChild(div);
@@ -514,434 +393,78 @@
     function renderDivisionGrid() {
         const grid = document.getElementById('divisionGrid'); grid.innerHTML = '';
         for(let i = 1; i <= 30; i++) {
-            let c = document.createElement('div'); c.className = 'division-circle';
-            c.textContent = i === 30 ? 'N/A' : i;
+            let c = document.createElement('div'); c.className = 'division-circle'; c.textContent = i === 30 ? 'N/A' : i;
             c.onclick = () => { 
-                if (selectedDivision === c.textContent) {
-                    selectedDivision = null;
-                    c.classList.remove('selected');
-                    document.getElementById('invoiceDivDisplay').textContent = `Div: Not Selected`;
-                } else {
-                    selectedDivision = c.textContent; 
-                    document.querySelectorAll('.division-circle').forEach(el => el.classList.remove('selected')); 
-                    c.classList.add('selected'); 
-                    document.getElementById('invoiceDivDisplay').textContent = `Div: ${c.textContent}`; 
-                }
-                const lastVal = document.getElementById('payLastName').value;
-                const firstVal = document.getElementById('payFirstName').value;
-                if(lastVal) advancedFilter(lastVal, 'last');
-                else if(firstVal) advancedFilter(firstVal, 'first');
-                else advancedFilter('', 'last'); 
+                if (selectedDivision === c.textContent) { selectedDivision = null; c.classList.remove('selected'); document.getElementById('invoiceDivDisplay').textContent = `Div: Not Selected`; } 
+                else { selectedDivision = c.textContent; document.querySelectorAll('.division-circle').forEach(el => el.classList.remove('selected')); c.classList.add('selected'); document.getElementById('invoiceDivDisplay').textContent = `Div: ${c.textContent}`; }
+                const lastVal = document.getElementById('payLastName').value; const firstVal = document.getElementById('payFirstName').value;
+                if(lastVal) advancedFilter(lastVal, 'last'); else if(firstVal) advancedFilter(firstVal, 'first'); else advancedFilter('', 'last'); 
             };
             grid.appendChild(c);
         }
     }
-    // -------------------------------------------------
 
     function toggleTrainingMode() {
-        if (currentCart.length > 0) {
-            if(!confirm("Warning: You have items in the cart. Switching modes will clear the current invoice. Proceed?")) return;
-        }
-        
-        isTrainingMode = !isTrainingMode;
-        currentCart = [];
-        
-        const btn = document.getElementById('trainingToggleBtn');
-        const banner = document.getElementById('activeEventBanner');
-        
+        if (currentCart.length > 0) { if(!confirm("Warning: Cart has items. Switching modes clears the invoice. Proceed?")) return; }
+        isTrainingMode = !isTrainingMode; currentCart = [];
+        const btn = document.getElementById('trainingToggleBtn'); const banner = document.getElementById('activeEventBanner');
         if (isTrainingMode) {
-            btn.textContent = "🔥 Turn OFF Training Mode";
-            btn.style.backgroundColor = "#D26C6C";
-            banner.style.backgroundColor = "rgba(210, 108, 108, 0.15)";
-            banner.style.color = "#D26C6C";
-            alert("Training Mode is now ON.\nYou will be redirected to the Cashier POS.");
+            btn.textContent = "🔥 Turn OFF Training Mode"; btn.style.backgroundColor = "#D26C6C"; banner.style.backgroundColor = "rgba(210, 108, 108, 0.15)"; banner.style.color = "#D26C6C"; alert("Training Mode is now ON.");
         } else {
-            btn.textContent = "🎓 Turn ON Training Mode";
-            btn.style.backgroundColor = "var(--numpad-color)";
-            banner.style.backgroundColor = "#f7ede2";
-            banner.style.color = "var(--primary-color)";
-            alert("Training Mode is OFF. Live system active.\nYou will be redirected to the Cashier POS.");
+            btn.textContent = "🎓 Turn ON Training Mode"; btn.style.backgroundColor = "var(--training-on-color)"; banner.style.backgroundColor = "rgba(198, 142, 23, 0.2)"; banner.style.color = "var(--primary-color)"; alert("Training Mode is OFF. Live system active.");
         }
-        nextCustomer(); 
-        saveData();
-        lockAdmin(); 
+        nextCustomer(); saveData(); lockAdmin(); 
     }
 
     function autoCheckEventDate() {
         const d = new Date(), todayStr = [d.getFullYear(), (''+(d.getMonth()+1)).padStart(2,'0'), (''+d.getDate()).padStart(2,'0')].join('-');
-        let matchedEventId = null;
-        eventsConfig.forEach(ev => {
-            if (ev.startDate) { if (todayStr >= ev.startDate && todayStr <= (ev.endDate || ev.startDate)) matchedEventId = ev.id; }
-        });
-        if (matchedEventId && activeEventId !== matchedEventId) { activeEventId = matchedEventId; localStorage.setItem(DB_KEYS.ACTIVE_EVENT, activeEventId); }
+        let matched = null; eventsConfig.forEach(ev => { if (ev.startDate && todayStr >= ev.startDate && todayStr <= (ev.endDate || ev.startDate)) matched = ev.id; });
+        if (matched && activeEventId !== matched) { activeEventId = matched; localStorage.setItem(DB_KEYS.ACTIVE_EVENT, activeEventId); }
     }
 
     function showSection(sectionId) {
-        if (sectionId !== 'payment' && !isAdminUnlocked) {
-            const pwd = prompt("🔐 Manager Access Required. Enter Admin Password:");
-            if (pwd !== "Eagles") return alert("Incorrect Password! Access Denied.");
-            isAdminUnlocked = true; document.getElementById('lockBtn').style.display = 'inline-block';
-        }
-        document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
-        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+        if (sectionId !== 'payment' && !isAdminUnlocked) { const pwd = prompt("🔐 Manager Access. Enter Password:"); if (pwd !== "Eagles") return alert("Access Denied."); isAdminUnlocked = true; document.getElementById('lockBtn').style.display = 'inline-block'; }
+        document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active')); document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(sectionId).classList.add('active');
         const buttons = document.querySelectorAll('.nav-btn');
-        if(sectionId === 'payment') buttons[0].classList.add('active');
-        if(sectionId === 'records') buttons[1].classList.add('active');
-        if(sectionId === 'students') buttons[2].classList.add('active');
-        if(sectionId === 'fees') buttons[3].classList.add('active');
+        if(sectionId === 'payment') buttons[0].classList.add('active'); if(sectionId === 'records') buttons[1].classList.add('active'); if(sectionId === 'students') buttons[2].classList.add('active'); if(sectionId === 'fees') buttons[3].classList.add('active');
     }
 
     function lockAdmin() { isAdminUnlocked = false; document.getElementById('lockBtn').style.display = 'none'; showSection('payment'); }
     function saveStationPrefix() { stationPrefix = document.getElementById('stationPrefixInput').value.trim().toUpperCase() || 'A'; saveData(); alert("Prefix Saved!"); }
     function generateInvoiceNo() { return isTrainingMode ? `TRAIN-${stationPrefix}-${nextTrainSequence}` : `INV-${stationPrefix}-${nextInvSequence}`; }
-
-    function selectCategory(cat) {
-        selectedCategory = cat;
-        document.querySelectorAll('.item-circle').forEach(el => { el.classList.remove('selected'); if(el.textContent === cat) el.classList.add('selected'); });
-    }
-
-    function inputNumpad(val) {
-        if (val === 'C') currentNumpadValue = ""; else if (val === '.') { if (!currentNumpadValue.includes('.')) currentNumpadValue += val; } 
-        else { if(currentNumpadValue.includes('.') && currentNumpadValue.split('.')[1].length >= 2) return; currentNumpadValue += val; }
-        document.getElementById('numpadDisplay').textContent = currentNumpadValue === "" ? "$0.00" : "$" + currentNumpadValue;
-    }
-
+    function selectCategory(cat) { selectedCategory = cat; document.querySelectorAll('.item-circle').forEach(el => { el.classList.remove('selected'); if(el.textContent === cat) el.classList.add('selected'); }); }
+    function inputNumpad(val) { if (val === 'C') currentNumpadValue = ""; else if (val === '.') { if (!currentNumpadValue.includes('.')) currentNumpadValue += val; } else { if(currentNumpadValue.includes('.') && currentNumpadValue.split('.')[1].length >= 2) return; currentNumpadValue += val; } document.getElementById('numpadDisplay').textContent = currentNumpadValue === "" ? "$0.00" : "$" + currentNumpadValue; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
-    function triggerAdd() {
-        if (!selectedCategory) return alert("Select an Item Category (Green Circle)!");
-        tempPrice = parseFloat(currentNumpadValue);
-        if (isNaN(tempPrice) || tempPrice <= 0) return alert("Enter a valid price greater than 0.");
-        
-        if (selectedCategory.toLowerCase().includes('pre-order')) {
-            document.getElementById('preOrderInput').value = '';
-            document.getElementById('preOrderModal').style.display = 'flex';
-            document.getElementById('preOrderInput').focus();
-        } else { pushToCart(selectedCategory); }
-    }
-
-    function confirmPreOrder() {
-        const name = formatName(document.getElementById('preOrderInput').value); 
-        if(!name) return alert("Please enter the book/item name.");
-        closeModal('preOrderModal');
-        pushToCart(`Pre-Order: ${name}`);
-    }
-
-    function pushToCart(finalName) {
-        currentCart.push({ id: Date.now(), name: finalName, price: tempPrice });
-        currentNumpadValue = ""; document.getElementById('numpadDisplay').textContent = "$0.00"; renderCart();
-    }
-
-    function renderCart() {
-        const list = document.getElementById('invoiceList'), totalDisplay = document.getElementById('cartTotalDisplay');
-        if (currentCart.length === 0) { list.innerHTML = '<div style="text-align:center; color:#999; margin-top:20px;">Cart is empty.</div>'; totalDisplay.textContent = "$0.00"; return; }
-        let total = 0;
-        list.innerHTML = currentCart.map(item => {
-            total += item.price; return `<div class="invoice-item"><span>✔️ ${item.name}</span><div><strong>$${item.price.toFixed(2)}</strong><span class="del-btn" onclick="currentCart=currentCart.filter(i=>i.id!==${item.id}); renderCart();">✖</span></div></div>`;
-        }).join('');
-        totalDisplay.textContent = "$" + total.toFixed(2);
-    }
-
-    function triggerCashModal() {
-        if (!selectedDivision) return alert('Step 1: Select a Division!');
-        if (currentCart.length === 0) return alert('Invoice is empty!');
-        tempTotalDue = currentCart.reduce((sum, item) => sum + item.price, 0);
-        document.getElementById('cashModalTotalDue').textContent = `$${tempTotalDue.toFixed(2)}`;
-        document.getElementById('cashInput').value = '';
-        document.getElementById('cashModal').style.display = 'flex';
-        document.getElementById('cashInput').focus();
-    }
-
-    function confirmCash() {
-        const received = parseFloat(document.getElementById('cashInput').value);
-        if (isNaN(received) || received < tempTotalDue) return alert("Error: Amount received is less than Total Due!");
-        closeModal('cashModal');
-        finalizeCheckout('Cash', received - tempTotalDue);
-    }
-
-    function finalizeCheckout(method, changeDue = 0) {
-        if (method === 'Card') {
-            if (!selectedDivision) return alert('Step 1: Select a Division!');
-            if (currentCart.length === 0) return alert('Invoice is empty!');
-        }
-
-        const lName = formatName(document.getElementById('payLastName').value);
-        const fName = formatName(document.getElementById('payFirstName').value);
-        const checkedName = (lName || fName) ? `${lName} ${fName}`.trim() : 'N/A';
-        
-        const totalAmount = currentCart.reduce((sum, item) => sum + item.price, 0);
-        const itemsString = currentCart.map(i => `${i.name}($${i.price.toFixed(2)})`).join(', ');
-
-        const targetArray = isTrainingMode ? trainingRecords : records;
-        targetArray.unshift({
-            id: Date.now(), invoiceNo: generateInvoiceNo(), date: new Date().toLocaleString('en-US'),
-            division: selectedDivision, studentName: checkedName, items: itemsString, amount: totalAmount, method: method, rawItems: [...currentCart]
-        });
-        
-        if(isTrainingMode) nextTrainSequence++; else nextInvSequence++; 
-        saveData();
-        
-        document.getElementById('successModalTitle').textContent = isTrainingMode ? "⚠️ Training Logged Successfully!" : "✅ Payment Successful!";
-        document.getElementById('successModal').style.display = 'flex';
-        const changeSec = document.getElementById('changeSection');
-        if(method === 'Cash') { changeSec.style.display = 'block'; document.getElementById('modalChangeDue').textContent = `$${changeDue.toFixed(2)}`; }
-        else { changeSec.style.display = 'none'; }
-    }
-
-    function nextCustomer() {
-        closeModal('successModal');
-        currentCart = []; selectedCategory = null; currentNumpadValue = ""; document.getElementById('numpadDisplay').textContent = "$0.00";
-        document.getElementById('payFirstName').value = ""; document.getElementById('payLastName').value = "";
-        document.getElementById('searchList').innerHTML = ""; 
-        document.getElementById('searchList').style.display = "none";
-        document.querySelectorAll('.division-circle').forEach(el => el.classList.remove('selected')); selectedDivision = null;
-        document.getElementById('invoiceDivDisplay').textContent = "Div: Not Selected";
-        renderCart(); updateCashierPOS();
-    }
-
-    function printLastReceipt() {
-        const sourceList = getActiveRecords();
-        if(sourceList.length === 0) return alert("No recent orders found.");
-        const r = sourceList[0];
-        
-        document.getElementById('printReceiptHeader').textContent = isTrainingMode ? "TRAINING REC - NOT A RECEIPT" : "Anderson PAC";
-        document.getElementById('rptInv').textContent = r.invoiceNo;
-        document.getElementById('rptDate').textContent = r.date;
-        document.getElementById('rptDiv').textContent = r.division;
-        document.getElementById('rptName').textContent = r.studentName;
-        document.getElementById('rptItems').innerHTML = (r.rawItems||[]).map(i => `<div style="display:flex; justify-content:space-between;"><span>${i.name}</span><span>$${i.price.toFixed(2)}</span></div>`).join('');
-        document.getElementById('rptTotal').textContent = `$${r.amount.toFixed(2)}`;
-        document.getElementById('rptMethod').textContent = r.method;
-        
-        document.body.className = 'print-receipt';
-        window.print();
-        setTimeout(() => { document.body.className = ''; }, 500);
-    }
-
-    function updateCashierPOS() {
-        const eventDisplay = document.getElementById('activeEventDisplay'); document.getElementById('invoiceNoDisplay').textContent = generateInvoiceNo();
-        const activeEvent = eventsConfig.find(e => e.id === activeEventId);
-        if (activeEvent && Array.isArray(activeEvent.items)) { 
-            eventDisplay.innerHTML = isTrainingMode ? `⚠️ PRACTICE: ${activeEvent.name}` : `🛒 ${activeEvent.name}`; 
-            document.getElementById('itemGrid').innerHTML = activeEvent.items.map(item => `<div class="item-circle" onclick="selectCategory('${item}')">${item}</div>`).join(''); 
-        } else { 
-            eventDisplay.innerHTML = `⚠️ No Event Set`; document.getElementById('itemGrid').innerHTML = ''; 
-        }
-        document.querySelectorAll('.item-circle').forEach(el => el.classList.remove('selected'));
-    }
-
-    function populateItemFilter() {
-        const filter = document.getElementById('itemFilter'); if(!filter) return;
-        const currentSelection = filter.value; let uniqueItems = new Set();
-        const currentData = getActiveRecords();
-        
-        currentData.forEach(r => { if(r.rawItems && Array.isArray(r.rawItems)) r.rawItems.forEach(i => uniqueItems.add(i.name)); });
-        
-        let optionsHtml = '<option value="ALL">All Items</option><option value="PRE-ORDER">📌 All Pre-Orders</option>';
-        Array.from(uniqueItems).sort().forEach(item => { optionsHtml += `<option value="${item}">${item}</option>`; });
-        filter.innerHTML = optionsHtml;
-        if(currentSelection) filter.value = currentSelection;
-    }
-
-    function renderItemizedReport() {
-        const tbody = document.getElementById('itemizedTableBody'); if(!tbody) return;
-        const filterVal = document.getElementById('itemFilter').value || 'ALL';
-        const currentData = getActiveRecords();
-        let itemRows = [];
-
-        currentData.forEach(r => {
-            if(r.rawItems && Array.isArray(r.rawItems)) {
-                r.rawItems.forEach(i => { itemRows.push({ inv: r.invoiceNo, date: r.date, name: r.studentName, div: r.division, item: i.name, price: i.price }); });
-            }
-        });
-
-        if(filterVal === 'PRE-ORDER') itemRows = itemRows.filter(row => row.item.toLowerCase().includes('pre-order'));
-        else if (filterVal !== 'ALL') itemRows = itemRows.filter(row => row.item === filterVal);
-
-        itemRows.sort((a,b) => a.item.localeCompare(b.item));
-        if(itemRows.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No items found.</td></tr>'; return; }
-
-        let totalQty = itemRows.length, totalPrice = itemRows.reduce((sum, r) => sum + r.price, 0);
-        let html = itemRows.map(r => `<tr><td><b>${r.item}</b></td><td>${r.inv}</td><td>${r.date.split(',')[0]}</td><td>${r.div}</td><td>${r.name}</td><td>$${r.price.toFixed(2)}</td></tr>`).join('');
-        html += `<tr class="summary-row"><td colspan="5" style="text-align:right;">Total Quantity: ${totalQty}</td><td>Total: $${totalPrice.toFixed(2)}</td></tr>`;
-        tbody.innerHTML = html;
-    }
-
+    function triggerAdd() { if (!selectedCategory) return alert("Select Category!"); tempPrice = parseFloat(currentNumpadValue); if (isNaN(tempPrice) || tempPrice <= 0) return alert("Enter valid price."); if (selectedCategory.toLowerCase().includes('pre-order')) { document.getElementById('preOrderInput').value = ''; document.getElementById('preOrderModal').style.display = 'flex'; document.getElementById('preOrderInput').focus(); } else { pushToCart(selectedCategory); } }
+    function confirmPreOrder() { const name = formatName(document.getElementById('preOrderInput').value); if(!name) return alert("Enter name."); closeModal('preOrderModal'); pushToCart(`Pre-Order: ${name}`); }
+    function pushToCart(finalName) { currentCart.push({ id: Date.now(), name: finalName, price: tempPrice }); currentNumpadValue = ""; document.getElementById('numpadDisplay').textContent = "$0.00"; renderCart(); }
+    function renderCart() { const list = document.getElementById('invoiceList'), totalDisplay = document.getElementById('cartTotalDisplay'); if (currentCart.length === 0) { list.innerHTML = ''; totalDisplay.textContent = "$0.00"; return; } let total = 0; list.innerHTML = currentCart.map(item => { total += item.price; return `<div class="invoice-item"><span>✔️ ${item.name}</span><div><strong>$${item.price.toFixed(2)}</strong><span class="del-btn" onclick="currentCart=currentCart.filter(i=>i.id!==${item.id}); renderCart();">✖</span></div></div>`; }).join(''); totalDisplay.textContent = "$" + total.toFixed(2); }
+    function triggerCashModal() { if (!selectedDivision) return alert('Step 1: Select Division!'); if (currentCart.length === 0) return alert('Invoice empty!'); tempTotalDue = currentCart.reduce((sum, item) => sum + item.price, 0); document.getElementById('cashModalTotalDue').textContent = `$${tempTotalDue.toFixed(2)}`; document.getElementById('cashInput').value = ''; document.getElementById('cashModal').style.display = 'flex'; document.getElementById('cashInput').focus(); }
+    function confirmCash() { const received = parseFloat(document.getElementById('cashInput').value); if (isNaN(received) || received < tempTotalDue) return alert("Amount too low!"); closeModal('cashModal'); finalizeCheckout('Cash', received - tempTotalDue); }
+    function finalizeCheckout(method, changeDue = 0) { if (method === 'Card') { if (!selectedDivision) return alert('Select Division!'); if (currentCart.length === 0) return alert('Invoice empty!'); } const lName = formatName(document.getElementById('payLastName').value); const fName = formatName(document.getElementById('payFirstName').value); const checkedName = (lName || fName) ? `${lName} ${fName}`.trim() : 'N/A'; const totalAmount = currentCart.reduce((sum, item) => sum + item.price, 0); const itemsString = currentCart.map(i => `${i.name}($${i.price.toFixed(2)})`).join(', '); const targetArray = isTrainingMode ? trainingRecords : records; targetArray.unshift({ id: Date.now(), invoiceNo: generateInvoiceNo(), date: new Date().toLocaleString('en-US'), division: selectedDivision, studentName: checkedName, items: itemsString, amount: totalAmount, method: method, rawItems: [...currentCart] }); if(isTrainingMode) nextTrainSequence++; else nextInvSequence++; saveData(); document.getElementById('successModalTitle').textContent = isTrainingMode ? "⚠️ Training Logged!" : "✅ Payment Successful!"; document.getElementById('successModal').style.display = 'flex'; const changeSec = document.getElementById('changeSection'); if(method === 'Cash') { changeSec.style.display = 'block'; document.getElementById('modalChangeDue').textContent = `$${changeDue.toFixed(2)}`; } else { changeSec.style.display = 'none'; } }
+    function nextCustomer() { closeModal('successModal'); currentCart = []; selectedCategory = null; currentNumpadValue = ""; document.getElementById('numpadDisplay').textContent = "$0.00"; document.getElementById('payFirstName').value = ""; document.getElementById('payLastName').value = ""; document.getElementById('searchList').style.display = "none"; document.querySelectorAll('.division-circle').forEach(el => el.classList.remove('selected')); selectedDivision = null; document.getElementById('invoiceDivDisplay').textContent = "Div: Not Selected"; renderCart(); updateCashierPOS(); }
+    function printLastReceipt() { const sourceList = getActiveRecords(); if(sourceList.length === 0) return alert("No recent orders."); const r = sourceList[0]; document.getElementById('printReceiptHeader').textContent = isTrainingMode ? "TRAINING REC" : "Anderson PAC"; document.getElementById('rptInv').textContent = r.invoiceNo; document.getElementById('rptDate').textContent = r.date; document.getElementById('rptDiv').textContent = r.division; document.getElementById('rptName').textContent = r.studentName; document.getElementById('rptItems').innerHTML = (r.rawItems||[]).map(i => `<div style="display:flex; justify-content:space-between;"><span>${i.name}</span><span>$${i.price.toFixed(2)}</span></div>`).join(''); document.getElementById('rptTotal').textContent = `$${r.amount.toFixed(2)}`; document.getElementById('rptMethod').textContent = r.method; document.body.className = 'print-receipt'; window.print(); setTimeout(() => { document.body.className = ''; }, 500); }
+    function updateCashierPOS() { const eventDisplay = document.getElementById('activeEventDisplay'); document.getElementById('invoiceNoDisplay').textContent = generateInvoiceNo(); const activeEvent = eventsConfig.find(e => e.id === activeEventId); if (activeEvent && Array.isArray(activeEvent.items)) { eventDisplay.innerHTML = isTrainingMode ? `⚠️ PRACTICE: ${activeEvent.name}` : `🛒 ${activeEvent.name}`; document.getElementById('itemGrid').innerHTML = activeEvent.items.map(item => `<div class="item-circle" onclick="selectCategory('${item}')">${item}</div>`).join(''); } else { eventDisplay.innerHTML = `⚠️ No Event Set`; document.getElementById('itemGrid').innerHTML = ''; } document.querySelectorAll('.item-circle').forEach(el => el.classList.remove('selected')); }
+    function populateItemFilter() { const filter = document.getElementById('itemFilter'); if(!filter) return; const currentSelection = filter.value; let uniqueItems = new Set(); getActiveRecords().forEach(r => { if(r.rawItems) r.rawItems.forEach(i => uniqueItems.add(i.name)); }); let optionsHtml = '<option value="ALL">All Items</option><option value="PRE-ORDER">📌 All Pre-Orders</option>'; Array.from(uniqueItems).sort().forEach(item => { optionsHtml += `<option value="${item}">${item}</option>`; }); filter.innerHTML = optionsHtml; if(currentSelection) filter.value = currentSelection; }
+    function renderItemizedReport() { const tbody = document.getElementById('itemizedTableBody'); if(!tbody) return; const filterVal = document.getElementById('itemFilter').value || 'ALL'; let itemRows = []; getActiveRecords().forEach(r => { if(r.rawItems) r.rawItems.forEach(i => { itemRows.push({ inv: r.invoiceNo, date: r.date, name: r.studentName, div: r.division, item: i.name, price: i.price }); }); }); if(filterVal === 'PRE-ORDER') itemRows = itemRows.filter(row => row.item.toLowerCase().includes('pre-order')); else if (filterVal !== 'ALL') itemRows = itemRows.filter(row => row.item === filterVal); itemRows.sort((a,b) => a.item.localeCompare(b.item)); if(itemRows.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No items found.</td></tr>'; return; } let totalQty = itemRows.length, totalPrice = itemRows.reduce((sum, r) => sum + r.price, 0); let html = itemRows.map(r => `<tr><td><b>${r.item}</b></td><td>${r.inv}</td><td>${r.date.split(',')[0]}</td><td>${r.div}</td><td>${r.name}</td><td>$${r.price.toFixed(2)}</td></tr>`).join(''); html += `<tr class="summary-row"><td colspan="5" style="text-align:right;">Total Quantity: ${totalQty}</td><td>Total: $${totalPrice.toFixed(2)}</td></tr>`; tbody.innerHTML = html; }
     function printItemizedList() { document.body.className = 'print-report'; window.print(); setTimeout(() => { document.body.className = ''; }, 500); }
-    
-    function exportItemizedToExcel() {
-        let rows = Array.from(document.getElementById('itemizedTableBody').rows);
-        if (rows.length === 0 || rows[0].cells.length < 6) return alert("No data to export.");
-        let csvContent = "\uFEFFItem Name,Invoice No.,Date,Division,Buyer Name,Price\n";
-        rows.forEach(r => {
-            if(r.classList.contains('summary-row')) return;
-            csvContent += `"${r.cells[0].innerText}","${r.cells[1].innerText}","${r.cells[2].innerText}","${r.cells[3].innerText}","${r.cells[4].innerText}","${r.cells[5].innerText.replace('$','')}"\n`;
-        });
-        downloadCSV(csvContent, `Itemized_List_${isTrainingMode?'TRAIN':'LIVE'}.csv`);
-    }
-
-    function renderRecords() {
-        const tbody = document.getElementById('recordsTableBody');
-        const filterVal = document.getElementById('invoiceDateFilter').value;
-        const todayStr = new Date().toLocaleDateString('en-US');
-        const currentSource = getActiveRecords();
-        
-        let filteredRecords = filterVal === 'TODAY' ? currentSource.filter(r => new Date(r.date).toLocaleDateString('en-US') === todayStr) : currentSource;
-
-        if (filteredRecords.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No transactions found.</td></tr>';
-        } else {
-            tbody.innerHTML = filteredRecords.map((r) => {
-                const realIndex = currentSource.findIndex(orig => orig.id === r.id);
-                return `
-                <tr><td><b>${r.invoiceNo}</b></td><td style="font-size:0.85em;">${r.date}</td><td>${r.division}</td><td>${r.studentName}</td>
-                    <td style="font-size:0.9em;">${r.items}</td><td><span style="background:${r.method==='Cash'?'var(--item-color)':'var(--primary-color)'}; color:white; padding:4px 8px; border-radius:4px; font-size:0.8em;">${r.method}</span></td>
-                    <td><b>$${r.amount.toFixed(2)}</b></td>
-                    <td class="no-print-report">
-                        <button class="btn btn-warning" style="padding:6px 10px; margin-right:5px; margin-bottom:5px; font-size:0.9em;" onclick="editRecord(${realIndex})">✏️ Edit</button>
-                        <button class="btn btn-danger" style="padding:6px 10px; font-size:0.9em;" onclick="deleteRecord(${realIndex})">🗑️ Void</button>
-                    </td></tr>
-                `;
-            }).join('');
-        }
-
-        let sumTotal = 0, sumCash = 0, sumCard = 0;
-        filteredRecords.forEach(r => { sumTotal += r.amount; if(r.method === 'Cash') sumCash += r.amount; if(r.method === 'Card') sumCard += r.amount; });
-        document.getElementById('overviewCount').textContent = filteredRecords.length;
-        document.getElementById('overviewTotal').textContent = `$${sumTotal.toFixed(2)}`;
-        document.getElementById('overviewCash').textContent = `$${sumCash.toFixed(2)}`;
-        document.getElementById('overviewCard').textContent = `$${sumCard.toFixed(2)}`;
-    }
-
-    function editRecord(index) {
-        const pwd = prompt("🔐 Manager Override. Enter Admin Password:");
-        if (pwd !== "Eagles") return alert("Incorrect Password!");
-        const targetList = getActiveRecords();
-        const r = targetList[index];
-        const newDiv = prompt("Edit Division (Current: " + r.division + "):", r.division);
-        if (newDiv === null) return; 
-        const newNameRaw = prompt("Edit Student Name (Current: " + r.studentName + "):", r.studentName);
-        if (newNameRaw === null) return;
-        targetList[index].division = newDiv.trim() || r.division;
-        targetList[index].studentName = formatName(newNameRaw) || r.studentName;
-        saveData();
-    }
-
-    function deleteRecord(index) {
-        const pwd = prompt("🔐 Manager Override. Enter Admin Password to VOID:");
-        if (pwd !== "Eagles") return alert("Incorrect Password!");
-        const targetList = getActiveRecords();
-        if(confirm(`Void invoice ${targetList[index].invoiceNo}?`)) { targetList.splice(index, 1); saveData(); }
-    }
-
-    function clearAllRecords() {
-        const modeText = isTrainingMode ? "TRAINING SESSION" : "PRODUCTION FINANCIAL OVERVIEW";
-        const pwd = prompt(`🔐 Manager Override. Enter Admin Password to CLEAR ALL ${modeText}:`);
-        if (pwd !== "Eagles") return alert("Incorrect Password!");
-        
-        if(confirm(`⚠️ WARNING: Are you sure you want to delete EVERY invoice inside ${modeText}?`)) {
-            if(confirm('FINAL WARNING: This cannot be undone. Continue?')) {
-                if (isTrainingMode) { trainingRecords = []; nextTrainSequence = 8001; } 
-                else { records = []; nextInvSequence = 1001; }
-                saveData();
-                alert("Data cleared successfully!");
-            }
-        }
-    }
-
-    function updateDashboard() {
-        const todayStr = new Date().toLocaleDateString('en-US'); let todayCash = 0, todayCard = 0, todayCount = 0;
-        const currentSource = getActiveRecords();
-        currentSource.forEach(r => { if (new Date(r.date).toLocaleDateString('en-US') === todayStr) { todayCount++; if (r.method === 'Cash') todayCash += r.amount; if (r.method === 'Card') todayCard += r.amount; } });
-        document.getElementById('todayCash').textContent = `$${todayCash.toLocaleString('en-US', {minimumFractionDigits: 2})}`; document.getElementById('todayCard').textContent = `$${todayCard.toLocaleString('en-US', {minimumFractionDigits: 2})}`; document.getElementById('todayTotal').textContent = `$${(todayCash + todayCard).toLocaleString('en-US', {minimumFractionDigits: 2})}`; document.getElementById('todayCount').textContent = todayCount;
-    }
-
-    function exportSalesToExcel() {
-        const filterVal = document.getElementById('invoiceDateFilter').value;
-        const todayStr = new Date().toLocaleDateString('en-US');
-        const currentSource = getActiveRecords();
-        let filteredRecords = filterVal === 'TODAY' ? currentSource.filter(r => new Date(r.date).toLocaleDateString('en-US') === todayStr) : currentSource;
-        
-        if (filteredRecords.length === 0) return alert("No data to export.");
-        let csvContent = "\uFEFFInvoice No.,Date & Time,Division,Student Name,Items Purchased,Payment Method,Total Amount\n";
-        filteredRecords.forEach(r => { csvContent += `"${r.invoiceNo}","${r.date}","${r.division}","${r.studentName}","${r.items.replace(/"/g, '""')}","${r.method}",${r.amount}\n`; });
-        downloadCSV(csvContent, `Anderson_Invoices_${isTrainingMode?'TRAIN':'LIVE'}.csv`);
-    }
-
-    function downloadCSV(content, filename) {
-        const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = filename; document.body.appendChild(link); link.click(); document.body.removeChild(link);
-    }
-    
-    function addEvent() {
-        const name = document.getElementById('newFeeName').value.trim(), itemsRaw = document.getElementById('newFeeItems').value.trim(), sDate = document.getElementById('newFeeStart').value, eDate = document.getElementById('newFeeEnd').value;
-        if (!name || !itemsRaw) return alert('Enter Event Name and Sale Items.');
-        const itemsArray = itemsRaw.split(',').map(s => s.trim()).filter(s => s !== "");
-        const existingIndex = eventsConfig.findIndex(ev => ev.name.toLowerCase() === name.toLowerCase());
-        if (existingIndex >= 0) { eventsConfig[existingIndex].items = itemsArray; eventsConfig[existingIndex].startDate = sDate; eventsConfig[existingIndex].endDate = eDate; } 
-        else { eventsConfig.push({ id: 'ev' + Date.now(), name: name, items: itemsArray, startDate: sDate, endDate: eDate }); }
-        document.getElementById('newFeeName').value = ''; document.getElementById('newFeeItems').value = ''; document.getElementById('newFeeStart').value = ''; document.getElementById('newFeeEnd').value = '';
-        autoCheckEventDate(); saveData(); 
-    }
-
-    function renderEventsAdmin() {
-        document.getElementById('feeTableBody').innerHTML = eventsConfig.map((e, index) => {
-            const isActive = (e.id === activeEventId), dateStr = (e.startDate) ? `${e.startDate} to ${e.endDate || e.startDate}` : '<span style="color:#aaa;">No Date Set</span>', isPreset = (e.id.startsWith('ev_'));
-            return `<tr><td>${e.name} ${isPreset ? '📌' : ''}</td><td>${dateStr}</td><td>${e.items.join(', ')}</td>
-                <td><button class="btn ${isActive ? 'btn-primary' : 'btn-warning'}" style="padding: 6px 12px; font-size: 0.9em;" onclick="activeEventId='${e.id}'; saveData();">${isActive ? '🌟 Active' : 'Set Active'}</button></td>
-                <td>${isPreset ? '' : `<button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.9em;" onclick="if(confirm('Delete event?')){eventsConfig.splice(${index}, 1); saveData();}">Del</button>`}</td></tr>`;
-        }).join('');
-    }
-
-    function addStudent() {
-        const lName = formatName(document.getElementById('stuLastName').value); const fName = formatName(document.getElementById('stuFirstName').value);
-        const div = document.getElementById('stuDivision').value.trim(); const sNum = document.getElementById('stuNumber').value.trim() || 'N/A';
-        if (!fName || !lName || !div) return alert('Enter Last Name, First Name, and Division.');
-        students.push({ id: Date.now(), studentNum: sNum, lastName: lName, firstName: fName, division: div });
-        document.getElementById('stuLastName').value = ''; document.getElementById('stuFirstName').value = ''; document.getElementById('stuDivision').value = ''; document.getElementById('stuNumber').value = '';
-        saveData();
-    }
-
-    function editStudentDiv(index) {
-        const newDiv = prompt("Enter new Division for this student:", students[index].division);
-        if (newDiv !== null && newDiv.trim() !== "") { students[index].division = newDiv.trim(); saveData(); }
-    }
-
-    document.getElementById('importCsvFile').addEventListener('change', function(event) {
-        const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
-        reader.onload = function(e) {
-            const lines = e.target.result.split('\n'); let addedCount = 0;
-            for (let i = 1; i < lines.length; i++) {
-                if(lines[i].trim() === "") continue;
-                const cols = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-                if (cols && cols.length >= 4) {
-                    const cleanStr = str => str.replace(/(^"|"$)/g, '').trim();
-                    students.push({ id: Date.now() + i, studentNum: cleanStr(cols[0]), lastName: formatName(cleanStr(cols[1])), firstName: formatName(cleanStr(cols[2])), division: cleanStr(cols[3]) });
-                    addedCount++;
-                }
-            }
-            saveData(); alert(`Imported ${addedCount} students!`);
-        };
-        reader.readAsText(file); event.target.value = '';
-    });
-
-    function renderStudents() {
-        document.getElementById('studentTableBody').innerHTML = students.map((s, index) => `
-            <tr><td>${s.studentNum}</td><td>${s.lastName}</td><td>${s.firstName}</td><td><b>${s.division}</b></td>
-            <td>
-                <button class="btn btn-warning" style="padding:8px 12px; margin-right:5px;" onclick="editStudentDiv(${index})">Edit Div</button>
-                <button class="btn btn-danger" style="padding:8px 12px;" onclick="if(confirm('Delete student?')){students.splice(${index}, 1); saveData();}">Del</button>
-            </td></tr>
-        `).join('');
-    }
-    
-    function exportStudentsToExcel() {
-        if (students.length === 0) return alert("List is empty.");
-        let csvContent = "\uFEFFStudent No.,Last Name,First Name,Division\n";
-        students.forEach(s => { csvContent += `"${s.studentNum}","${s.lastName}","${s.firstName}","${s.division}"\n`; });
-        downloadCSV(csvContent, "Anderson_Student_List.csv");
-    }
-    function clearRoster() { if(confirm('⚠️ WARNING: Delete ALL students?')) { students = []; saveData(); } }
+    function exportItemizedToExcel() { let rows = Array.from(document.getElementById('itemizedTableBody').rows); if (rows.length === 0 || rows[0].cells.length < 6) return alert("No data."); let csvContent = "\uFEFFItem Name,Invoice No.,Date,Division,Buyer Name,Price\n"; rows.forEach(r => { if(r.classList.contains('summary-row')) return; csvContent += `"${r.cells[0].innerText}","${r.cells[1].innerText}","${r.cells[2].innerText}","${r.cells[3].innerText}","${r.cells[4].innerText}","${r.cells[5].innerText.replace('$','')}"\n`; }); downloadCSV(csvContent, `Itemized_List_${isTrainingMode?'TRAIN':'LIVE'}.csv`); }
+    function renderRecords() { const tbody = document.getElementById('recordsTableBody'); const filterVal = document.getElementById('invoiceDateFilter').value; const todayStr = new Date().toLocaleDateString('en-US'); const currentSource = getActiveRecords(); let filteredRecords = filterVal === 'TODAY' ? currentSource.filter(r => new Date(r.date).toLocaleDateString('en-US') === todayStr) : currentSource; if (filteredRecords.length === 0) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No transactions.</td></tr>'; } else { tbody.innerHTML = filteredRecords.map((r) => { const realIndex = currentSource.findIndex(orig => orig.id === r.id); return `<tr><td><b>${r.invoiceNo}</b></td><td style="font-size:0.85em;">${r.date}</td><td>${r.division}</td><td>${r.studentName}</td><td style="font-size:0.9em;">${r.items}</td><td><span style="background:${r.method==='Cash'?'var(--item-color)':'var(--primary-color)'}; color:white; padding:4px 8px; border-radius:4px;">${r.method}</span></td><td><b>$${r.amount.toFixed(2)}</b></td><td class="no-print-report"><button class="btn btn-warning" style="padding:6px; margin-bottom:5px;" onclick="editRecord(${realIndex})">✏️ Edit</button><button class="btn btn-danger" style="padding:6px;" onclick="deleteRecord(${realIndex})">🗑️ Void</button></td></tr>`; }).join(''); } let sumTotal = 0, sumCash = 0, sumCard = 0; filteredRecords.forEach(r => { sumTotal += r.amount; if(r.method === 'Cash') sumCash += r.amount; if(r.method === 'Card') sumCard += r.amount; }); document.getElementById('overviewCount').textContent = filteredRecords.length; document.getElementById('overviewTotal').textContent = `$${sumTotal.toFixed(2)}`; document.getElementById('overviewCash').textContent = `$${sumCash.toFixed(2)}`; document.getElementById('overviewCard').textContent = `$${sumCard.toFixed(2)}`; }
+    function editRecord(index) { const pwd = prompt("Manager Password:"); if (pwd !== "Eagles") return; const targetList = getActiveRecords(); const r = targetList[index]; const newDiv = prompt("Edit Division:", r.division); if (newDiv === null) return; const newNameRaw = prompt("Edit Student Name:", r.studentName); if (newNameRaw === null) return; targetList[index].division = newDiv.trim() || r.division; targetList[index].studentName = formatName(newNameRaw) || r.studentName; saveData(); }
+    function deleteRecord(index) { const pwd = prompt("Manager Password to VOID:"); if (pwd !== "Eagles") return; const targetList = getActiveRecords(); if(confirm(`Void invoice?`)) { targetList.splice(index, 1); saveData(); } }
+    function clearAllRecords() { const pwd = prompt(`Manager Password to CLEAR ALL:`); if (pwd !== "Eagles") return; if(confirm(`⚠️ Delete EVERY invoice?`)) { if(confirm('FINAL WARNING. Continue?')) { if (isTrainingMode) { trainingRecords = []; nextTrainSequence = 8001; } else { records = []; nextInvSequence = 1001; } saveData(); alert("Cleared!"); } } }
+    function updateDashboard() { const todayStr = new Date().toLocaleDateString('en-US'); let todayCash = 0, todayCard = 0, todayCount = 0; getActiveRecords().forEach(r => { if (new Date(r.date).toLocaleDateString('en-US') === todayStr) { todayCount++; if (r.method === 'Cash') todayCash += r.amount; if (r.method === 'Card') todayCard += r.amount; } }); document.getElementById('todayCash').textContent = `$${todayCash.toLocaleString('en-US', {minimumFractionDigits: 2})}`; document.getElementById('todayCard').textContent = `$${todayCard.toLocaleString('en-US', {minimumFractionDigits: 2})}`; document.getElementById('todayTotal').textContent = `$${(todayCash + todayCard).toLocaleString('en-US', {minimumFractionDigits: 2})}`; document.getElementById('todayCount').textContent = todayCount; }
+    function exportSalesToExcel() { const filterVal = document.getElementById('invoiceDateFilter').value; const todayStr = new Date().toLocaleDateString('en-US'); const currentSource = getActiveRecords(); let filteredRecords = filterVal === 'TODAY' ? currentSource.filter(r => new Date(r.date).toLocaleDateString('en-US') === todayStr) : currentSource; if (filteredRecords.length === 0) return alert("No data."); let csvContent = "\uFEFFInvoice No.,Date & Time,Division,Student Name,Items Purchased,Payment Method,Total Amount\n"; filteredRecords.forEach(r => { csvContent += `"${r.invoiceNo}","${r.date}","${r.division}","${r.studentName}","${r.items.replace(/"/g, '""')}","${r.method}",${r.amount}\n`; }); downloadCSV(csvContent, `Anderson_Invoices.csv`); }
+    function downloadCSV(content, filename) { const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = filename; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
+    function addEvent() { const name = document.getElementById('newFeeName').value.trim(), itemsRaw = document.getElementById('newFeeItems').value.trim(), sDate = document.getElementById('newFeeStart').value, eDate = document.getElementById('newFeeEnd').value; if (!name || !itemsRaw) return alert('Enter Event Name and Items.'); const itemsArray = itemsRaw.split(',').map(s => s.trim()).filter(s => s !== ""); const existingIndex = eventsConfig.findIndex(ev => ev.name.toLowerCase() === name.toLowerCase()); if (existingIndex >= 0) { eventsConfig[existingIndex].items = itemsArray; eventsConfig[existingIndex].startDate = sDate; eventsConfig[existingIndex].endDate = eDate; } else { eventsConfig.push({ id: 'ev' + Date.now(), name: name, items: itemsArray, startDate: sDate, endDate: eDate }); } document.getElementById('newFeeName').value = ''; document.getElementById('newFeeItems').value = ''; document.getElementById('newFeeStart').value = ''; document.getElementById('newFeeEnd').value = ''; autoCheckEventDate(); saveData(); }
+    function renderEventsAdmin() { document.getElementById('feeTableBody').innerHTML = eventsConfig.map((e, index) => { const isActive = (e.id === activeEventId), dateStr = (e.startDate) ? `${e.startDate} to ${e.endDate || e.startDate}` : '<span style="color:#aaa;">No Date Set</span>', isPreset = (e.id.startsWith('ev_')); return `<tr><td>${e.name} ${isPreset ? '📌' : ''}</td><td>${dateStr}</td><td>${e.items.join(', ')}</td><td><button class="btn ${isActive ? 'btn-primary' : 'btn-warning'}" onclick="activeEventId='${e.id}'; saveData();">${isActive ? '🌟 Active' : 'Set Active'}</button></td><td>${isPreset ? '' : `<button class="btn btn-danger" onclick="if(confirm('Delete event?')){eventsConfig.splice(${index}, 1); saveData();}">Del</button>`}</td></tr>`; }).join(''); }
+    function addStudent() { const lName = formatName(document.getElementById('stuLastName').value); const fName = formatName(document.getElementById('stuFirstName').value); const div = document.getElementById('stuDivision').value.trim(); const sNum = document.getElementById('stuNumber').value.trim() || 'N/A'; if (!fName || !lName || !div) return alert('Enter Name and Division.'); students.push({ id: Date.now(), studentNum: sNum, lastName: lName, firstName: fName, division: div }); document.getElementById('stuLastName').value = ''; document.getElementById('stuFirstName').value = ''; document.getElementById('stuDivision').value = ''; document.getElementById('stuNumber').value = ''; saveData(); }
+    function editStudentDiv(index) { const newDiv = prompt("Enter new Division:", students[index].division); if (newDiv !== null && newDiv.trim() !== "") { students[index].division = newDiv.trim(); saveData(); } }
+    document.getElementById('importCsvFile').addEventListener('change', function(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { const lines = e.target.result.split('\n'); let addedCount = 0; for (let i = 1; i < lines.length; i++) { if(lines[i].trim() === "") continue; const cols = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g); if (cols && cols.length >= 4) { const cleanStr = str => str.replace(/(^"|"$)/g, '').trim(); students.push({ id: Date.now() + i, studentNum: cleanStr(cols[0]), lastName: formatName(cleanStr(cols[1])), firstName: formatName(cleanStr(cols[2])), division: cleanStr(cols[3]) }); addedCount++; } } saveData(); alert(`Imported ${addedCount} students!`); }; reader.readAsText(file); event.target.value = ''; });
+    function renderStudents() { document.getElementById('studentTableBody').innerHTML = students.map((s, index) => `<tr><td>${s.studentNum}</td><td>${s.lastName}</td><td>${s.firstName}</td><td><b>${s.division}</b></td><td><button class="btn btn-warning" onclick="editStudentDiv(${index})">Edit Div</button> <button class="btn btn-danger" onclick="if(confirm('Delete student?')){students.splice(${index}, 1); saveData();}">Del</button></td></tr>`).join(''); }
+    function exportStudentsToExcel() { if (students.length === 0) return alert("List is empty."); let csvContent = "\uFEFFStudent No.,Last Name,First Name,Division\n"; students.forEach(s => { csvContent += `"${s.studentNum}","${s.lastName}","${s.firstName}","${s.division}"\n`; }); downloadCSV(csvContent, "Anderson_Student_List.csv"); }
+    function clearRoster() { if(confirm('⚠️ Delete ALL students?')) { students = []; saveData(); } }
 </script>
 </body>
 </html>
