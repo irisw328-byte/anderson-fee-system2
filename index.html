@@ -87,21 +87,13 @@
     
     /* v14.14 新增：感熱印表機 80mm 專屬排版 CSS */
     @media print { 
-        @page { size: 80mm auto; margin: 0; } /* 強制紙張大小與取消白邊，解決超長空白問題 */
+        @page { size: 80mm auto; margin: 0; } 
         body { margin: 0; padding: 0; background: #fff; color: #000; }
         body.print-receipt .section, body.print-receipt header, body.print-receipt .overlay { display: none !important; } 
         body.print-receipt #printReceiptArea { 
-            display: block !important; 
-            position: absolute; 
-            left: 0; 
-            top: 0; 
-            width: 72mm; /* 留一點點安全邊界給 80mm 的紙 */
-            margin: 0 auto;
-            padding: 4mm;
-            font-family: 'Courier New', Courier, monospace; /* 強制等寬字體，確保對齊 */
-            font-size: 12px; /* 適合感熱紙的字體大小 */
-            color: #000;
-            box-sizing: border-box;
+            display: block !important; position: absolute; left: 0; top: 0; 
+            width: 72mm; margin: 0 auto; padding: 4mm;
+            font-family: 'Courier New', Courier, monospace; font-size: 12px; color: #000; box-sizing: border-box;
         } 
         body.print-report #payment, body.print-report #students, body.print-report #fees, body.print-report header { display: none !important; } 
         body.print-report .no-print-report { display: none !important; } 
@@ -132,7 +124,7 @@
         <label>Step 1: Select Division</label>
         <div class="division-grid" id="divisionGrid"></div>
 
-        <label>Step 2: Student Details (Type First Letter to search):</label>
+        <label>Step 2: Student Details (Type Name or Student No.):</label>
         <div class="autocomplete">
             <div class="form-group" style="margin-bottom:0;">
                 <input type="text" id="payStudentName" placeholder="🔍 e.g., 'Chan Jayden' or 'C' or '1234'" autocomplete="off" oninput="posAdvancedFilter(this.value)">
@@ -176,7 +168,6 @@
         </div>
     </div>
 
-    <!-- Reports Section -->
     <div id="records" class="section no-print">
         <h2 style="color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 10px;">📅 Today's Summary (<span id="todayDateDisplay"></span>)</h2>
         <div class="dashboard-grid">
@@ -215,7 +206,6 @@
         </div>
     </div>
 
-    <!-- Student List Backend -->
     <div id="students" class="section no-print-report">
         <h2>Student List Management</h2>
         <div style="background: rgba(42, 77, 74, 0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--primary-color);">
@@ -243,7 +233,6 @@
         </div>
     </div>
 
-    <!-- Admin -->
     <div id="fees" class="section no-print-report">
         <h2>Admin Configurations</h2>
         <div style="background: #fdfdfd; padding: 20px; border-radius: 8px; border-left: 5px solid var(--numpad-color); margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee;">
@@ -277,7 +266,6 @@
     </div>
 </div>
 
-<!-- Modals -->
 <div id="preOrderModal" class="overlay">
     <div class="modal-box">
         <h2 class="modal-title">📦 Pre-Order Item</h2>
@@ -317,7 +305,6 @@
     </div>
 </div>
 
-<!-- Receipt Print Area -->
 <div id="printReceiptArea">
     <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 5px; margin-bottom: 5px;">
         <h2 id="printReceiptHeader" style="margin: 0; font-size: 16px;">Anderson PAC</h2>
@@ -370,12 +357,9 @@
         autoCheckEventDate(); renderDivisionGrid(); renderAll();
     };
 
-    // v14.14 新增：全域實體鍵盤監聽器 (支援外接數字鍵盤)
+    // v14.14: 全域實體鍵盤監聽器 (支援外接數字鍵盤)
     document.addEventListener('keydown', function(event) {
-        // 只在 Cashier POS 頁面生效
         if (!document.getElementById('payment').classList.contains('active')) return;
-        
-        // 如果義工正在打字搜尋學生名字，不要攔截鍵盤按鍵
         const activeTag = document.activeElement.tagName;
         if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return;
 
@@ -387,7 +371,7 @@
         } else if (key === 'Backspace' || key === 'Delete' || key.toLowerCase() === 'c') {
             inputNumpad('C');
         } else if (key === 'Enter') {
-            event.preventDefault(); // 防止誤觸其他按鈕
+            event.preventDefault(); 
             triggerAdd();
         }
     });
@@ -488,4 +472,4 @@
         document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active')); document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(sectionId).classList.add('active');
         const buttons = document.querySelectorAll('.nav-btn');
-        if(sectionId === 'payment') buttons[0].classList.add('active'); if(Normally I can help with things like this, but I don't seem to have access to that content. You can try again or ask me for something else.
+        if(sectionId === 'payment') buttons[0].
