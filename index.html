@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anderson POS System v14.13</title>
+<title>Anderson POS System v14.14</title>
 <style>
     :root {
         --bg-color: #EAE0C8; --card-bg: #FCFBF9; --primary-color: #2A4D4A; 
@@ -84,7 +84,28 @@
     .modal-btn-row { display: flex; gap: 20px; justify-content: center; }
     .modal-btn { flex: 1; padding: 20px; font-size: 1.3em; font-weight: 800; border-radius: 12px; border: none; cursor: pointer; color: white; }
     .change-huge { font-size: 5em; color: var(--primary-color); font-weight: 800; margin: 10px 0; }
-    @media print { body.print-receipt .section, body.print-receipt header, body.print-receipt .overlay { display: none !important; } body.print-receipt #printReceiptArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; font-family: monospace; font-size: 14px;} body.print-report #payment, body.print-report #students, body.print-report #fees, body.print-report header { display: none !important; } body.print-report .no-print-report { display: none !important; } }
+    
+    /* v14.14 新增：感熱印表機 80mm 專屬排版 CSS */
+    @media print { 
+        @page { size: 80mm auto; margin: 0; } /* 強制紙張大小與取消白邊，解決超長空白問題 */
+        body { margin: 0; padding: 0; background: #fff; color: #000; }
+        body.print-receipt .section, body.print-receipt header, body.print-receipt .overlay { display: none !important; } 
+        body.print-receipt #printReceiptArea { 
+            display: block !important; 
+            position: absolute; 
+            left: 0; 
+            top: 0; 
+            width: 72mm; /* 留一點點安全邊界給 80mm 的紙 */
+            margin: 0 auto;
+            padding: 4mm;
+            font-family: 'Courier New', Courier, monospace; /* 強制等寬字體，確保對齊 */
+            font-size: 12px; /* 適合感熱紙的字體大小 */
+            color: #000;
+            box-sizing: border-box;
+        } 
+        body.print-report #payment, body.print-report #students, body.print-report #fees, body.print-report header { display: none !important; } 
+        body.print-report .no-print-report { display: none !important; } 
+    }
     #printReceiptArea { display: none; padding: 20px; max-width: 300px; border: 1px solid #ccc; margin: 0 auto; background: #fff;}
 </style>
 </head>
@@ -92,7 +113,7 @@
 
 <div class="container">
     <header class="no-print-report">
-        <h1>🦅 Anderson POS System <span style="font-size: 0.4em; color: var(--numpad-color); font-weight: 600; vertical-align: middle;">v14.13</span></h1>
+        <h1>🦅 Anderson POS System <span style="font-size: 0.4em; color: var(--numpad-color); font-weight: 600; vertical-align: middle;">v14.14</span></h1>
         <div class="nav-tabs">
             <button class="nav-btn active" onclick="showSection('payment')">💻 Cashier POS</button>
             <button class="nav-btn" onclick="showSection('records')">📊 Reports</button>
@@ -102,7 +123,6 @@
         </div>
     </header>
 
-    <!-- Cashier POS -->
     <div id="payment" class="section active no-print">
         <div id="activeEventBanner" style="background: rgba(198, 142, 23, 0.2); padding: 15px; border-radius: 8px; font-weight: bold; color: var(--primary-color); margin-bottom: 20px; display: flex; justify-content: space-between; border-left: 5px solid var(--highlight-color);">
             <span id="activeEventDisplay">Active Event: None</span>
@@ -112,7 +132,7 @@
         <label>Step 1: Select Division</label>
         <div class="division-grid" id="divisionGrid"></div>
 
-        <label>Step 2: Student Details (Type Name or Student No.):</label>
+        <label>Step 2: Student Details (Type First Letter to search):</label>
         <div class="autocomplete">
             <div class="form-group" style="margin-bottom:0;">
                 <input type="text" id="payStudentName" placeholder="🔍 e.g., 'Chan Jayden' or 'C' or '1234'" autocomplete="off" oninput="posAdvancedFilter(this.value)">
@@ -126,7 +146,7 @@
             <div class="pos-controls">
                 <label>Step 3: Category</label>
                 <div class="item-grid" id="itemGrid"></div>
-                <label>Step 4: Price & Add</label>
+                <label>Step 4: Price & Add (Use physical Numpad too!)</label>
                 <div class="numpad-display" id="numpadDisplay">$0.00</div>
                 <div class="numpad-grid">
                     <button class="num-btn" onclick="inputNumpad('1')">1</button><button class="num-btn" onclick="inputNumpad('2')">2</button><button class="num-btn" onclick="inputNumpad('3')">3</button>
@@ -156,7 +176,7 @@
         </div>
     </div>
 
-    <!-- Reports -->
+    <!-- Reports Section -->
     <div id="records" class="section no-print">
         <h2 style="color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 10px;">📅 Today's Summary (<span id="todayDateDisplay"></span>)</h2>
         <div class="dashboard-grid">
@@ -297,23 +317,24 @@
     </div>
 </div>
 
+<!-- Receipt Print Area -->
 <div id="printReceiptArea">
-    <div style="text-align: center; border-bottom: 2px dashed #000; padding-bottom: 10px; margin-bottom: 10px;">
-        <h2 id="printReceiptHeader" style="margin: 0;">Anderson PAC</h2>
-        <p id="printReceiptSub" style="margin: 5px 0 0 0; font-size: 12px;">Thank you for your support!</p>
+    <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 5px; margin-bottom: 5px;">
+        <h2 id="printReceiptHeader" style="margin: 0; font-size: 16px;">Anderson PAC</h2>
+        <p id="printReceiptSub" style="margin: 3px 0 0 0; font-size: 12px;">Thank you for your support!</p>
     </div>
-    <div style="margin-bottom: 10px; font-size: 14px;">
-        <div><strong>Invoice:</strong> <span id="rptInv"></span></div>
+    <div style="margin-bottom: 5px; font-size: 12px;">
+        <div><strong>Inv:</strong> <span id="rptInv"></span></div>
         <div><strong>Date:</strong> <span id="rptDate"></span></div>
         <div><strong>Div:</strong> <span id="rptDiv"></span></div>
         <div><strong>Name:</strong> <span id="rptName"></span></div>
     </div>
-    <div style="border-bottom: 1px solid #000; padding-bottom: 5px; margin-bottom: 5px;"><strong>Items:</strong></div>
-    <div id="rptItems" style="margin-bottom: 15px; font-size: 14px; line-height: 1.5;"></div>
-    <div style="text-align: right; font-size: 16px; border-top: 2px dashed #000; padding-top: 10px;">
+    <div style="border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 3px; font-size: 12px;"><strong>Items:</strong></div>
+    <div id="rptItems" style="margin-bottom: 10px; font-size: 12px; line-height: 1.4;"></div>
+    <div style="text-align: right; font-size: 14px; border-top: 1px dashed #000; padding-top: 5px;">
         <strong>Total: <span id="rptTotal"></span></strong>
     </div>
-    <div style="text-align: right; font-size: 14px; margin-top: 5px;">Paid by: <span id="rptMethod"></span></div>
+    <div style="text-align: right; font-size: 12px; margin-top: 3px;">Paid by: <span id="rptMethod"></span></div>
 </div>
 
 <script>
@@ -349,6 +370,28 @@
         autoCheckEventDate(); renderDivisionGrid(); renderAll();
     };
 
+    // v14.14 新增：全域實體鍵盤監聽器 (支援外接數字鍵盤)
+    document.addEventListener('keydown', function(event) {
+        // 只在 Cashier POS 頁面生效
+        if (!document.getElementById('payment').classList.contains('active')) return;
+        
+        // 如果義工正在打字搜尋學生名字，不要攔截鍵盤按鍵
+        const activeTag = document.activeElement.tagName;
+        if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return;
+
+        const key = event.key;
+        if (/^[0-9]$/.test(key)) {
+            inputNumpad(key);
+        } else if (key === '.' || key === 'Decimal') {
+            inputNumpad('.');
+        } else if (key === 'Backspace' || key === 'Delete' || key.toLowerCase() === 'c') {
+            inputNumpad('C');
+        } else if (key === 'Enter') {
+            event.preventDefault(); // 防止誤觸其他按鈕
+            triggerAdd();
+        }
+    });
+
     function getActiveRecords() { return isTrainingMode ? trainingRecords : records; }
 
     function saveData() {
@@ -363,7 +406,6 @@
 
     function renderAll() { renderStudents(document.getElementById('rosterSearch') ? document.getElementById('rosterSearch').value : ''); renderEventsAdmin(); populateItemFilter(); renderRecords(); renderItemizedReport(); updateCashierPOS(); updateDashboard(); }
 
-    // --- POS Front-end: Multi-Keyword + StartsWith Search (v14.13) ---
     function posAdvancedFilter(val = '') {
         const list = document.getElementById('searchList');
         list.innerHTML = '';
@@ -377,15 +419,12 @@
         if (val.length > 0) {
             const terms = val.split(/[\s,]+/).filter(t => t);
             matches = matches.filter(s => {
-                // Multi-keyword check for ALL terms
                 const matchesAll = terms.every(ft => 
                     s.lastName.toLowerCase().includes(ft) || 
                     s.firstName.toLowerCase().includes(ft) || 
                     (s.studentNum && s.studentNum.toLowerCase().includes(ft))
                 );
                 if (!matchesAll) return false;
-                
-                // First term must match the START of either first name or last name
                 const firstTerm = terms[0];
                 return s.lastName.toLowerCase().startsWith(firstTerm) || s.firstName.toLowerCase().startsWith(firstTerm);
             });
@@ -449,73 +488,4 @@
         document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active')); document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(sectionId).classList.add('active');
         const buttons = document.querySelectorAll('.nav-btn');
-        if(sectionId === 'payment') buttons[0].classList.add('active'); if(sectionId === 'records') buttons[1].classList.add('active'); if(sectionId === 'students') buttons[2].classList.add('active'); if(sectionId === 'fees') buttons[3].classList.add('active');
-    }
-
-    function lockAdmin() { isAdminUnlocked = false; document.getElementById('lockBtn').style.display = 'none'; showSection('payment'); }
-    function saveStationPrefix() { stationPrefix = document.getElementById('stationPrefixInput').value.trim().toUpperCase() || 'A'; saveData(); alert("Prefix Saved!"); }
-    function generateInvoiceNo() { return isTrainingMode ? `TRAIN-${stationPrefix}-${nextTrainSequence}` : `INV-${stationPrefix}-${nextInvSequence}`; }
-    function selectCategory(cat) { selectedCategory = cat; document.querySelectorAll('.item-circle').forEach(el => { el.classList.remove('selected'); if(el.textContent === cat) el.classList.add('selected'); }); }
-    function inputNumpad(val) { if (val === 'C') currentNumpadValue = ""; else if (val === '.') { if (!currentNumpadValue.includes('.')) currentNumpadValue += val; } else { if(currentNumpadValue.includes('.') && currentNumpadValue.split('.')[1].length >= 2) return; currentNumpadValue += val; } document.getElementById('numpadDisplay').textContent = currentNumpadValue === "" ? "$0.00" : "$" + currentNumpadValue; }
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-    function triggerAdd() { if (!selectedCategory) return alert("Select Category!"); tempPrice = parseFloat(currentNumpadValue); if (isNaN(tempPrice) || tempPrice <= 0) return alert("Enter valid price."); if (selectedCategory.toLowerCase().includes('pre-order')) { document.getElementById('preOrderInput').value = ''; document.getElementById('preOrderModal').style.display = 'flex'; document.getElementById('preOrderInput').focus(); } else { pushToCart(selectedCategory); } }
-    function confirmPreOrder() { const name = formatName(document.getElementById('preOrderInput').value); if(!name) return alert("Enter name."); closeModal('preOrderModal'); pushToCart(`Pre-Order: ${name}`); }
-    function pushToCart(finalName) { currentCart.push({ id: Date.now(), name: finalName, price: tempPrice }); currentNumpadValue = ""; document.getElementById('numpadDisplay').textContent = "$0.00"; renderCart(); }
-    function renderCart() { const list = document.getElementById('invoiceList'), totalDisplay = document.getElementById('cartTotalDisplay'); if (currentCart.length === 0) { list.innerHTML = ''; totalDisplay.textContent = "$0.00"; return; } let total = 0; list.innerHTML = currentCart.map(item => { total += item.price; return `<div class="invoice-item"><span>✔️ ${item.name}</span><div><strong>$${item.price.toFixed(2)}</strong><span class="del-btn" onclick="currentCart=currentCart.filter(i=>i.id!==${item.id}); renderCart();">✖</span></div></div>`; }).join(''); totalDisplay.textContent = "$" + total.toFixed(2); }
-    function triggerCashModal() { if (!selectedDivision) return alert('Step 1: Select Division!'); if (currentCart.length === 0) return alert('Invoice empty!'); tempTotalDue = currentCart.reduce((sum, item) => sum + item.price, 0); document.getElementById('cashModalTotalDue').textContent = `$${tempTotalDue.toFixed(2)}`; document.getElementById('cashInput').value = ''; document.getElementById('cashModal').style.display = 'flex'; document.getElementById('cashInput').focus(); }
-    function confirmCash() { const received = parseFloat(document.getElementById('cashInput').value); if (isNaN(received) || received < tempTotalDue) return alert("Amount too low!"); closeModal('cashModal'); finalizeCheckout('Cash', received - tempTotalDue); }
-    
-    function finalizeCheckout(method, changeDue = 0) { 
-        if (method === 'Card') { if (!selectedDivision) return alert('Select Division!'); if (currentCart.length === 0) return alert('Invoice empty!'); } 
-        const rawName = document.getElementById('payStudentName').value;
-        const checkedName = rawName.trim() ? formatName(rawName) : 'N/A'; 
-        const totalAmount = currentCart.reduce((sum, item) => sum + item.price, 0); 
-        const itemsString = currentCart.map(i => `${i.name}($${i.price.toFixed(2)})`).join(', '); 
-        const targetArray = isTrainingMode ? trainingRecords : records; 
-        targetArray.unshift({ id: Date.now(), invoiceNo: generateInvoiceNo(), date: new Date().toLocaleString('en-US'), division: selectedDivision, studentName: checkedName, items: itemsString, amount: totalAmount, method: method, rawItems: [...currentCart] }); 
-        if(isTrainingMode) nextTrainSequence++; else nextInvSequence++; 
-        saveData(); 
-        document.getElementById('successModalTitle').textContent = isTrainingMode ? "⚠️ Training Logged!" : "✅ Payment Successful!"; 
-        document.getElementById('successModal').style.display = 'flex'; 
-        const changeSec = document.getElementById('changeSection'); 
-        if(method === 'Cash') { changeSec.style.display = 'block'; document.getElementById('modalChangeDue').textContent = `$${changeDue.toFixed(2)}`; } else { changeSec.style.display = 'none'; } 
-    }
-    
-    function nextCustomer() { closeModal('successModal'); currentCart = []; selectedCategory = null; currentNumpadValue = ""; document.getElementById('numpadDisplay').textContent = "$0.00"; document.getElementById('payStudentName').value = ""; document.getElementById('searchList').style.display = "none"; document.querySelectorAll('.division-circle').forEach(el => el.classList.remove('selected')); selectedDivision = null; document.getElementById('invoiceDivDisplay').textContent = "Div: Not Selected"; renderCart(); updateCashierPOS(); }
-    function printLastReceipt() { const sourceList = getActiveRecords(); if(sourceList.length === 0) return alert("No recent orders."); const r = sourceList[0]; document.getElementById('printReceiptHeader').textContent = isTrainingMode ? "TRAINING REC" : "Anderson PAC"; document.getElementById('rptInv').textContent = r.invoiceNo; document.getElementById('rptDate').textContent = r.date; document.getElementById('rptDiv').textContent = r.division; document.getElementById('rptName').textContent = r.studentName; document.getElementById('rptItems').innerHTML = (r.rawItems||[]).map(i => `<div style="display:flex; justify-content:space-between;"><span>${i.name}</span><span>$${i.price.toFixed(2)}</span></div>`).join(''); document.getElementById('rptTotal').textContent = `$${r.amount.toFixed(2)}`; document.getElementById('rptMethod').textContent = r.method; document.body.className = 'print-receipt'; window.print(); setTimeout(() => { document.body.className = ''; }, 500); }
-    function updateCashierPOS() { const eventDisplay = document.getElementById('activeEventDisplay'); document.getElementById('invoiceNoDisplay').textContent = generateInvoiceNo(); const activeEvent = eventsConfig.find(e => e.id === activeEventId); if (activeEvent && Array.isArray(activeEvent.items)) { eventDisplay.innerHTML = isTrainingMode ? `⚠️ PRACTICE: ${activeEvent.name}` : `🛒 ${activeEvent.name}`; document.getElementById('itemGrid').innerHTML = activeEvent.items.map(item => `<div class="item-circle" onclick="selectCategory('${item}')">${item}</div>`).join(''); } else { eventDisplay.innerHTML = `⚠️ No Event Set`; document.getElementById('itemGrid').innerHTML = ''; } document.querySelectorAll('.item-circle').forEach(el => el.classList.remove('selected')); }
-    function populateItemFilter() { const filter = document.getElementById('itemFilter'); if(!filter) return; const currentSelection = filter.value; let uniqueItems = new Set(); getActiveRecords().forEach(r => { if(r.rawItems) r.rawItems.forEach(i => uniqueItems.add(i.name)); }); let optionsHtml = '<option value="ALL">All Items</option><option value="PRE-ORDER">📌 All Pre-Orders</option>'; Array.from(uniqueItems).sort().forEach(item => { optionsHtml += `<option value="${item}">${item}</option>`; }); filter.innerHTML = optionsHtml; if(currentSelection) filter.value = currentSelection; }
-    function renderItemizedReport() { const tbody = document.getElementById('itemizedTableBody'); if(!tbody) return; const filterVal = document.getElementById('itemFilter').value || 'ALL'; let itemRows = []; getActiveRecords().forEach(r => { if(r.rawItems) r.rawItems.forEach(i => { itemRows.push({ inv: r.invoiceNo, date: r.date, name: r.studentName, div: r.division, item: i.name, price: i.price }); }); }); if(filterVal === 'PRE-ORDER') itemRows = itemRows.filter(row => row.item.toLowerCase().includes('pre-order')); else if (filterVal !== 'ALL') itemRows = itemRows.filter(row => row.item === filterVal); itemRows.sort((a,b) => a.item.localeCompare(b.item)); if(itemRows.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No items found.</td></tr>'; return; } let totalQty = itemRows.length, totalPrice = itemRows.reduce((sum, r) => sum + r.price, 0); let html = itemRows.map(r => `<tr><td><b>${r.item}</b></td><td>${r.inv}</td><td>${r.date.split(',')[0]}</td><td>${r.div}</td><td>${r.name}</td><td>$${r.price.toFixed(2)}</td></tr>`).join(''); html += `<tr class="summary-row"><td colspan="5" style="text-align:right;">Total Quantity: ${totalQty}</td><td>Total: $${totalPrice.toFixed(2)}</td></tr>`; tbody.innerHTML = html; }
-    function printItemizedList() { document.body.className = 'print-report'; window.print(); setTimeout(() => { document.body.className = ''; }, 500); }
-    function exportItemizedToExcel() { let rows = Array.from(document.getElementById('itemizedTableBody').rows); if (rows.length === 0 || rows[0].cells.length < 6) return alert("No data."); let csvContent = "\uFEFFItem Name,Invoice No.,Date,Division,Buyer Name,Price\n"; rows.forEach(r => { if(r.classList.contains('summary-row')) return; csvContent += `"${r.cells[0].innerText}","${r.cells[1].innerText}","${r.cells[2].innerText}","${r.cells[3].innerText}","${r.cells[4].innerText}","${r.cells[5].innerText.replace('$','')}"\n`; }); downloadCSV(csvContent, `Itemized_List_${isTrainingMode?'TRAIN':'LIVE'}.csv`); }
-    function renderRecords() { const tbody = document.getElementById('recordsTableBody'); const filterVal = document.getElementById('invoiceDateFilter').value; const todayStr = new Date().toLocaleDateString('en-US'); const currentSource = getActiveRecords(); let filteredRecords = filterVal === 'TODAY' ? currentSource.filter(r => new Date(r.date).toLocaleDateString('en-US') === todayStr) : currentSource; if (filteredRecords.length === 0) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No transactions.</td></tr>'; } else { tbody.innerHTML = filteredRecords.map((r) => { const realIndex = currentSource.findIndex(orig => orig.id === r.id); return `<tr><td><b>${r.invoiceNo}</b></td><td style="font-size:0.85em;">${r.date}</td><td>${r.division}</td><td>${r.studentName}</td><td style="font-size:0.9em;">${r.items}</td><td><span style="background:${r.method==='Cash'?'var(--item-color)':'var(--primary-color)'}; color:white; padding:4px 8px; border-radius:4px;">${r.method}</span></td><td><b>$${r.amount.toFixed(2)}</b></td><td class="no-print-report"><button class="btn btn-warning" style="padding:6px; margin-bottom:5px;" onclick="editRecord(${realIndex})">✏️ Edit</button><button class="btn btn-danger" style="padding:6px;" onclick="deleteRecord(${realIndex})">🗑️ Void</button></td></tr>`; }).join(''); } let sumTotal = 0, sumCash = 0, sumCard = 0; filteredRecords.forEach(r => { sumTotal += r.amount; if(r.method === 'Cash') sumCash += r.amount; if(r.method === 'Card') sumCard += r.amount; }); document.getElementById('overviewCount').textContent = filteredRecords.length; document.getElementById('overviewTotal').textContent = `$${sumTotal.toFixed(2)}`; document.getElementById('overviewCash').textContent = `$${sumCash.toFixed(2)}`; document.getElementById('overviewCard').textContent = `$${sumCard.toFixed(2)}`; }
-    function editRecord(index) { const pwd = prompt("Manager Password:"); if (pwd !== "Eagles") return; const targetList = getActiveRecords(); const r = targetList[index]; const newDiv = prompt("Edit Division:", r.division); if (newDiv === null) return; const newNameRaw = prompt("Edit Student Name:", r.studentName); if (newNameRaw === null) return; targetList[index].division = newDiv.trim() || r.division; targetList[index].studentName = formatName(newNameRaw) || r.studentName; saveData(); }
-    function deleteRecord(index) { const pwd = prompt("Manager Password to VOID:"); if (pwd !== "Eagles") return; const targetList = getActiveRecords(); if(confirm(`Void invoice?`)) { targetList.splice(index, 1); saveData(); } }
-    function clearAllRecords() { const pwd = prompt(`Manager Password to CLEAR ALL:`); if (pwd !== "Eagles") return; if(confirm(`⚠️ Delete EVERY invoice?`)) { if(confirm('FINAL WARNING. Continue?')) { if (isTrainingMode) { trainingRecords = []; nextTrainSequence = 8001; } else { records = []; nextInvSequence = 1001; } saveData(); alert("Cleared!"); } } }
-    function updateDashboard() { const todayStr = new Date().toLocaleDateString('en-US'); let todayCash = 0, todayCard = 0, todayCount = 0; getActiveRecords().forEach(r => { if (new Date(r.date).toLocaleDateString('en-US') === todayStr) { todayCount++; if (r.method === 'Cash') todayCash += r.amount; if (r.method === 'Card') todayCard += r.amount; } }); document.getElementById('todayCash').textContent = `$${todayCash.toLocaleString('en-US', {minimumFractionDigits: 2})}`; document.getElementById('todayCard').textContent = `$${todayCard.toLocaleString('en-US', {minimumFractionDigits: 2})}`; document.getElementById('todayTotal').textContent = `$${(todayCash + todayCard).toLocaleString('en-US', {minimumFractionDigits: 2})}`; document.getElementById('todayCount').textContent = todayCount; }
-    function exportSalesToExcel() { const filterVal = document.getElementById('invoiceDateFilter').value; const todayStr = new Date().toLocaleDateString('en-US'); const currentSource = getActiveRecords(); let filteredRecords = filterVal === 'TODAY' ? currentSource.filter(r => new Date(r.date).toLocaleDateString('en-US') === todayStr) : currentSource; if (filteredRecords.length === 0) return alert("No data."); let csvContent = "\uFEFFInvoice No.,Date & Time,Division,Student Name,Items Purchased,Payment Method,Total Amount\n"; filteredRecords.forEach(r => { csvContent += `"${r.invoiceNo}","${r.date}","${r.division}","${r.studentName}","${r.items.replace(/"/g, '""')}","${r.method}",${r.amount}\n`; }); downloadCSV(csvContent, `Anderson_Invoices.csv`); }
-    function downloadCSV(content, filename) { const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = filename; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
-    function addEvent() { const name = document.getElementById('newFeeName').value.trim(), itemsRaw = document.getElementById('newFeeItems').value.trim(), sDate = document.getElementById('newFeeStart').value, eDate = document.getElementById('newFeeEnd').value; if (!name || !itemsRaw) return alert('Enter Event Name and Items.'); const itemsArray = itemsRaw.split(',').map(s => s.trim()).filter(s => s !== ""); const existingIndex = eventsConfig.findIndex(ev => ev.name.toLowerCase() === name.toLowerCase()); if (existingIndex >= 0) { eventsConfig[existingIndex].items = itemsArray; eventsConfig[existingIndex].startDate = sDate; eventsConfig[existingIndex].endDate = eDate; } else { eventsConfig.push({ id: 'ev' + Date.now(), name: name, items: itemsArray, startDate: sDate, endDate: eDate }); } document.getElementById('newFeeName').value = ''; document.getElementById('newFeeItems').value = ''; document.getElementById('newFeeStart').value = ''; document.getElementById('newFeeEnd').value = ''; autoCheckEventDate(); saveData(); }
-    function renderEventsAdmin() { document.getElementById('feeTableBody').innerHTML = eventsConfig.map((e, index) => { const isActive = (e.id === activeEventId), dateStr = (e.startDate) ? `${e.startDate} to ${e.endDate || e.startDate}` : '<span style="color:#aaa;">No Date Set</span>', isPreset = (e.id.startsWith('ev_')); return `<tr><td>${e.name} ${isPreset ? '📌' : ''}</td><td>${dateStr}</td><td>${e.items.join(', ')}</td><td><button class="btn ${isActive ? 'btn-primary' : 'btn-warning'}" onclick="activeEventId='${e.id}'; saveData();">${isActive ? '🌟 Active' : 'Set Active'}</button></td><td>${isPreset ? '' : `<button class="btn btn-danger" onclick="if(confirm('Delete event?')){eventsConfig.splice(${index}, 1); saveData();}">Del</button>`}</td></tr>`; }).join(''); }
-    
-    // --- 後台名單搜尋 (v14.13) ---
-    function renderStudents(filterText = '') { 
-        let displayList = students;
-        if (filterText) {
-            const terms = filterText.toLowerCase().split(/[\s,]+/).filter(t => t);
-            displayList = students.filter(s => terms.every(ft => s.lastName.toLowerCase().includes(ft) || s.firstName.toLowerCase().includes(ft) || (s.division && s.division.toLowerCase().includes(ft)) || (s.studentNum && s.studentNum.toLowerCase().includes(ft))));
-        }
-        document.getElementById('studentTableBody').innerHTML = displayList.map(s => { 
-            const idx = students.findIndex(orig => orig === s);
-            return `<tr><td>${s.studentNum}</td><td>${s.lastName}</td><td>${s.firstName}</td><td><b>${s.division}</b></td><td><button class="btn btn-warning" onclick="editStudentDiv(${idx})" style="padding:8px 12px; margin-right:5px;">Edit Div</button> <button class="btn btn-danger" onclick="if(confirm('Delete student?')){students.splice(${idx}, 1); document.getElementById('rosterSearch').value=''; saveData();}" style="padding:8px 12px;">Del</button></td></tr>`; 
-        }).join(''); 
-    }
-    
-    function addStudent() { const lName = formatName(document.getElementById('stuLastName').value); const fName = formatName(document.getElementById('stuFirstName').value); const div = document.getElementById('stuDivision').value.trim(); const sNum = document.getElementById('stuNumber').value.trim() || 'N/A'; if (!fName || !lName || !div) return alert('Enter Name and Division.'); students.push({ id: Date.now(), studentNum: sNum, lastName: lName, firstName: fName, division: div }); document.getElementById('stuLastName').value = ''; document.getElementById('stuFirstName').value = ''; document.getElementById('stuDivision').value = ''; document.getElementById('stuNumber').value = ''; if(document.getElementById('rosterSearch')) document.getElementById('rosterSearch').value = ''; saveData(); }
-    function editStudentDiv(index) { const newDiv = prompt("Enter new Division:", students[index].division); if (newDiv !== null && newDiv.trim() !== "") { students[index].division = newDiv.trim(); if(document.getElementById('rosterSearch')) document.getElementById('rosterSearch').value = ''; saveData(); } }
-    document.getElementById('importCsvFile').addEventListener('change', function(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { const lines = e.target.result.split('\n'); let addedCount = 0; for (let i = 1; i < lines.length; i++) { if(lines[i].trim() === "") continue; const cols = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g); if (cols && cols.length >= 4) { const cleanStr = str => str.replace(/(^"|"$)/g, '').trim(); students.push({ id: Date.now() + i, studentNum: cleanStr(cols[0]), lastName: formatName(cleanStr(cols[1])), firstName: formatName(cleanStr(cols[2])), division: cleanStr(cols[3]) }); addedCount++; } } if(document.getElementById('rosterSearch')) document.getElementById('rosterSearch').value = ''; saveData(); alert(`Imported ${addedCount} students!`); }; reader.readAsText(file); event.target.value = ''; });
-    function exportStudentsToExcel() { if (students.length === 0) return alert("List is empty."); let csvContent = "\uFEFFStudent No.,Last Name,First Name,Division\n"; students.forEach(s => { csvContent += `"${s.studentNum}","${s.lastName}","${s.firstName}","${s.division}"\n`; }); downloadCSV(csvContent, "Anderson_Student_List.csv"); }
-    function clearRoster() { if(confirm('⚠️ Delete ALL students?')) { students = []; if(document.getElementById('rosterSearch')) document.getElementById('rosterSearch').value = ''; saveData(); } }
-</script>
-</body>
-</html>
+        if(sectionId === 'payment') buttons[0].classList.add('active'); if(Normally I can help with things like this, but I don't seem to have access to that content. You can try again or ask me for something else.
