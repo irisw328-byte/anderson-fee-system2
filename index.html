@@ -1,9 +1,10 @@
+Anderson POS System v14.14
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anderson POS System v14.13</title>
+<title>Anderson POS System v14.14</title>
 <style>
     :root {
         --bg-color: #EAE0C8; --card-bg: #FCFBF9; --primary-color: #2A4D4A; 
@@ -84,12 +85,19 @@
     .modal-btn-row { display: flex; gap: 20px; justify-content: center; }
     .modal-btn { flex: 1; padding: 20px; font-size: 1.3em; font-weight: 800; border-radius: 12px; border: none; cursor: pointer; color: white; }
     .change-huge { font-size: 5em; color: var(--primary-color); font-weight: 800; margin: 10px 0; }
-    @media print { body.print-receipt .section, body.print-receipt header, body.print-receipt .overlay { display: none !important; } body.print-receipt #printReceiptArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; font-family: monospace; font-size: 14px;} body.print-report #payment, body.print-report #students, body.print-report #fees, body.print-report header { display: none !important; } body.print-report .no-print-report { display: none !important; } }
+    
+    /* 修改 1: 在列印媒體查詢中加入紙張與邊距設定 */
+    @media print { 
+        @page { size: 80mm 297mm; margin: 0; } 
+        body.print-receipt .section, body.print-receipt header, body.print-receipt .overlay { display: none !important; } 
+        body.print-receipt #printReceiptArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; font-family: monospace; font-size: 14px;} 
+        body.print-report #payment, body.print-report #students, body.print-report #fees, body.print-report header { display: none !important; } 
+        body.print-report .no-print-report { display: none !important; } 
+    }
     #printReceiptArea { display: none; padding: 20px; max-width: 300px; border: 1px solid #ccc; margin: 0 auto; background: #fff;}
 </style>
 </head>
 <body>
-
 <div class="container">
     <header class="no-print-report">
         <h1>🦅 Anderson POS System <span style="font-size: 0.4em; color: var(--numpad-color); font-weight: 600; vertical-align: middle;">v14.13</span></h1>
@@ -102,7 +110,6 @@
         </div>
     </header>
 
-    <!-- Cashier POS -->
     <div id="payment" class="section active no-print">
         <div id="activeEventBanner" style="background: rgba(198, 142, 23, 0.2); padding: 15px; border-radius: 8px; font-weight: bold; color: var(--primary-color); margin-bottom: 20px; display: flex; justify-content: space-between; border-left: 5px solid var(--highlight-color);">
             <span id="activeEventDisplay">Active Event: None</span>
@@ -155,9 +162,7 @@
             </div>
         </div>
     </div>
-
-    <!-- Reports -->
-    <div id="records" class="section no-print">
+<div id="records" class="section no-print">
         <h2 style="color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 10px;">📅 Today's Summary (<span id="todayDateDisplay"></span>)</h2>
         <div class="dashboard-grid">
             <div class="stat-card card-green"><h3 id="todayCash">$0.00</h3><p>💵 Today's Cash</p></div>
@@ -195,7 +200,6 @@
         </div>
     </div>
 
-    <!-- Student List Backend -->
     <div id="students" class="section no-print-report">
         <h2>Student List Management</h2>
         <div style="background: rgba(42, 77, 74, 0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--primary-color);">
@@ -223,7 +227,6 @@
         </div>
     </div>
 
-    <!-- Admin -->
     <div id="fees" class="section no-print-report">
         <h2>Admin Configurations</h2>
         <div style="background: #fdfdfd; padding: 20px; border-radius: 8px; border-left: 5px solid var(--numpad-color); margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee;">
@@ -257,7 +260,6 @@
     </div>
 </div>
 
-<!-- Modals -->
 <div id="preOrderModal" class="overlay">
     <div class="modal-box">
         <h2 class="modal-title">📦 Pre-Order Item</h2>
@@ -315,7 +317,6 @@
     </div>
     <div style="text-align: right; font-size: 14px; margin-top: 5px;">Paid by: <span id="rptMethod"></span></div>
 </div>
-
 <script>
     function formatName(name) { return name.trim().toLowerCase().replace(/(?:^|[\s-])\w/g, function(m) { return m.toUpperCase(); }); }
     window.addEventListener('beforeunload', function (e) { if (currentCart && currentCart.length > 0) { e.preventDefault(); e.returnValue = ''; } });
@@ -349,6 +350,51 @@
         autoCheckEventDate(); renderDivisionGrid(); renderAll();
     };
 
+    // 修改 2: 新增全域鍵盤監聽器 (支援外接實體數字鍵盤)
+    window.addEventListener('keydown', function(e) {
+        // 確認目前是否在「結帳畫面 (Cashier POS)」
+        const paymentSection = document.getElementById('payment');
+        if (!paymentSection.classList.contains('active')) return;
+
+        // 如果焦點在輸入框 (例如正在搜尋學生，或彈跳視窗的 input 裡)，就不要觸發快捷鍵，讓正常打字進行
+        if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+            // 小優化：如果在彈跳視窗內的 input 按 Enter，直接執行確認
+            if (e.key === 'Enter') {
+                if (document.getElementById('preOrderModal').style.display === 'flex') { confirmPreOrder(); e.preventDefault(); }
+                else if (document.getElementById('cashModal').style.display === 'flex') { confirmCash(); e.preventDefault(); }
+            }
+            return;
+        }
+
+        // 如果有任何彈出視窗開著，也不要觸發底下計算機的快捷鍵
+        if (document.getElementById('preOrderModal').style.display === 'flex' || 
+            document.getElementById('cashModal').style.display === 'flex' || 
+            document.getElementById('successModal').style.display === 'flex') {
+            
+            // 如果在成功畫面按 Enter，直接切換下一個客人
+            if (e.key === 'Enter' && document.getElementById('successModal').style.display === 'flex') {
+                nextCustomer(); e.preventDefault();
+            }
+            return;
+        }
+
+        // 監聽實體小鍵盤的數字與小數點
+        if (/^[0-9\.]$/.test(e.key)) {
+            inputNumpad(e.key);
+            e.preventDefault(); 
+        } 
+        // 監聽 Enter 鍵 = ➕ Add to Invoice
+        else if (e.key === 'Enter') {
+            triggerAdd();
+            e.preventDefault();
+        }
+        // 監聽清除鍵 (按 C, Escape, 或 Backspace 都視為 Clear)
+        else if (e.key.toLowerCase() === 'c' || e.key === 'Escape' || e.key === 'Backspace') {
+            inputNumpad('C');
+            e.preventDefault();
+        }
+    });
+
     function getActiveRecords() { return isTrainingMode ? trainingRecords : records; }
 
     function saveData() {
@@ -363,7 +409,6 @@
 
     function renderAll() { renderStudents(document.getElementById('rosterSearch') ? document.getElementById('rosterSearch').value : ''); renderEventsAdmin(); populateItemFilter(); renderRecords(); renderItemizedReport(); updateCashierPOS(); updateDashboard(); }
 
-    // --- POS Front-end: Multi-Keyword + StartsWith Search (v14.13) ---
     function posAdvancedFilter(val = '') {
         const list = document.getElementById('searchList');
         list.innerHTML = '';
@@ -377,15 +422,12 @@
         if (val.length > 0) {
             const terms = val.split(/[\s,]+/).filter(t => t);
             matches = matches.filter(s => {
-                // Multi-keyword check for ALL terms
                 const matchesAll = terms.every(ft => 
                     s.lastName.toLowerCase().includes(ft) || 
                     s.firstName.toLowerCase().includes(ft) || 
                     (s.studentNum && s.studentNum.toLowerCase().includes(ft))
                 );
                 if (!matchesAll) return false;
-                
-                // First term must match the START of either first name or last name
                 const firstTerm = terms[0];
                 return s.lastName.toLowerCase().startsWith(firstTerm) || s.firstName.toLowerCase().startsWith(firstTerm);
             });
@@ -498,7 +540,6 @@
     function addEvent() { const name = document.getElementById('newFeeName').value.trim(), itemsRaw = document.getElementById('newFeeItems').value.trim(), sDate = document.getElementById('newFeeStart').value, eDate = document.getElementById('newFeeEnd').value; if (!name || !itemsRaw) return alert('Enter Event Name and Items.'); const itemsArray = itemsRaw.split(',').map(s => s.trim()).filter(s => s !== ""); const existingIndex = eventsConfig.findIndex(ev => ev.name.toLowerCase() === name.toLowerCase()); if (existingIndex >= 0) { eventsConfig[existingIndex].items = itemsArray; eventsConfig[existingIndex].startDate = sDate; eventsConfig[existingIndex].endDate = eDate; } else { eventsConfig.push({ id: 'ev' + Date.now(), name: name, items: itemsArray, startDate: sDate, endDate: eDate }); } document.getElementById('newFeeName').value = ''; document.getElementById('newFeeItems').value = ''; document.getElementById('newFeeStart').value = ''; document.getElementById('newFeeEnd').value = ''; autoCheckEventDate(); saveData(); }
     function renderEventsAdmin() { document.getElementById('feeTableBody').innerHTML = eventsConfig.map((e, index) => { const isActive = (e.id === activeEventId), dateStr = (e.startDate) ? `${e.startDate} to ${e.endDate || e.startDate}` : '<span style="color:#aaa;">No Date Set</span>', isPreset = (e.id.startsWith('ev_')); return `<tr><td>${e.name} ${isPreset ? '📌' : ''}</td><td>${dateStr}</td><td>${e.items.join(', ')}</td><td><button class="btn ${isActive ? 'btn-primary' : 'btn-warning'}" onclick="activeEventId='${e.id}'; saveData();">${isActive ? '🌟 Active' : 'Set Active'}</button></td><td>${isPreset ? '' : `<button class="btn btn-danger" onclick="if(confirm('Delete event?')){eventsConfig.splice(${index}, 1); saveData();}">Del</button>`}</td></tr>`; }).join(''); }
     
-    // --- 後台名單搜尋 (v14.13) ---
     function renderStudents(filterText = '') { 
         let displayList = students;
         if (filterText) {
