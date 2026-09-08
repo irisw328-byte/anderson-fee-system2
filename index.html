@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anderson POS System v14.14</title>
+<title>Anderson POS System v14.15</title>
 <style>
     :root {
         --bg-color: #EAE0C8; --card-bg: #FCFBF9; --primary-color: #2A4D4A; 
@@ -38,7 +38,7 @@
     .division-circle { width: 55px; height: 55px; background-color: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; cursor: pointer; transition: 0.2s; box-shadow: 0 3px 6px rgba(0,0,0,0.1); border: 2px solid transparent;}
     .division-circle.selected { background-color: var(--highlight-color); color: #fff; transform: scale(1.15); border-color: #fff; }
     .item-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 30px;}
-    .item-circle { width: 75px; height: 75px; background-color: var(--item-color); color: white; border-radius: 18px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 0.9em; font-weight: 700; cursor: pointer; padding: 6px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); border: 2px solid transparent; transition: 0.2s;}
+    .item-circle { width: 75px; height: 75px; background-color: var(--item-color); color: white; border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-size: 0.9em; font-weight: 700; cursor: pointer; padding: 6px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); border: 2px solid transparent; transition: 0.2s; line-height: 1.1;}
     .item-circle.selected { background-color: var(--highlight-color); color: white; transform: scale(1.08); border-color: #fff;}
     .pos-layout { display: flex; gap: 30px; flex-wrap: wrap; }
     .pos-controls { flex: 1.5; min-width: 350px; }
@@ -85,7 +85,6 @@
     .modal-btn { flex: 1; padding: 20px; font-size: 1.3em; font-weight: 800; border-radius: 12px; border: none; cursor: pointer; color: white; }
     .change-huge { font-size: 5em; color: var(--primary-color); font-weight: 800; margin: 10px 0; }
     
-    /* 修改 1: 在列印媒體查詢中加入紙張與邊距設定 */
     @media print { 
         @page { size: 80mm 297mm; margin: 0; } 
         body.print-receipt .section, body.print-receipt header, body.print-receipt .overlay { display: none !important; } 
@@ -99,7 +98,7 @@
 <body>
 <div class="container">
     <header class="no-print-report">
-        <h1>🦅 Anderson POS System <span style="font-size: 0.4em; color: var(--numpad-color); font-weight: 600; vertical-align: middle;">v14.14</span></h1>
+        <h1>🦅 Anderson POS System <span style="font-size: 0.4em; color: var(--numpad-color); font-weight: 600; vertical-align: middle;">v14.15</span></h1>
         <div class="nav-tabs">
             <button class="nav-btn active" onclick="showSection('payment')">💻 Cashier POS</button>
             <button class="nav-btn" onclick="showSection('records')">📊 Reports</button>
@@ -119,11 +118,12 @@
         <div class="division-grid" id="divisionGrid"></div>
 
         <label>Step 2: Student Details (Type Name or Student No.):</label>
-        <div class="autocomplete">
-            <div class="form-group" style="margin-bottom:0;">
-                <input type="text" id="payStudentName" placeholder="🔍 e.g., 'Chan Jayden' or 'C' or '1234'" autocomplete="off" oninput="posAdvancedFilter(this.value)">
+        <div class="name-row" style="align-items: flex-start; flex-wrap: nowrap; margin-bottom: 25px;">
+            <div class="autocomplete" style="flex: 1; margin-bottom: 0;">
+                <input type="text" id="payStudentName" placeholder="🔍 e.g., 'Chan Jayden' or 'C'" autocomplete="off" oninput="posAdvancedFilter(this.value)">
+                <div id="searchList" class="autocomplete-items"></div>
             </div>
-            <div id="searchList" class="autocomplete-items"></div>
+            <button class="btn btn-primary" onclick="setGuest()" style="white-space: nowrap; height: 50px; margin-left: 10px; background-color: var(--secondary-color);">👤 無名氏 (Guest)</button>
         </div>
 
         <hr style="border: 0; border-top: 2px solid #eee; margin: 25px 0;">
@@ -161,7 +161,7 @@
             </div>
         </div>
     </div>
-<div id="records" class="section no-print">
+    <div id="records" class="section no-print">
         <h2 style="color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 10px;">📅 Today's Summary (<span id="todayDateDisplay"></span>)</h2>
         <div class="dashboard-grid">
             <div class="stat-card card-green"><h3 id="todayCash">$0.00</h3><p>💵 Today's Cash</p></div>
@@ -247,7 +247,7 @@
         <div style="background: #fff; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
             <div class="name-row">
                 <div class="form-group"><input type="text" id="newFeeName" placeholder="Event Name"></div>
-                <div class="form-group"><input type="text" id="newFeeItems" placeholder="Sale Items (e.g., Book, Pre-Order, Open)"></div>
+                <div class="form-group"><input type="text" id="newFeeItems" placeholder="e.g., Hat:15, Sticker:2, Open"></div>
             </div>
             <div class="name-row">
                 <div class="form-group"><label>Start Date:</label><input type="date" id="newFeeStart"></div>
@@ -349,15 +349,11 @@
         autoCheckEventDate(); renderDivisionGrid(); renderAll();
     };
 
-    // 修改 2: 新增全域鍵盤監聽器 (支援外接實體數字鍵盤)
     window.addEventListener('keydown', function(e) {
-        // 確認目前是否在「結帳畫面 (Cashier POS)」
         const paymentSection = document.getElementById('payment');
         if (!paymentSection.classList.contains('active')) return;
 
-        // 如果焦點在輸入框 (例如正在搜尋學生，或彈跳視窗的 input 裡)，就不要觸發快捷鍵，讓正常打字進行
         if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
-            // 小優化：如果在彈跳視窗內的 input 按 Enter，直接執行確認
             if (e.key === 'Enter') {
                 if (document.getElementById('preOrderModal').style.display === 'flex') { confirmPreOrder(); e.preventDefault(); }
                 else if (document.getElementById('cashModal').style.display === 'flex') { confirmCash(); e.preventDefault(); }
@@ -365,29 +361,24 @@
             return;
         }
 
-        // 如果有任何彈出視窗開著，也不要觸發底下計算機的快捷鍵
         if (document.getElementById('preOrderModal').style.display === 'flex' || 
             document.getElementById('cashModal').style.display === 'flex' || 
             document.getElementById('successModal').style.display === 'flex') {
             
-            // 如果在成功畫面按 Enter，直接切換下一個客人
             if (e.key === 'Enter' && document.getElementById('successModal').style.display === 'flex') {
                 nextCustomer(); e.preventDefault();
             }
             return;
         }
 
-        // 監聽實體小鍵盤的數字與小數點
         if (/^[0-9\.]$/.test(e.key)) {
             inputNumpad(e.key);
             e.preventDefault(); 
         } 
-        // 監聽 Enter 鍵 = ➕ Add to Invoice
         else if (e.key === 'Enter') {
             triggerAdd();
             e.preventDefault();
         }
-        // 監聽清除鍵 (按 C, Escape, 或 Backspace 都視為 Clear)
         else if (e.key.toLowerCase() === 'c' || e.key === 'Escape' || e.key === 'Backspace') {
             inputNumpad('C');
             e.preventDefault();
@@ -416,7 +407,7 @@
         if (!selectedDivision && val.length === 0) { list.style.display = 'none'; return; }
 
         let matches = students;
-        if (selectedDivision) matches = matches.filter(s => s.division === selectedDivision);
+        if (selectedDivision && selectedDivision !== 'N/A') matches = matches.filter(s => s.division === selectedDivision);
         
         if (val.length > 0) {
             const terms = val.split(/[\s,]+/).filter(t => t);
@@ -467,6 +458,17 @@
         }
     }
 
+    function setGuest() {
+        document.getElementById('payStudentName').value = "Guest (無名氏)";
+        selectedDivision = "N/A";
+        document.querySelectorAll('.division-circle').forEach(el => { 
+            el.classList.remove('selected'); 
+            if (el.textContent === "N/A") el.classList.add('selected'); 
+        });
+        document.getElementById('invoiceDivDisplay').textContent = `Div: N/A`;
+        document.getElementById('searchList').style.display = 'none';
+    }
+
     function toggleTrainingMode() {
         if (currentCart.length > 0) { if(!confirm("Warning: Cart has items. Switching modes clears the invoice. Proceed?")) return; }
         isTrainingMode = !isTrainingMode; currentCart = [];
@@ -496,7 +498,25 @@
     function lockAdmin() { isAdminUnlocked = false; document.getElementById('lockBtn').style.display = 'none'; showSection('payment'); }
     function saveStationPrefix() { stationPrefix = document.getElementById('stationPrefixInput').value.trim().toUpperCase() || 'A'; saveData(); alert("Prefix Saved!"); }
     function generateInvoiceNo() { return isTrainingMode ? `TRAIN-${stationPrefix}-${nextTrainSequence}` : `INV-${stationPrefix}-${nextInvSequence}`; }
-    function selectCategory(cat) { selectedCategory = cat; document.querySelectorAll('.item-circle').forEach(el => { el.classList.remove('selected'); if(el.textContent === cat) el.classList.add('selected'); }); }
+    
+    function selectCategory(cat) { 
+        let parts = cat.split(':');
+        selectedCategory = parts[0]; 
+        document.querySelectorAll('.item-circle').forEach(el => { 
+            el.classList.remove('selected'); 
+            if(el.getAttribute('data-raw') === cat) el.classList.add('selected'); 
+        });
+        
+        if (parts.length > 1) {
+            let presetPrice = parseFloat(parts[1]);
+            if (!isNaN(presetPrice)) {
+                currentNumpadValue = presetPrice.toString();
+                document.getElementById('numpadDisplay').textContent = "$" + presetPrice.toFixed(2);
+                triggerAdd();
+            }
+        }
+    }
+    
     function inputNumpad(val) { if (val === 'C') currentNumpadValue = ""; else if (val === '.') { if (!currentNumpadValue.includes('.')) currentNumpadValue += val; } else { if(currentNumpadValue.includes('.') && currentNumpadValue.split('.')[1].length >= 2) return; currentNumpadValue += val; } document.getElementById('numpadDisplay').textContent = currentNumpadValue === "" ? "$0.00" : "$" + currentNumpadValue; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     function triggerAdd() { if (!selectedCategory) return alert("Select Category!"); tempPrice = parseFloat(currentNumpadValue); if (isNaN(tempPrice) || tempPrice <= 0) return alert("Enter valid price."); if (selectedCategory.toLowerCase().includes('pre-order')) { document.getElementById('preOrderInput').value = ''; document.getElementById('preOrderModal').style.display = 'flex'; document.getElementById('preOrderInput').focus(); } else { pushToCart(selectedCategory); } }
@@ -524,7 +544,27 @@
     
     function nextCustomer() { closeModal('successModal'); currentCart = []; selectedCategory = null; currentNumpadValue = ""; document.getElementById('numpadDisplay').textContent = "$0.00"; document.getElementById('payStudentName').value = ""; document.getElementById('searchList').style.display = "none"; document.querySelectorAll('.division-circle').forEach(el => el.classList.remove('selected')); selectedDivision = null; document.getElementById('invoiceDivDisplay').textContent = "Div: Not Selected"; renderCart(); updateCashierPOS(); }
     function printLastReceipt() { const sourceList = getActiveRecords(); if(sourceList.length === 0) return alert("No recent orders."); const r = sourceList[0]; document.getElementById('printReceiptHeader').textContent = isTrainingMode ? "TRAINING REC" : "Anderson PAC"; document.getElementById('rptInv').textContent = r.invoiceNo; document.getElementById('rptDate').textContent = r.date; document.getElementById('rptDiv').textContent = r.division; document.getElementById('rptName').textContent = r.studentName; document.getElementById('rptItems').innerHTML = (r.rawItems||[]).map(i => `<div style="display:flex; justify-content:space-between;"><span>${i.name}</span><span>$${i.price.toFixed(2)}</span></div>`).join(''); document.getElementById('rptTotal').textContent = `$${r.amount.toFixed(2)}`; document.getElementById('rptMethod').textContent = r.method; document.body.className = 'print-receipt'; window.print(); setTimeout(() => { document.body.className = ''; }, 500); }
-    function updateCashierPOS() { const eventDisplay = document.getElementById('activeEventDisplay'); document.getElementById('invoiceNoDisplay').textContent = generateInvoiceNo(); const activeEvent = eventsConfig.find(e => e.id === activeEventId); if (activeEvent && Array.isArray(activeEvent.items)) { eventDisplay.innerHTML = isTrainingMode ? `⚠️ PRACTICE: ${activeEvent.name}` : `🛒 ${activeEvent.name}`; document.getElementById('itemGrid').innerHTML = activeEvent.items.map(item => `<div class="item-circle" onclick="selectCategory('${item}')">${item}</div>`).join(''); } else { eventDisplay.innerHTML = `⚠️ No Event Set`; document.getElementById('itemGrid').innerHTML = ''; } document.querySelectorAll('.item-circle').forEach(el => el.classList.remove('selected')); }
+    
+    function updateCashierPOS() { 
+        const eventDisplay = document.getElementById('activeEventDisplay'); 
+        document.getElementById('invoiceNoDisplay').textContent = generateInvoiceNo(); 
+        const activeEvent = eventsConfig.find(e => e.id === activeEventId); 
+        
+        if (activeEvent && Array.isArray(activeEvent.items)) { 
+            eventDisplay.innerHTML = isTrainingMode ? `⚠️ PRACTICE: ${activeEvent.name}` : `🛒 ${activeEvent.name}`; 
+            document.getElementById('itemGrid').innerHTML = activeEvent.items.map(item => {
+                let parts = item.split(':');
+                let name = parts[0];
+                let priceStr = parts.length > 1 ? `<span style="font-size:0.85em; font-weight:normal; margin-top:4px;">$${parts[1]}</span>` : '';
+                return `<div class="item-circle" data-raw="${item}" onclick="selectCategory('${item}')">${name}${priceStr}</div>`;
+            }).join(''); 
+        } else { 
+            eventDisplay.innerHTML = `⚠️ No Event Set`; 
+            document.getElementById('itemGrid').innerHTML = ''; 
+        } 
+        document.querySelectorAll('.item-circle').forEach(el => el.classList.remove('selected')); 
+    }
+    
     function populateItemFilter() { const filter = document.getElementById('itemFilter'); if(!filter) return; const currentSelection = filter.value; let uniqueItems = new Set(); getActiveRecords().forEach(r => { if(r.rawItems) r.rawItems.forEach(i => uniqueItems.add(i.name)); }); let optionsHtml = '<option value="ALL">All Items</option><option value="PRE-ORDER">📌 All Pre-Orders</option>'; Array.from(uniqueItems).sort().forEach(item => { optionsHtml += `<option value="${item}">${item}</option>`; }); filter.innerHTML = optionsHtml; if(currentSelection) filter.value = currentSelection; }
     function renderItemizedReport() { const tbody = document.getElementById('itemizedTableBody'); if(!tbody) return; const filterVal = document.getElementById('itemFilter').value || 'ALL'; let itemRows = []; getActiveRecords().forEach(r => { if(r.rawItems) r.rawItems.forEach(i => { itemRows.push({ inv: r.invoiceNo, date: r.date, name: r.studentName, div: r.division, item: i.name, price: i.price }); }); }); if(filterVal === 'PRE-ORDER') itemRows = itemRows.filter(row => row.item.toLowerCase().includes('pre-order')); else if (filterVal !== 'ALL') itemRows = itemRows.filter(row => row.item === filterVal); itemRows.sort((a,b) => a.item.localeCompare(b.item)); if(itemRows.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No items found.</td></tr>'; return; } let totalQty = itemRows.length, totalPrice = itemRows.reduce((sum, r) => sum + r.price, 0); let html = itemRows.map(r => `<tr><td><b>${r.item}</b></td><td>${r.inv}</td><td>${r.date.split(',')[0]}</td><td>${r.div}</td><td>${r.name}</td><td>$${r.price.toFixed(2)}</td></tr>`).join(''); html += `<tr class="summary-row"><td colspan="5" style="text-align:right;">Total Quantity: ${totalQty}</td><td>Total: $${totalPrice.toFixed(2)}</td></tr>`; tbody.innerHTML = html; }
     function printItemizedList() { document.body.className = 'print-report'; window.print(); setTimeout(() => { document.body.className = ''; }, 500); }
@@ -536,7 +576,17 @@
     function updateDashboard() { const todayStr = new Date().toLocaleDateString('en-US'); let todayCash = 0, todayCard = 0, todayCount = 0; getActiveRecords().forEach(r => { if (new Date(r.date).toLocaleDateString('en-US') === todayStr) { todayCount++; if (r.method === 'Cash') todayCash += r.amount; if (r.method === 'Card') todayCard += r.amount; } }); document.getElementById('todayCash').textContent = `$${todayCash.toLocaleString('en-US', {minimumFractionDigits: 2})}`; document.getElementById('todayCard').textContent = `$${todayCard.toLocaleString('en-US', {minimumFractionDigits: 2})}`; document.getElementById('todayTotal').textContent = `$${(todayCash + todayCard).toLocaleString('en-US', {minimumFractionDigits: 2})}`; document.getElementById('todayCount').textContent = todayCount; }
     function exportSalesToExcel() { const filterVal = document.getElementById('invoiceDateFilter').value; const todayStr = new Date().toLocaleDateString('en-US'); const currentSource = getActiveRecords(); let filteredRecords = filterVal === 'TODAY' ? currentSource.filter(r => new Date(r.date).toLocaleDateString('en-US') === todayStr) : currentSource; if (filteredRecords.length === 0) return alert("No data."); let csvContent = "\uFEFFInvoice No.,Date & Time,Division,Student Name,Items Purchased,Payment Method,Total Amount\n"; filteredRecords.forEach(r => { csvContent += `"${r.invoiceNo}","${r.date}","${r.division}","${r.studentName}","${r.items.replace(/"/g, '""')}","${r.method}",${r.amount}\n`; }); downloadCSV(csvContent, `Anderson_Invoices.csv`); }
     function downloadCSV(content, filename) { const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = filename; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
-    function addEvent() { const name = document.getElementById('newFeeName').value.trim(), itemsRaw = document.getElementById('newFeeItems').value.trim(), sDate = document.getElementById('newFeeStart').value, eDate = document.getElementById('newFeeEnd').value; if (!name || !itemsRaw) return alert('Enter Event Name and Items.'); const itemsArray = itemsRaw.split(',').map(s => s.trim()).filter(s => s !== ""); const existingIndex = eventsConfig.findIndex(ev => ev.name.toLowerCase() === name.toLowerCase()); if (existingIndex >= 0) { eventsConfig[existingIndex].items = itemsArray; eventsConfig[existingIndex].startDate = sDate; eventsConfig[existingIndex].endDate = eDate; } else { eventsConfig.push({ id: 'ev' + Date.now(), name: name, items: itemsArray, startDate: sDate, endDate: eDate }); } document.getElementById('newFeeName').value = ''; document.getElementById('newFeeItems').value = ''; document.getElementById('newFeeStart').value = ''; document.getElementById('newFeeEnd').value = ''; autoCheckEventDate(); saveData(); }
+    
+    function addEvent() { 
+        const name = document.getElementById('newFeeName').value.trim(), itemsRaw = document.getElementById('newFeeItems').value.trim(), sDate = document.getElementById('newFeeStart').value, eDate = document.getElementById('newFeeEnd').value; 
+        if (!name || !itemsRaw) return alert('Enter Event Name and Items.'); 
+        const itemsArray = itemsRaw.split(',').map(s => s.trim()).filter(s => s !== ""); 
+        const existingIndex = eventsConfig.findIndex(ev => ev.name.toLowerCase() === name.toLowerCase()); 
+        if (existingIndex >= 0) { eventsConfig[existingIndex].items = itemsArray; eventsConfig[existingIndex].startDate = sDate; eventsConfig[existingIndex].endDate = eDate; } 
+        else { eventsConfig.push({ id: 'ev' + Date.now(), name: name, items: itemsArray, startDate: sDate, endDate: eDate }); } 
+        document.getElementById('newFeeName').value = ''; document.getElementById('newFeeItems').value = ''; document.getElementById('newFeeStart').value = ''; document.getElementById('newFeeEnd').value = ''; autoCheckEventDate(); saveData(); 
+    }
+    
     function renderEventsAdmin() { document.getElementById('feeTableBody').innerHTML = eventsConfig.map((e, index) => { const isActive = (e.id === activeEventId), dateStr = (e.startDate) ? `${e.startDate} to ${e.endDate || e.startDate}` : '<span style="color:#aaa;">No Date Set</span>', isPreset = (e.id.startsWith('ev_')); return `<tr><td>${e.name} ${isPreset ? '📌' : ''}</td><td>${dateStr}</td><td>${e.items.join(', ')}</td><td><button class="btn ${isActive ? 'btn-primary' : 'btn-warning'}" onclick="activeEventId='${e.id}'; saveData();">${isActive ? '🌟 Active' : 'Set Active'}</button></td><td>${isPreset ? '' : `<button class="btn btn-danger" onclick="if(confirm('Delete event?')){eventsConfig.splice(${index}, 1); saveData();}">Del</button>`}</td></tr>`; }).join(''); }
     
     function renderStudents(filterText = '') { 
