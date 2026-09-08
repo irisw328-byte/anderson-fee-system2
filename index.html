@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anderson POS System v14.16</title>
+<title>Anderson POS System v14.17</title>
 <style>
     :root {
         --bg-color: #EAE0C8; --card-bg: #FCFBF9; --primary-color: #2A4D4A; 
@@ -100,7 +100,7 @@
 <body>
 <div class="container">
     <header class="no-print-report">
-        <h1>🦅 Anderson POS System <span style="font-size: 0.4em; color: var(--numpad-color); font-weight: 600; vertical-align: middle;">v14.16</span></h1>
+        <h1>🦅 Anderson POS System <span style="font-size: 0.4em; color: var(--numpad-color); font-weight: 600; vertical-align: middle;">v14.17</span></h1>
         <div class="nav-tabs">
             <button class="nav-btn active" onclick="showSection('payment')">💻 Cashier POS</button>
             <button class="nav-btn" onclick="showSection('records')">📊 Reports</button>
@@ -613,7 +613,7 @@
             document.getElementById('itemGrid').innerHTML = activeEvent.items.map(item => {
                 let parts = item.split(':');
                 let name = parts[0];
-                let priceStr = parts.length > 1 ? `<span style="font-size:0.85em; font-weight:normal; margin-top:4px;">$${parts[1]}</span>` : '';
+                let priceStr = parts.length > 1 ? `<span style="font-size:1.2em; font-weight:bold; color:#FFD700; margin-top:5px; letter-spacing:0.5px;">$${parts[1]}</span>` : '';
                 return `<div class="item-circle" data-raw="${item}" onclick="selectCategory('${item}')">${name}${priceStr}</div>`;
             }).join(''); 
         } else { 
@@ -726,7 +726,6 @@
                 eventsConfig[existingIndex].endDate = eDate;
             }
         } else {
-            // Check if name already exists to prevent duplicate exact names
             const existingIndex = eventsConfig.findIndex(ev => ev.name.toLowerCase() === name.toLowerCase()); 
             if (existingIndex >= 0) { 
                 eventsConfig[existingIndex].items = itemsArray; 
